@@ -1,0 +1,63 @@
+apply from: "gradle/vertx.gradle"
+apply plugin: "clojure"
+
+repositories {
+  mavenCentral()
+  clojarsRepo()
+}
+
+buildscript{
+    repositories {
+        maven { url 'http://clojars.org/repo' }
+    }
+    dependencies { classpath "clojuresque:clojuresque:1.5.7" }
+}
+
+dependencies {
+  compile "org.clojure:clojure:1.5.1"
+}
+
+test {
+  /* Configure which tests are included
+  include 'org/foo/**'
+  exclude 'org/boo/**'
+  */
+
+}
+
+/*
+If you're uploading stuff to Maven, Gradle needs to generate a POM.
+Please edit the details below.
+ */
+def configurePom(def pom) {
+  pom.project {
+    description 'Description of your module here'
+    inceptionYear '2013'
+    packaging 'zip'
+    url 'Your project url'
+
+    developers {
+      developer {
+        id 'developer id (e.g. github username)'
+        name 'developer name'
+        email 'developer email'
+      }
+    }
+
+    scm {
+      url 'url to your repo - e.g. github repo url'
+    }
+
+    licenses {
+      license {
+        name 'The name of the license used, e.g.: The Apache Software License, Version 2.0'
+        url 'URl to the license, e.g.: http://www.apache.org/licenses/LICENSE-2.0.txt'
+        distribution 'repo'
+      }
+    }
+
+    properties {
+      setProperty('project.build.sourceEncoding', 'UTF8')
+    }
+  }
+}
