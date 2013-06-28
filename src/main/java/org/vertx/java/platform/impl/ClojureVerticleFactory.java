@@ -24,13 +24,14 @@ import org.vertx.java.platform.Verticle;
 import org.vertx.java.platform.VerticleFactory;
 
 import clojure.lang.RT;
+import clojure.lang.Var;
 
 public class ClojureVerticleFactory implements VerticleFactory {
 
     private static final Logger log = LoggerFactory.getLogger(ClojureVerticleFactory.class);
     private ClassLoader cl;
-    private Vertx vertx;
-    private Container container;
+    public static Vertx vertx;
+    public static Container container;
 
     public ClojureVerticleFactory() {
         super();
@@ -39,8 +40,8 @@ public class ClojureVerticleFactory implements VerticleFactory {
     @Override
     public void init(Vertx vertx, Container container, ClassLoader cl) {
         this.cl = cl;
-        this.vertx = vertx;
-        this.container = container;
+        ClojureVerticleFactory.vertx = vertx;
+        ClojureVerticleFactory.container = container;
     }
 
     @Override
@@ -58,6 +59,7 @@ public class ClojureVerticleFactory implements VerticleFactory {
 
     private class ClojureVerticle extends Verticle {
         private final String scriptName;
+        private Var stopFunc;
 
         ClojureVerticle(String scriptName) {
             this.scriptName = scriptName;
@@ -67,9 +69,10 @@ public class ClojureVerticleFactory implements VerticleFactory {
             try {
                 RT.load("clojure/core");
                 clojure.lang.Var.pushThreadBindings(RT.map(clojure.lang.Compiler.LOADER, cl));
-                RT.var("vertx.core", "vertx", getVertx());
-                RT.var("vertx.core", "container", getContainer());
+                RT.var("vertx.core", "vertx", ClojureVerticleFactory.vertx);
+                RT.var("vertx.core", "container", ClojureVerticleFactory.container);
                 RT.loadResourceScript(scriptName);
+                stopFunc = RT.var("vertx.core", "vertx-stop");
             } catch(Exception e) {
                 log.info(e.getMessage(), e);
             }
@@ -77,7 +80,12 @@ public class ClojureVerticleFactory implements VerticleFactory {
         }
 
         public void stop() {
-            //TODO: setting a stop handler
+            try {
+                if(stopFunc != null)
+                    stopFunc.invoke();
+            } catch (Exception e) {
+                log.error(e.getMessage(), e);
+            }
             log.info("Stop verticle: " + scriptName);
         }
     }

@@ -15,6 +15,7 @@ buildscript{
 
 dependencies {
   compile "org.clojure:clojure:1.5.1"
+  compile "org.clojure:data.json:0.2.2"
 }
 
 test {

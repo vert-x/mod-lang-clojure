@@ -1,8 +1,9 @@
 (ns vertx.net
   (:import (org.vertx.java.core.streams Pump)
+           (org.vertx.java.core.buffer Buffer)
+           (org.vertx.java.core.parsetools RecordParser)
            (org.vertx.java.core Vertx Handler AsyncResultHandler))
-  (:use vertx.core)
-)
+  (:use [vertx.core]))
 
 (defn pump
   ([sock1 sock2]
@@ -13,43 +14,47 @@
        (pump sock1 sock2))))
 
 
-(defmacro sock-listen
-  "Create a ```NetServer``` and listen on specified port and host,
-   vertx and sock-server is available in the body."
-  [port host & body]
-  `(fn [vertx# _#]
-     (let [sock-server# (.createNetServer vertx#)]
-       ((fn [~'vertx ~'sock-server] ~@body) vertx# sock-server#)
-       (.listen sock-server# ~port ~host))))
+(defn parse-fixed [in size h] 
+  (-> (RecordParser/newFixed size h) (.handle in)))
 
-(defmacro sock-connect
-  "Create a ```NetClient```, and connect specified port and host."
-  [port host body]
-  `(fn [vertx# container#]
-     (let [client# (.createNetClient vertx#)]
-       (.connect client# ~port ~host ~body))))
+(defn parse-delimited
+  "Parse ```Buffer``` with specific limiter then invoke handler"
+  [in ^String limite h]
+  (-> (RecordParser/newDelimited (.getBytes limite) h) (.handle in)))
+
+
+(defmacro sock-listen
+  "Create a ```NetServer``` and listen on specified port and host"
+  [port host & body]
+  `(let [vertx# (get-vertx)
+         sock-server# (.createNetServer vertx#)]
+     ((fn [~'sock-server] ~@body) sock-server#)
+     (.listen sock-server# ~port ~host)))
 
 (defmacro connect-handler
   "Used by a ```NetServer```, handle new connection."
   [sock-server expr & body]
-  `(.connectHandler ~sock-server
-                    (handler ~expr ~@body)))
+  `(.connectHandler ~sock-server (handler ~expr ~@body)))
 
-(defmacro data-handler
-"``` dataHandler```"
-  [sock expr & body]
-  `(.dataHandler ~sock
-                 (handler ~expr ~@body)))
-
-(defmacro closed-handler
+(defmacro close-handler
   "Used by a ```NetServer```, handle connection close."
   [sock expr & body]
-  `(.closedHandler ~sock
-                  (handler ~expr ~@body)))
+  `(.closeHandler ~sock (handler ~expr ~@body)))
 
-;;TODO exception Handler
+(defmacro data-handler
+  "Create a handler and attach it the ```.dataHandler``` callback of the first argument,
+   usually a socket"
+  [sock expr & body]
+  `(.dataHandler ~sock (handler ~expr ~@body)))
 
+(defmacro sock-connect
+  "Create a ```NetClient```, and connect specified port and host."
+  [port host & body]
+  `(let [vertx# (get-vertx)
+         client# (.createNetClient vertx#)]
+     (.connect client# ~port ~host ~@body)))
 
-
-
-
+(defmacro exception-handler
+  "Catch exception from socket"
+  [sock e & body]
+  `(.exceptionHandler ~sock (handler ~e ~@body)))
