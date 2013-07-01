@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.vertx.java.platform.impl;
+package io.vertx.lang.clojure;
 
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.logging.impl.LoggerFactory;
@@ -30,8 +30,6 @@ public class ClojureVerticleFactory implements VerticleFactory {
 
     private static final Logger log = LoggerFactory.getLogger(ClojureVerticleFactory.class);
     private ClassLoader cl;
-    public static Vertx vertx;
-    public static Container container;
 
     public ClojureVerticleFactory() {
         super();
@@ -40,8 +38,15 @@ public class ClojureVerticleFactory implements VerticleFactory {
     @Override
     public void init(Vertx vertx, Container container, ClassLoader cl) {
         this.cl = cl;
-        ClojureVerticleFactory.vertx = vertx;
-        ClojureVerticleFactory.container = container;
+
+        try {
+            RT.load("clojure/core");
+            clojure.lang.Compiler.LOADER.bindRoot(this.cl);
+            RT.var("vertx.core", "vertx", vertx);
+            RT.var("vertx.core", "container", container);
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+        }
     }
 
     @Override
@@ -55,7 +60,9 @@ public class ClojureVerticleFactory implements VerticleFactory {
     }
 
     @Override
-    public void close() {}
+    public void close() {
+        RT.var("clojure.core", "shutdown-agents").invoke();
+    }
 
     private class ClojureVerticle extends Verticle {
         private final String scriptName;
@@ -67,10 +74,6 @@ public class ClojureVerticleFactory implements VerticleFactory {
 
         public void start() {
             try {
-                RT.load("clojure/core");
-                clojure.lang.Var.pushThreadBindings(RT.map(clojure.lang.Compiler.LOADER, cl));
-                RT.var("vertx.core", "vertx", ClojureVerticleFactory.vertx);
-                RT.var("vertx.core", "container", ClojureVerticleFactory.container);
                 RT.loadResourceScript(scriptName);
                 stopFunc = RT.var("vertx.core", "vertx-stop");
             } catch(Exception e) {
