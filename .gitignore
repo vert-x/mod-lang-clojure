@@ -1,4 +1,3 @@
-pom.xml
 *jar
 /lib/
 /classes/
@@ -7,3 +6,6 @@ pom.xml
 /build/
 /mods/
 /.gradle/
+.idea
+*.iml
+target
