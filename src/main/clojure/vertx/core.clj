@@ -110,7 +110,9 @@
   ([main config instances]
      (deploy-verticle main config instances nil))
   ([main config instances handler]
-     (.deployVerticle !container main
+     (deploy-verticle !container main config instances handler))
+  ([container main config instances handler]
+     (.deployVerticle container main
                       (encode config)
                       (or instances 1)
                       (async-result-handler handler))))
@@ -119,7 +121,9 @@
   ([id]
      (undeploy-verticle id nil))
   ([id handler]
-     (.undeployVerticle !container id (async-result-handler handler false))))
+     (undeploy-verticle !container id handler))
+  ([container id handler]
+     (.undeployVerticle container id (async-result-handler handler false))))
 
 ;; bound by ClojureVerticle
 (def ^:dynamic !vertx-stop-fn nil)
@@ -127,20 +131,29 @@
 (defmacro on-stop [& body]
   `(reset! !vertx-stop-fn (fn [] ~@body)))
 
-(defn set-timer* [t h]
-  (.setTimer !vertx t (handle* h)))
+(defn set-timer*
+  ([t h]
+     (set-timer* !vertx t h))
+  ([vertx t h]
+     (.setTimer vertx t (handle* h))))
 
 (defmacro set-timer [t & body]
   `(set-timer* ~t (fn [_#] ~@body)))
 
-(defn set-periodic* [t h]
-  (.setPeriodic !vertx t (handle* h)))
+(defn set-periodic*
+  ([t h]
+     (set-periodic* !vertx t h))
+  ([vertx t h]
+     (.setPeriodic vertx t (handle* h))))
 
 (defmacro set-periodic [t & body]
   `(set-periodic* ~t (fn [_#] ~@body)))
 
-(defn cancel-timer [id]
-  (.cancelTimer !vertx id))
+(defn cancel-timer
+  ([id]
+     (cancel-timer !vertx id))
+  ([vertx id]
+     (.cancelTimer vertx id)))
 
 (defni deploy-worker-verticle)
 (defni deploy-module)
