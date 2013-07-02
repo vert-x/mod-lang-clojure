@@ -8,7 +8,7 @@
   (VertxAssert/initialize core/!vertx)
   ((ns-resolve *ns*
                (symbol
-                (get (core/config) :methodName)))))
+                ((core/config) :methodName)))))
 
 (defn test-complete* [f]
   (try

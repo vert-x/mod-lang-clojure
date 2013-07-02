@@ -59,7 +59,7 @@
   `(def ~name (handler ~@rest)))
 
 (defn config []
-  (<-json (.config !container)))
+  (decode (.config !container)))
 
 (defn async-result-handler
   ([f]
@@ -95,6 +95,13 @@
 (defmacro deploy-worker-verticle [container & body]
   `(.deployWorkerVerticle ~container  ~@body))
 
+(defn simple-handler [f]
+  (if (or (nil? f) (handler? f))
+    f
+    (handle*
+     (fn [& _]
+       (f)))))
+
 (defn deploy-verticle
   ([main]
      (deploy-verticle main nil nil nil))
@@ -104,7 +111,7 @@
      (deploy-verticle main config instances nil))
   ([main config instances handler]
      (.deployVerticle !container main
-                      (->json config)
+                      (encode config)
                       (or instances 1)
                       (async-result-handler handler))))
 
@@ -119,6 +126,12 @@
 
 (defmacro on-stop [& body]
   `(reset! !vertx-stop-fn (fn [] ~@body)))
+
+(defn set-timer* [t h]
+  (.setTimer !vertx t (simple-handler h)))
+
+(defmacro set-timer [t & body]
+  `(set-timer* ~t (fn [] ~@body)))
 
 (defni deploy-worker-verticle)
 (defni deploy-module)

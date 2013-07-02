@@ -1,20 +1,25 @@
 (ns vertx.utils
   (:require [clojure.string :as s]
             [clojure.data.json :as json])
-  (:import [org.vertx.java.core.json JsonObject]))
+  (:import [org.vertx.java.core.json JsonArray JsonObject]
+           java.util.UUID))
 
-;; TODO: we may need to handle other types here. what about arrays?
-(defn ->json
-  "Converts a map to a JsonObject, else returns the data"
+(defn encode
   [data]
   (condp instance? data
     java.util.Map (JsonObject. (json/write-str data))
+    java.util.List (JsonArray. (json/write-str data))
     data))
 
-(defn <-json
-  "Converts a JsonObject to clojure data, converting keys to keywords."
-  [^JsonObject j]
-  (json/read-str (.encode j) :key-fn keyword))
+(defn decode
+  [j]
+  (condp instance? j
+    JsonObject (json/read-str (.encode j) :key-fn keyword)
+    JsonArray (json/read-str (.encode j) :key-fn keyword)
+    j))
+
+(defn uuid []
+  (.toString (UUID/randomUUID)))
 
 (defmacro webroot
   "Get the absolute path of the current verticle definition."
