@@ -3,22 +3,20 @@
             [vertx.utils :as utils])
   (:import [org.vertx.testtools VertxAssert]))
 
-(defn init [vertx]
-  (VertxAssert/initialize vertx))
-
 (defn start-tests []
-  (init core/vertx)
+  (VertxAssert/initialize core/!vertx)
   ((ns-resolve *ns*
                (symbol
-                (-> (.config core/container)
-                    utils/json->map
-                    (get "methodName"))))))
+                (get (core/config) :methodName)))))
 
 (defn test-complete []
   (VertxAssert/testComplete))
 
 (defn assert [cond]
   (VertxAssert/assertTrue (boolean cond)))
+
+(defn assert= [exp actual]
+  (VertxAssert/assertEquals exp actual))
 
 (defmacro completing-handler [bindings & body]
   `(core/handle

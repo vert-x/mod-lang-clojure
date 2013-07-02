@@ -16,20 +16,19 @@
 
 package io.vertx.lang.clojure;
 
+import clojure.lang.Atom;
+import clojure.lang.IFn;
+import clojure.lang.PersistentHashMap;
+import clojure.lang.RT;
+import clojure.lang.Var;
 import org.vertx.java.core.Vertx;
-import org.vertx.java.core.logging.impl.LoggerFactory;
 import org.vertx.java.core.logging.Logger;
+import org.vertx.java.core.logging.impl.LoggerFactory;
 import org.vertx.java.platform.Container;
 import org.vertx.java.platform.Verticle;
 import org.vertx.java.platform.VerticleFactory;
 
-import clojure.lang.RT;
-import clojure.lang.Var;
-
 public class ClojureVerticleFactory implements VerticleFactory {
-
-    private static final Logger log = LoggerFactory.getLogger(ClojureVerticleFactory.class);
-    private ClassLoader cl;
 
     public ClojureVerticleFactory() {
         super();
@@ -42,8 +41,8 @@ public class ClojureVerticleFactory implements VerticleFactory {
         try {
             RT.load("clojure/core");
             clojure.lang.Compiler.LOADER.bindRoot(this.cl);
-            RT.var("vertx.core", "vertx", vertx);
-            RT.var("vertx.core", "container", container);
+            RT.var("vertx.core", "!vertx", vertx);
+            RT.var("vertx.core", "!container", container);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
         }
@@ -65,31 +64,35 @@ public class ClojureVerticleFactory implements VerticleFactory {
     }
 
     private class ClojureVerticle extends Verticle {
-        private final String scriptName;
-        private Var stopFunc;
 
         ClojureVerticle(String scriptName) {
             this.scriptName = scriptName;
         }
 
         public void start() {
+            Var stopVar = RT.var("vertx.core", "!vertx-stop-fn").setDynamic();
+            Var.pushThreadBindings(PersistentHashMap.create(stopVar, this.stopFn));
             try {
                 RT.loadResourceScript(scriptName);
-                stopFunc = RT.var("vertx.core", "vertx-stop");
             } catch(Exception e) {
-                log.info(e.getMessage(), e);
+                log.error(e.getMessage(), e);
+            } finally {
+                Var.popThreadBindings();
             }
             log.info("Started clojure verticle: " + scriptName);
         }
 
         public void stop() {
-            try {
-                if(stopFunc != null)
-                    stopFunc.invoke();
-            } catch (Exception e) {
-                log.error(e.getMessage(), e);
-            }
             log.info("Stop verticle: " + scriptName);
+            if (this.stopFn.deref() != null) {
+                ((IFn)this.stopFn.deref()).invoke();
+            }
         }
+        private final String scriptName;
+        private final Atom stopFn = new Atom(null);
     }
+
+    private static final Logger log = LoggerFactory.getLogger(ClojureVerticleFactory.class);
+    private ClassLoader cl;
+
 }

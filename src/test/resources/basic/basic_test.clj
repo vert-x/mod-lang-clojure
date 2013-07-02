@@ -4,11 +4,11 @@
 
 (defn test-a-simple-deployment-should-work []
   (core/deploy-verticle*
-   core/container "basic/app.clj"
+   "basic/app.clj"
    {:handler
     (completing-handler [deploy-id]
-                 (assert (not (nil? deploy-id)))
-                 (assert (resolve 'basic.app/value)))}))
+                        (assert (not (nil? deploy-id)))
+                        (assert (resolve 'basic.app/value)))}))
 
 (start-tests)
 

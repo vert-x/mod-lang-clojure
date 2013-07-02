@@ -1,15 +1,7 @@
 (ns vertx.core
-  (:import [org.vertx.java.core.json JsonObject]
-           [org.vertx.java.core Vertx Handler]
-           [org.vertx.java.platform Verticle]
-           [org.vertx.java.core.impl DefaultVertx]
-           [org.vertx.java.platform.impl DefaultPlatformManager DefaultContainer])
-           [clojure.lang ArityException])
   (:require [vertx.utils :refer :all])
-
-(println "vert.x core initializing")
-
-;;(dorun (map #(println %) (.getURLs (^URLClassLoader ClassLoader/getSystemClassLoader))))
+  (:import [org.vertx.java.core Handler]
+           [org.vertx.java.core.json JsonObject]))
 
 (def no-vertx-runtime-error
   (Exception. (str "there are not Vertx instance in this process.")))
@@ -44,31 +36,38 @@
 (defn cancel-timer [id]
   (.cancelTimer (get-vertx) id))
 
-(declare vertx)
-(declare container)
+(declare !vertx)
+(declare !container)
 
-
+(defn handle* [f]
+  (if (instance? Handler f)
+    f
+    (reify Handler
+      (handle [_# event#]
+        (f event#)))))
 
 (defmacro handler
   [bindings & body]
-     (handle ~bindings ~@body)))
-  `(reify org.vertx.java.core.Handler
-     (handle [_# ~@bindings] ~@body)))
+  `(handle* (fn ~bindings
+              ~@body)))
 
 (defmacro defhandler
   [name & rest]
   `(def ~name (handler ~@rest)))
 
+(defn config []
+  (<-json (.config !container)))
+
 (defn deploy-module
   ([module-name conf]
      (fn [vertx# container#]
-       (.deployModule container# module-name (map->json conf))))
+       (.deployModule container# module-name (->json conf))))
   ([module-name conf instances]
      (fn [vertx# container#]
-       (.deployModule container# module-name (map->json conf) instances)))
+       (.deployModule container# module-name (->json conf) instances)))
   ([module-name conf instances done-handler]
      (fn [vertx# container#]
-       (.deployModule container# module-name (map->json conf) instances done-handler)))
+       (.deployModule container# module-name (->json conf) instances done-handler)))
   )
 
 (defmacro deploy-module [container & body]
@@ -84,11 +83,17 @@
 (defmacro undeploy-verticle [container id & body]
   `(.undeployVerticle ~container ~id ~@body))
 
-(defn deploy-verticle* [container main {:keys [config instances handler]}]
-  (.deployVerticle container main
-                   (map->json config)
+(defn deploy-verticle* [main {:keys [config instances handler]}]
+  (.deployVerticle !container main
+                   (->json config)
                    (or instances 1)
                    handler))
 
 (defmacro deploy-worker-verticle [container & body]
   `(.deployWorkerVerticle ~container  ~@body))
+
+;; bound by ClojureVerticle
+(def ^:dynamic !vertx-stop-fn nil)
+
+(defmacro on-stop [& body]
+  `(reset! !vertx-stop-fn (fn [] ~@body)))

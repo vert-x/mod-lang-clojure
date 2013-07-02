@@ -36,6 +36,7 @@
     <version.vertx.testframework>2.0.0-CR1</version.vertx.testframework>
     <version.vertx.testtools>2.0.0-CR1</version.vertx.testtools>
     <version.clojure>1.5.1</version.clojure>
+    <version.json>0.2.2</version.json>
     <version.nrepl>0.2.3</version.nrepl>
   </properties>
 
@@ -56,6 +57,12 @@
       <groupId>org.clojure</groupId>
       <artifactId>clojure</artifactId>
       <version>${version.clojure}</version>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.clojure</groupId>
+      <artifactId>data.json</artifactId>
+      <version>${version.json}</version>
       <scope>compile</scope>
     </dependency>
 
