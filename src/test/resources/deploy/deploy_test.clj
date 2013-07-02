@@ -8,7 +8,6 @@
    "test.data"
    (fn [m]
      (t/test-complete
-      (println "GOT" (.body m))
       (t/assert= "started" (.body m)))))
   
   (core/deploy-verticle "deploy/child.clj" {:ham "biscuit"}))

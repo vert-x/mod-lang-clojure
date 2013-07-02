@@ -128,10 +128,19 @@
   `(reset! !vertx-stop-fn (fn [] ~@body)))
 
 (defn set-timer* [t h]
-  (.setTimer !vertx t (simple-handler h)))
+  (.setTimer !vertx t (handle* h)))
 
 (defmacro set-timer [t & body]
-  `(set-timer* ~t (fn [] ~@body)))
+  `(set-timer* ~t (fn [_#] ~@body)))
+
+(defn set-periodic* [t h]
+  (.setPeriodic !vertx t (handle* h)))
+
+(defmacro set-periodic [t & body]
+  `(set-periodic* ~t (fn [_#] ~@body)))
+
+(defn cancel-timer [id]
+  (.cancelTimer !vertx id))
 
 (defni deploy-worker-verticle)
 (defni deploy-module)
