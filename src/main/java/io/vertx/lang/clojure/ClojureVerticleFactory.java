@@ -22,11 +22,14 @@ import clojure.lang.PersistentHashMap;
 import clojure.lang.RT;
 import clojure.lang.Var;
 import org.vertx.java.core.Vertx;
+import org.vertx.java.core.VertxException;
 import org.vertx.java.core.logging.Logger;
 import org.vertx.java.core.logging.impl.LoggerFactory;
 import org.vertx.java.platform.Container;
 import org.vertx.java.platform.Verticle;
 import org.vertx.java.platform.VerticleFactory;
+
+import java.io.IOException;
 
 public class ClojureVerticleFactory implements VerticleFactory {
 
@@ -74,8 +77,8 @@ public class ClojureVerticleFactory implements VerticleFactory {
             Var.pushThreadBindings(PersistentHashMap.create(stopVar, this.stopFn));
             try {
                 RT.loadResourceScript(scriptName);
-            } catch(Exception e) {
-                log.error(e.getMessage(), e);
+            } catch (IOException e) {
+                throw new VertxException(e);
             } finally {
                 Var.popThreadBindings();
             }

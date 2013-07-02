@@ -39,8 +39,11 @@
 (declare !vertx)
 (declare !container)
 
+(defn handler? [h]
+  (instance? Handler h))
+
 (defn handle* [f]
-  (if (instance? Handler f)
+  (if (or (nil? f) (handler? f))
     f
     (reify Handler
       (handle [_# event#]
@@ -58,17 +61,17 @@
 (defn config []
   (<-json (.config !container)))
 
-(defn deploy-module
-  ([module-name conf]
-     (fn [vertx# container#]
-       (.deployModule container# module-name (->json conf))))
-  ([module-name conf instances]
-     (fn [vertx# container#]
-       (.deployModule container# module-name (->json conf) instances)))
-  ([module-name conf instances done-handler]
-     (fn [vertx# container#]
-       (.deployModule container# module-name (->json conf) instances done-handler)))
-  )
+(defn async-result-handler
+  ([f]
+     (async-result-handler f true))
+  ([f include-result?]
+     (if (or (nil? f) (handler? f))
+       f
+       (handle*
+        (fn [r]
+          (if include-result?
+            (f (.cause r) (.result r))
+            (f (.cause r))))))))
 
 (defmacro deploy-module [container & body]
   `(.deployModule ~container ~@body))
@@ -92,8 +95,30 @@
 (defmacro deploy-worker-verticle [container & body]
   `(.deployWorkerVerticle ~container  ~@body))
 
+(defn deploy-verticle
+  ([main]
+     (deploy-verticle main nil nil nil))
+  ([main config]
+     (deploy-verticle main config nil nil))
+  ([main config instances]
+     (deploy-verticle main config instances nil))
+  ([main config instances handler]
+     (.deployVerticle !container main
+                      (->json config)
+                      (or instances 1)
+                      (async-result-handler handler))))
+
+(defn undeploy-verticle
+  ([id]
+     (undeploy-verticle id nil))
+  ([id handler]
+     (.undeployVerticle !container id (async-result-handler handler false))))
+
 ;; bound by ClojureVerticle
 (def ^:dynamic !vertx-stop-fn nil)
 
 (defmacro on-stop [& body]
   `(reset! !vertx-stop-fn (fn [] ~@body)))
+
+(defni deploy-worker-verticle)
+(defni deploy-module)
