@@ -1,5 +1,4 @@
-mod-lang-clojure
-================
+# mod-lang-clojure
 
 A vert.x language implementation in Clojure
 
@@ -13,6 +12,8 @@ Update `langs.properties` in your VERTX_HOME/conf with:
     .clj=clojure
 
 
+## Examples
+
 Run the echo server:
 
     vertx run examples/echo/echo-server.clj
@@ -20,3 +21,11 @@ Run the echo server:
 and, in another shell, run the echo client:
 
     vertx run examples/echo/echo-client.clj
+
+For the eventbus example:
+
+    vertx run examples/eventbus/handler.clj -cluster
+    
+and in another shell:
+
+    vertx run examples/eventbus/sender.clj -cluster

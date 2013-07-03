@@ -1,10 +1,9 @@
 (ns example.handler
-  (:use [vertx.core]))
-
+  (:require [vertx.eventbus :as eb]))
 
 (def address "example.address")
 
-(start-vertx vertx
-             (bus-register address
-                           (handler [^String msg]
-                                    (println "Received message" (.body msg)))))
+(eb/register-handler
+ address
+ (fn [msg]
+   (println "Received message" (eb/message-body msg))))
