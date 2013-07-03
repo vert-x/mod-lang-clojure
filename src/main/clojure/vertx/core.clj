@@ -53,11 +53,28 @@
             (f (.cause r) (.result r))
             (f (.cause r))))))))
 
-(defmacro deploy-module [container & body]
-  `(.deployModule ~container ~@body))
+(defn deploy-module
+  ([module-name]
+     (deploy-module module-name nil nil nil))
+  ([module-name config]
+     (deploy-module module-name config nil nil))
+  ([module-name config instances]
+     (deploy-module module-name config instances nil))
+  ([module-name config instances handler]
+     (deploy-module (get-container) module-name config instances handler))
+  ([container module-name config instances handler]
+     (.deployModule container module-name
+                    (encode config)
+                    (or instances 1)
+                    (async-result-handler handler))))
 
-(defmacro undeploy-module [container id & body]
-  `(.undeployModule ~container ~id ~@body))
+(defn undeploy-module
+  ([id]
+     (undeploy-module id nil))
+  ([id handler]
+     (undeploy-module (get-container) id handler))
+  ([container id handler]
+     (.undeployModule container id (async-result-handler handler false))))
 
 (defn deploy-verticle
   ([main]
