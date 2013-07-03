@@ -42,7 +42,7 @@
 (defn handler? [h]
   (instance? Handler h))
 
-(defn handle* [f]
+(defn handler* [f]
   (if (or (nil? f) (handler? f))
     f
     (reify Handler
@@ -51,7 +51,7 @@
 
 (defmacro handler
   [bindings & body]
-  `(handle* (fn ~bindings
+  `(handler* (fn ~bindings
               ~@body)))
 
 (defmacro defhandler
@@ -67,7 +67,7 @@
   ([f include-result?]
      (if (or (nil? f) (handler? f))
        f
-       (handle*
+       (handler*
         (fn [r]
           (if include-result?
             (f (.cause r) (.result r))
@@ -98,9 +98,12 @@
 (defn simple-handler [f]
   (if (or (nil? f) (handler? f))
     f
-    (handle*
+    (handler*
      (fn [& _]
        (f)))))
+
+(defn config []
+  (decode (.config !container)))
 
 (defn deploy-verticle
   ([main]
@@ -135,7 +138,7 @@
   ([t h]
      (set-timer* !vertx t h))
   ([vertx t h]
-     (.setTimer vertx t (handle* h))))
+     (.setTimer vertx t (handler* h))))
 
 (defmacro set-timer [t & body]
   `(set-timer* ~t (fn [_#] ~@body)))
@@ -144,7 +147,7 @@
   ([t h]
      (set-periodic* !vertx t h))
   ([vertx t h]
-     (.setPeriodic vertx t (handle* h))))
+     (.setPeriodic vertx t (handler* h))))
 
 (defmacro set-periodic [t & body]
   `(set-periodic* ~t (fn [_#] ~@body)))

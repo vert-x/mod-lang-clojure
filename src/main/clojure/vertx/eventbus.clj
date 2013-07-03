@@ -15,7 +15,7 @@
   ([addr content handler]
      (send (eventbus) addr content handler))
   ([eb addr content handler]
-     (.send eb addr (encode content) (core/handle* handler))))
+     (.send eb addr (encode content) (core/handler* handler))))
 
 (defn publish
   ([addr content]
@@ -29,7 +29,7 @@
   ([m content]
      (.reply m (encode content)))
   ([m content handler]
-     (.reply m (encode content)) (core/handle* handler)))
+     (.reply m (encode content)) (core/handler* handler)))
 
 (let [registered-handlers (atom {})]
 
@@ -42,7 +42,7 @@ unregister-handler."
     ([addr handler local-only?]
        (register-handler (eventbus) addr handler local-only?))
     ([eb addr handler local-only?]
-       (let [h (core/handle* handler)
+       (let [h (core/handler* handler)
              id (uuid)]
          (if local-only?
            (.registerLocalHandler eb addr h)
