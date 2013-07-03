@@ -21,11 +21,6 @@
 (defn uuid []
   (.toString (UUID/randomUUID)))
 
-(defmacro webroot
-  "Get the absolute path of the current verticle definition."
-  [resource]
-  `(str user-dir "src/" (-> (s/join "/" (-> ~*ns* str (s/split #"\.") drop-last)) (s/replace #"-" "_")) "/" ~resource))
-
 (defmacro defni [n]
   `(do
      (let [fqn# (format "%s/%s" *ns* ~(name n))]

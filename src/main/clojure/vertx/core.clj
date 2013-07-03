@@ -1,43 +1,23 @@
 (ns vertx.core
   (:require [vertx.utils :refer :all])
-  (:import [org.vertx.java.core Handler]
+  (:import [org.vertx.java.core Handler VertxException]
            [org.vertx.java.core.json JsonObject]))
 
-(def no-vertx-runtime-error
-  (Exception. (str "there are not Vertx instance in this process.")))
-
-(def ^:dynamic *vertx* (atom nil))
+(defonce ^:dynamic *vertx* nil)
+(defonce ^:dynamic *container* nil)
 
 (defn get-vertx [] 
-  (or @*vertx*
-      (throw no-vertx-runtime-error)))
+  (or *vertx*
+      (throw (VertxException. "No vertx instance available."))))
+
+(defn get-container [] 
+  (or *container*
+      (throw (VertxException. "No container instance available."))))
 
 (defmacro start-vertx
   [vertx & body]
-  `(do (reset! *vertx* ~vertx) ~@body))
-
-(defn bus-send
-  "Send message with ```EventBus``` and it's address"
-  ([addr content] (.send (.eventBus (get-vertx)) addr content))
-  ([addr content handler] (.send (.eventBus (get-vertx)) addr content handler)))
-
-(defn bus-register
-  "Register message handler with address in Eventbus"
-  ([addr handler] (.registerHandler (.eventBus (get-vertx)) addr handler))
-  ([addr handler rest-handler] (.registerHandler (.eventBus (get-vertx)) addr handler rest-handler)))
-
-
-(defn periodic [delay handler]
-  (.setPeriodic (get-vertx) delay handler))
-
-(defn timer [delay handler]
-  (.setTimer (get-vertx) delay handler))
-
-(defn cancel-timer [id]
-  (.cancelTimer (get-vertx) id))
-
-(declare !vertx)
-(declare !container)
+  `(binding [*vertx* ~vertx]
+     ~@body))
 
 (defn handler? [h]
   (instance? Handler h))
@@ -59,7 +39,7 @@
   `(def ~name (handler ~@rest)))
 
 (defn config []
-  (decode (.config !container)))
+  (decode (.config (get-container))))
 
 (defn async-result-handler
   ([f]
@@ -79,21 +59,46 @@
 (defmacro undeploy-module [container id & body]
   `(.undeployModule ~container ~id ~@body))
 
+(defn deploy-verticle
+  ([main]
+     (deploy-verticle main nil nil nil))
+  ([main config]
+     (deploy-verticle main config nil nil))
+  ([main config instances]
+     (deploy-verticle main config instances nil))
+  ([main config instances handler]
+     (deploy-verticle (get-container) main config instances handler))
+  ([container main config instances handler]
+     (.deployVerticle container main
+                      (encode config)
+                      (or instances 1)
+                      (async-result-handler handler))))
 
-(defmacro deploy-verticle [container & body]
-  `(.deployVerticle ~container ~@body))
+(defn deploy-worker-verticle
+  ([main]
+     (deploy-worker-verticle main nil nil nil nil))
+  ([main config]
+     (deploy-worker-verticle main config nil nil nil))
+  ([main config instances]
+     (deploy-worker-verticle main config instances nil nil))
+  ([main config instances multi-threaded?]
+     (deploy-worker-verticle main config instances multi-threaded? nil))
+  ([main config instances multi-threaded? handler]
+     (deploy-worker-verticle (get-container) main config instances multi-threaded? handler))
+  ([container main config instances multi-threaded? handler]
+     (.deployWorkerVerticle container main
+                      (encode config)
+                      (or instances 1)
+                      multi-threaded?
+                      (async-result-handler handler))))
 
-(defmacro undeploy-verticle [container id & body]
-  `(.undeployVerticle ~container ~id ~@body))
-
-(defn deploy-verticle* [main {:keys [config instances handler]}]
-  (.deployVerticle !container main
-                   (->json config)
-                   (or instances 1)
-                   handler))
-
-(defmacro deploy-worker-verticle [container & body]
-  `(.deployWorkerVerticle ~container  ~@body))
+(defn undeploy-verticle
+  ([id]
+     (undeploy-verticle id nil))
+  ([id handler]
+     (undeploy-verticle (get-container) id handler))
+  ([container id handler]
+     (.undeployVerticle container id (async-result-handler handler false))))
 
 (defn simple-handler [f]
   (if (or (nil? f) (handler? f))
@@ -103,30 +108,7 @@
        (f)))))
 
 (defn config []
-  (decode (.config !container)))
-
-(defn deploy-verticle
-  ([main]
-     (deploy-verticle main nil nil nil))
-  ([main config]
-     (deploy-verticle main config nil nil))
-  ([main config instances]
-     (deploy-verticle main config instances nil))
-  ([main config instances handler]
-     (deploy-verticle !container main config instances handler))
-  ([container main config instances handler]
-     (.deployVerticle container main
-                      (encode config)
-                      (or instances 1)
-                      (async-result-handler handler))))
-
-(defn undeploy-verticle
-  ([id]
-     (undeploy-verticle id nil))
-  ([id handler]
-     (undeploy-verticle !container id handler))
-  ([container id handler]
-     (.undeployVerticle container id (async-result-handler handler false))))
+  (decode (.config (get-container))))
 
 ;; bound by ClojureVerticle
 (def ^:dynamic !vertx-stop-fn nil)
@@ -134,29 +116,27 @@
 (defmacro on-stop [& body]
   `(reset! !vertx-stop-fn (fn [] ~@body)))
 
-(defn set-timer*
+(defn timer*
   ([t h]
-     (set-timer* !vertx t h))
+     (timer* (get-vertx) t h))
   ([vertx t h]
      (.setTimer vertx t (handler* h))))
 
-(defmacro set-timer [t & body]
-  `(set-timer* ~t (fn [_#] ~@body)))
+(defmacro timer [t & body]
+  `(timer* ~t (fn [_#] ~@body)))
 
-(defn set-periodic*
+(defn periodic*
   ([t h]
-     (set-periodic* !vertx t h))
+     (periodic* (get-vertx) t h))
   ([vertx t h]
      (.setPeriodic vertx t (handler* h))))
 
-(defmacro set-periodic [t & body]
-  `(set-periodic* ~t (fn [_#] ~@body)))
+(defmacro periodic [t & body]
+  `(periodic* ~t (fn [_#] ~@body)))
 
 (defn cancel-timer
   ([id]
-     (cancel-timer !vertx id))
+     (cancel-timer (get-vertx) id))
   ([vertx id]
      (.cancelTimer vertx id)))
 
-(defni deploy-worker-verticle)
-(defni deploy-module)

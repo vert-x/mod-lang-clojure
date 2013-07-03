@@ -5,7 +5,7 @@
 
 (defn eventbus
   ([]
-     (eventbus core/!vertx))
+     (eventbus (core/get-vertx)))
   ([vertx]
      (.eventBus vertx)))
 

@@ -3,12 +3,12 @@
             [vertx.core :as core]))
 
 (defn test-timer-macro []
-  (core/set-timer
+  (core/timer
    10
    (t/test-complete)))
 
 (defn test-timer-fn []
-  (core/set-timer*
+  (core/timer*
    10
    (fn [id]
      (t/test-complete
@@ -17,14 +17,14 @@
 (defn test-periodic-fn []
   (let [count (atom 1)
         total 10]
-    (core/set-periodic*
+    (core/periodic*
      10
      (fn [id]
        (swap! count inc)
        (when (= @count total)
          (core/cancel-timer id)
          ;; end test in another timer to catch if this timer keeps running
-         (core/set-timer 100 (t/test-complete)))
+         (core/timer 100 (t/test-complete)))
        (when (> @count total)
          (throw (IllegalStateException. "fired too many times")))))))
 

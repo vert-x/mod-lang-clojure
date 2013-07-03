@@ -40,14 +40,17 @@ public class ClojureVerticleFactory implements VerticleFactory {
     @Override
     public void init(Vertx vertx, Container container, ClassLoader cl) {
         this.cl = cl;
-
+        ClassLoader oldCl = Thread.currentThread().getContextClassLoader();
+        Thread.currentThread().setContextClassLoader(cl);
         try {
             RT.load("clojure/core");
             clojure.lang.Compiler.LOADER.bindRoot(this.cl);
-            RT.var("vertx.core", "!vertx", vertx);
-            RT.var("vertx.core", "!container", container);
+            RT.var("vertx.core", "*vertx*").bindRoot(vertx);
+            RT.var("vertx.core", "*container*").bindRoot(container);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
+        } finally {
+            Thread.currentThread().setContextClassLoader(oldCl);
         }
     }
 

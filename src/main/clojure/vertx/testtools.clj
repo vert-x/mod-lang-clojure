@@ -5,7 +5,7 @@
   (:import [org.vertx.testtools VertxAssert]))
 
 (defn start-tests []
-  (VertxAssert/initialize core/!vertx)
+  (VertxAssert/initialize (core/get-vertx))
   ((ns-resolve *ns*
                (symbol
                 ((core/config) :methodName)))))

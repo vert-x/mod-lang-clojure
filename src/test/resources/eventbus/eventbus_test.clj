@@ -51,7 +51,7 @@
                (t/assert= msg (eb/message-body m))
                (eb/unregister-handler @id)
                (reset! rcvd true)
-               (core/set-timer 100 (t/test-complete)))))
+               (core/timer 100 (t/test-complete)))))
     
     (t/assert-not-nil @id)
     (dotimes [_ 2]

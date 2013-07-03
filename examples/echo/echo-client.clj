@@ -10,15 +10,14 @@
                             (let [s (.toString res)]
                              (println "net client receive:" s)))))
 
-(start-vertx vertx
-             (sock-connect 1234 "localhost"
-                           (handler [async-sock]
-                                    (when-let [sock (.result async-sock)]
-                                      (pump sock sock)
-                                      (data-handler sock [buf]
-                                                    (parse-buf buf))
-                                      (doseq [i (range 10)]
-                                        (let [s (str "hello" i "\n")]
-                                          (->> s (Buffer.) (.write sock))))
-                                      ))
-                           ))
+(sock-connect 1234 "localhost"
+              (handler [async-sock]
+                       (when-let [sock (.result async-sock)]
+                         (pump sock sock)
+                         (data-handler sock [buf]
+                                       (parse-buf buf))
+                         (doseq [i (range 10)]
+                           (let [s (str "hello" i "\n")]
+                             (->> s (Buffer.) (.write sock))))
+                         ))
+              )
