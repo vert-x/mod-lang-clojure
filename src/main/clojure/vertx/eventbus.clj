@@ -1,9 +1,13 @@
 (ns vertx.eventbus
+  "Functions for operating on the eventbus and its messages."
   (:refer-clojure :exclude [send])
   (:require [vertx.core :as core]
             [vertx.utils :refer :all]))
 
 (defn eventbus
+  "Returns the eventbus for the given vertx.
+   If vertx is not provided, it defaults to the default
+   vertx (vertx.core/*vertx*)."
   ([]
      (eventbus (core/get-vertx)))
   ([vertx]
@@ -15,7 +19,7 @@
   ([addr content handler]
      (send (eventbus) addr content handler))
   ([eb addr content handler]
-     (.send eb addr (encode content) (core/handler* handler))))
+     (.send eb addr (encode content) (core/as-handler handler))))
 
 (defn publish
   ([addr content]
@@ -29,7 +33,7 @@
   ([m content]
      (.reply m (encode content)))
   ([m content handler]
-     (.reply m (encode content)) (core/handler* handler)))
+     (.reply m (encode content)) (core/as-handler handler)))
 
 (let [registered-handlers (atom {})]
 
@@ -42,7 +46,7 @@ unregister-handler."
     ([addr handler local-only?]
        (register-handler (eventbus) addr handler local-only?))
     ([eb addr handler local-only?]
-       (let [h (core/handler* handler)
+       (let [h (core/as-handler handler)
              id (uuid)]
          (if local-only?
            (.registerLocalHandler eb addr h)

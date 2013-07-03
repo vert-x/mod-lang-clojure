@@ -1,4 +1,5 @@
-(ns vertx.utils
+(ns ^:internal ^:no-doc vertx.utils
+    "Internal utility functions."
   (:require [clojure.string :as s]
             [clojure.data.json :as json])
   (:import [org.vertx.java.core.json JsonArray JsonObject]
@@ -18,13 +19,8 @@
     JsonArray (json/read-str (.encode j) :key-fn keyword)
     j))
 
-(defn uuid []
+(defn uuid
+  "Generates a uuid."
+  []
   (.toString (UUID/randomUUID)))
 
-(defmacro defni [n]
-  `(do
-     (let [fqn# (format "%s/%s" *ns* ~(name n))]
-       (println "NOT IMPLEMENTED:" fqn#)
-       (defn ~n [& args#]
-         (throw (RuntimeException.
-                 (format "%s not yet implemented" fqn#)))))))

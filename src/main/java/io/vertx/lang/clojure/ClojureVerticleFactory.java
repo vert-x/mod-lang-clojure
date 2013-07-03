@@ -16,9 +16,11 @@
 
 package io.vertx.lang.clojure;
 
+import clojure.core.Vec;
 import clojure.lang.Atom;
 import clojure.lang.IFn;
 import clojure.lang.PersistentHashMap;
+import clojure.lang.PersistentVector;
 import clojure.lang.RT;
 import clojure.lang.Var;
 import org.vertx.java.core.Vertx;
@@ -30,6 +32,7 @@ import org.vertx.java.platform.Verticle;
 import org.vertx.java.platform.VerticleFactory;
 
 import java.io.IOException;
+import java.util.List;
 
 public class ClojureVerticleFactory implements VerticleFactory {
 
@@ -90,12 +93,12 @@ public class ClojureVerticleFactory implements VerticleFactory {
 
         public void stop() {
             log.info("Stop verticle: " + scriptName);
-            if (this.stopFn.deref() != null) {
-                ((IFn)this.stopFn.deref()).invoke();
+            for(Object f : (List)this.stopFn.deref()) {
+                ((IFn)f).invoke();
             }
         }
         private final String scriptName;
-        private final Atom stopFn = new Atom(null);
+        private final Atom stopFn = new Atom(PersistentVector.create());
     }
 
     private static final Logger log = LoggerFactory.getLogger(ClojureVerticleFactory.class);
