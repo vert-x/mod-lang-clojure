@@ -1,15 +1,14 @@
 (ns example.echo.echo-client
-  (:import (org.vertx.java.core.buffer Buffer))
   (:require [vertx.core :as vertx]
-            [vertx.net :as net]))
-
+            [vertx.net :as net]
+            [vertx.buffer :as buff]))
 
 (defn parse-buf [buf]
-  (net/parse-delimited
+  (buff/parse-delimited
    buf "\n"
-   (vertx/handler [res]
-                  (let [s (.toString res)]
-                    (println "net client receive:" s)))))
+   (fn [res]
+     (let [s (.toString res)]
+       (println "net client receive:" s)))))
 
 (net/sock-connect
  1234 "localhost"
@@ -20,4 +19,4 @@
                                     (parse-buf buf))
                   (doseq [i (range 10)]
                     (let [s (str "hello" i "\n")]
-                      (->> s (Buffer.) (.write sock)))))))
+                      (->> s buff/buffer (.write sock)))))))

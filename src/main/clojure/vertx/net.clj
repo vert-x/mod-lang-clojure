@@ -1,27 +1,15 @@
 (ns vertx.net
-  (:import (org.vertx.java.core.streams Pump)
-           (org.vertx.java.core.buffer Buffer)
-           (org.vertx.java.core.parsetools RecordParser)
-           (org.vertx.java.core Vertx Handler AsyncResultHandler))
+  (:import (org.vertx.java.core.streams Pump))
   (:use [vertx.core]))
 
 (defn pump
   ([sock1 sock2]
      (Pump/createPump sock1 sock2))
   ([sock1 sock2 start]
-     (if start
-       (.start (pump sock1 sock2))
-       (pump sock1 sock2))))
-
-
-(defn parse-fixed [in size h] 
-  (-> (RecordParser/newFixed size h) (.handle in)))
-
-(defn parse-delimited
-  "Parse ```Buffer``` with specific limiter then invoke handler"
-  [in ^String limite h]
-  (-> (RecordParser/newDelimited (.getBytes limite) h) (.handle in)))
-
+     (let [p (pump sock1 sock2)]
+       (if start
+         (.start p)
+         p))))
 
 (defmacro sock-listen
   "Create a ```NetServer``` and listen on specified port and host"

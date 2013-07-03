@@ -1,16 +1,14 @@
 (ns example.echo.echo-server
-  (:import (org.vertx.java.core.buffer Buffer))
-  (:require [vertx.core :as vertx]
-            [vertx.net :as net]))
-
+  (:require [vertx.net :as net]
+            [vertx.buffer :as buff]))
 
 (defn parse-buf [buf sock]
-  (net/parse-delimited
+  (buff/parse-delimited
    buf "\n"
-   (vertx/handler [res]
-                  (let [s (.toString res)]
-                    (println "net server receive:" s)
-                    (->> (str s " from server \n") (Buffer.) (.write sock))))))
+   (fn [res]
+     (let [s (.toString res)]
+       (println "net server receive:" s)
+       (->> (str s " from server \n") buff/buffer (.write sock))))))
 
 (net/sock-listen
  1234 "localhost"
@@ -19,4 +17,4 @@
                       (net/data-handler sock [buf]
                                         (parse-buf buf sock))
                       (net/close-handler sock [_]
-                                         (println "close handler be invoked"))))
+                                         (println "close handler invoked"))))
