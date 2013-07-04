@@ -1,8 +1,7 @@
 (ns vertx.shareddata
   "Functions for operating on Vert.x Shareddata.
    Though shareddata isn't that useful for Clojure,
-   since it already has immutable data structures.
-   We may want to implement them for completeness though"
+   since it already has immutable data structures."
   (:require [vertx.core :as core])
   (:import [org.vertx.java.core.shareddata SharedData]))
 
@@ -34,7 +33,7 @@
      (-> (shared-data vertx) (.removeMap name))))
 
 (defn remove-set
-  "Remove the map with the specific name"
+  "Remove the Set with the specific name"
   ([name]
      (remove-set (core/get-vertx) name))
   ([vertx name]
