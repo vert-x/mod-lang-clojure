@@ -1,20 +1,14 @@
 (ns example.echo.echo-server
   (:require [vertx.net :as net]
-            [vertx.buffer :as buff]))
+            [vertx.buffer :as buf]
+            [vertx.stream :as stream]))
 
-(defn parse-buf [buf sock]
-  (buff/parse-delimited
-   buf "\n"
-   (fn [res]
-     (let [s (.toString res)]
-       (println "net server receive:" s)
-       (->> (str s " from server \n") buff/buffer (.write sock))))))
+(defn echo-data [socket]
+  (stream/pump socket socket true)
+  (-> socket
+      (stream/on-data #(println "echo server received:" %))
+      (net/on-close #(println "Socket closed"))))
 
-(net/sock-listen
- 1234 "localhost"
- (net/connect-handler sock-server [sock]
-                      (net/pump sock sock)
-                      (net/data-handler sock [buf]
-                                        (parse-buf buf sock))
-                      (net/close-handler sock [_]
-                                         (println "close handler invoked"))))
+(-> (net/server)
+    (net/on-connect echo-data)
+    (net/listen 1234))

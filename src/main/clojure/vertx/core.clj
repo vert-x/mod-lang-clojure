@@ -1,7 +1,7 @@
 (ns vertx.core
   "Vert.x core functionality."
   (:require [vertx.utils :refer :all])
-  (:import [org.vertx.java.core Handler VertxException]
+  (:import [org.vertx.java.core Handler VertxException VoidHandler]
            [org.vertx.java.core.json JsonObject]))
 
 (defonce ^{:dynamic true
@@ -60,21 +60,13 @@
   [name bindings & body]
   `(def ~name (handler ~bindings ~@body)))
 
-(defn config
-  "Returns the configuration map from the container.
-   If no container is provided, the default is used."
-  ([]
-     (config (get-container)))
-  ([container]
-     (decode (.config container))))
-
-(defn async-result-handler
+(defn as-async-result-handler
   "Wraps the given fn in a org.vertx.java.core.Handler for handling an AsyncResult.
    If include-result? is true (the default), the fn will be passed the
    exception and the result from the AsyncResult, otherwise just the exception.
    Returns f unmodified if it is nil or already a Handler."
   ([f]
-     (async-result-handler f true))
+     (as-async-result-handler f true))
   ([f include-result?]
      (if (or (nil? f) (handler? f))
        f
@@ -83,6 +75,23 @@
           (if include-result?
             (f (.cause r) (.result r))
             (f (.cause r))))))))
+
+(defn as-void-handler
+  "Wraps the given fn in a Handler that ignores the event.
+   f is expected to be a zero-arity fn or a Handler.
+   Returns f unmodified if it is nil or already a Handler."
+  [f]
+  (if (or (nil? f) (handler? f))
+    f
+    (as-handler (fn [_#] (f)))))
+
+(defn config
+  "Returns the configuration map from the container.
+   If no container is provided, the default is used."
+  ([]
+     (config (get-container)))
+  ([container]
+     (decode (.config container))))
 
 (defn deploy-module
   "Deploys the module with the given name.
@@ -104,7 +113,7 @@
      (.deployModule container module-name
                     (encode config)
                     (or instances 1)
-                    (async-result-handler handler))))
+                    (as-async-result-handler handler))))
 
 (defn undeploy-module
   "Undeploys the module identified by id.
@@ -118,7 +127,7 @@
   ([id handler]
      (undeploy-module (get-container) id handler))
   ([container id handler]
-     (.undeployModule container id (async-result-handler handler false))))
+     (.undeployModule container id (as-async-result-handler handler false))))
 
 (defn deploy-verticle
   "Deploys the verticle with the given main file path.
@@ -140,7 +149,7 @@
      (.deployVerticle container main
                       (encode config)
                       (or instances 1)
-                      (async-result-handler handler))))
+                      (as-async-result-handler handler))))
 
 (defn deploy-worker-verticle
   "Deploys the worker verticle with the given main file path.
@@ -166,7 +175,7 @@
                       (encode config)
                       (or instances 1)
                       multi-threaded?
-                      (async-result-handler handler))))
+                      (as-async-result-handler handler))))
 
 (defn undeploy-verticle
   "Undeploys the verticle identified by id.
@@ -180,7 +189,7 @@
   ([id handler]
      (undeploy-verticle (get-container) id handler))
   ([container id handler]
-     (.undeployVerticle container id (async-result-handler handler false))))
+     (.undeployVerticle container id (as-async-result-handler handler false))))
 
 ;; bound by ClojureVerticle
 (def ^:dynamic ^:internal ^:no-doc !vertx-stop-fn nil)

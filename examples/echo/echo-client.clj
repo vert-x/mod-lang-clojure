@@ -1,22 +1,19 @@
 (ns example.echo.echo-client
   (:require [vertx.core :as vertx]
             [vertx.net :as net]
-            [vertx.buffer :as buff]))
+            [vertx.stream :as stream]
+            [vertx.buffer :as buf]))
 
-(defn parse-buf [buf]
-  (buff/parse-delimited
-   buf "\n"
-   (fn [res]
-     (let [s (.toString res)]
-       (println "net client receive:" s)))))
+(defn send-data [socket]
+  (stream/on-data socket #(println "echo client received:" %))
+  (doseq [i (range 10)]
+    (let [s (format "hello %s\n" i)]
+      (println "echo client sending:" s)
+      (->> s buf/buffer (.write socket)))))
 
-(net/sock-connect
+(net/connect
  1234 "localhost"
- (vertx/handler [async-sock]
-                (when-let [sock (.result async-sock)]
-                  (net/pump sock sock)
-                  (net/data-handler sock [buf]
-                                    (parse-buf buf))
-                  (doseq [i (range 10)]
-                    (let [s (str "hello" i "\n")]
-                      (->> s buff/buffer (.write sock)))))))
+ (fn [err socket]
+   (if err
+     (throw err)
+     (send-data socket))))
