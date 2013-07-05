@@ -215,6 +215,10 @@
               <name>vertx.mods</name>
               <value>target/mods</value>
             </property>
+            <property>
+              <name>vertx.test.timeout</name>
+              <value>10</value>
+            </property>            
           </systemProperties>
           <environmentVariables>
             <cheese>Gouda</cheese>
