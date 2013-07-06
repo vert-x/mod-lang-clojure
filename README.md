@@ -1,5 +1,7 @@
 # mod-lang-clojure
 
+THIS IS A WORK IN PROGRESS, AND FAR FROM COMPLETE.
+
 A vert.x language implementation in Clojure
 
 Build with:
