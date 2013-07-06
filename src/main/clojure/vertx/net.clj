@@ -1,15 +1,20 @@
 (ns vertx.net
-  (:require [vertx.core :as core]))
+  (:require [vertx.core :as core]
+            [vertx.utils :as u]))
 
+;;TODO: document properties
 (defn server
   "Creates a TCP or SSL server (NetServer) instance.
    If vertx is not provided, it defaults to the default
    vertx (vertx.core/*vertx*)."
   ([]
-     (server (core/get-vertx)))
-  ([vertx]
-     (.createNetServer vertx)))
+     (server (core/get-vertx) nil))
+  ([properties]
+     (server (core/get-vertx) properties))
+  ([vertx properties]
+     (u/set-properties (.createNetServer vertx) properties)))
 
+;;TODO: document properties
 (defn client
   "Creates a TCP or SSL client (NetClient) instance.
    If vertx is not provided, it defaults to the default
@@ -18,9 +23,11 @@
    Multiple connections to different servers can be made using the
    same client instance."
   ([]
-     (client (core/get-vertx)))
-  ([vertx]
-     (.createNetClient vertx)))
+     (client (core/get-vertx) nil))
+  ([properties]
+     (client (core/get-vertx) properties))
+  ([vertx properties]
+     (u/set-properties (.createNetClient vertx) properties)))
 
 (defn listen
   "Tells the server to start listening for connections on port.
