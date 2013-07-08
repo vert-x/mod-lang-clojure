@@ -56,3 +56,8 @@
 
 (defn random-buffer [length]
   (buf/buffer (random-byte-array length)))
+
+(defn a=
+  "Compares java arrays for equality."
+  [& args]
+  (apply = (map (partial into '()) args)))

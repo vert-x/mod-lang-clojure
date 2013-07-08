@@ -18,7 +18,8 @@
   (:import [org.vertx.java.core.buffer Buffer]
            [org.vertx.java.core.parsetools RecordParser]
            [clojure.lang BigInt Ratio]
-           java.math.BigDecimal))
+           java.math.BigDecimal
+           java.nio.ByteBuffer))
 
 ;; TODO: better docs
 (defn buffer
@@ -30,7 +31,9 @@
   ([str enc]
      (Buffer. str enc)))
 
-(let [byte-array (Class/forName "[B")]
+
+(let [byte-arr (Class/forName "[B")]
+  ;; TODO: doc types and type coercion/loss of precision
   (defn append!
     "Appends data to a buffer.
      Returns the mutated buffer instance."
@@ -38,7 +41,7 @@
        (condp instance? data
          Buffer     (.appendBuffer buf data)
          Byte       (.appendByte buf data)
-         byte-array (.appendBytes buf data)
+         byte-arr   (.appendBytes buf data)
          Double     (.appendDouble buf data)
          BigDecimal (.appendDouble buf (double data))
          Ratio      (.appendDouble buf (double data))
@@ -46,11 +49,72 @@
          Integer    (.appendInt buf data)    
          Long       (.appendLong buf data)
          BigInt     (.appendLong buf (long data))
+         Short      (.appendShort buf data)
          String     (.appendString buf data)
          (throw (IllegalArgumentException.
                  (str "Can't append data of class " (class data))))))
     ([buf data-string encoding]
-       (.append data-string encoding))))
+       (.append data-string encoding)))
+
+  (defn set!
+    "TODO: docs"
+    ([buf loc data]
+       (condp instance? data
+         Buffer     (.setBuffer buf loc data)
+         Byte       (.setByte buf loc data)
+         byte-arr   (.setBytes buf loc data)
+         ByteBuffer (.setBytes buf loc data)
+         Double     (.setDouble buf loc data)
+         BigDecimal (.setDouble buf loc (double data))
+         Ratio      (.setDouble buf loc (double data))
+         Float      (.setFloat buf loc data)
+         Integer    (.setInt buf loc data)    
+         Long       (.setLong buf loc data)
+         BigInt     (.setLong buf loc (long data))
+         Short      (.setShort buf loc data)
+         String     (.setString buf loc data)
+         (throw (IllegalArgumentException.
+                 (str "Can't set data of class " (class data))))))
+    ([buf loc data-string encoding]
+       (.setString buf loc data-string encoding))))
+
+(defn get-buffer
+  "Returns a copy of a sub-sequence of buf as a Buffer starting
+   at start and ending at end - 1."
+  [buf start end]
+  (.getBuffer buf start end))
+
+(defmacro ^:private def-get [name len]
+  (let [fname (symbol (str "get-" name))
+        doc (format "Returns the %s at position pos in buf.\n  Throws IndexOutOfBoundsException if the specified pos is less than 0\n  or pos + %s is greater than the length of buf." name len)
+        method (symbol (str ".get" (clojure.string/capitalize name)))]
+    `(defn ~fname ~doc [~'buf ~'pos] (~method ~'buf ~'pos))))
+
+(def-get byte 1) 
+(def-get int 4)
+(def-get long 8)
+(def-get double 8)
+(def-get float 4)
+(def-get short 2)
+
+(defn get-bytes
+  "Returns a copy of all or a portion of buf as a java byte array.
+   If start and end are provided, it returns a copy of a sub-sequnce
+   starting at start and ending at end - 1, otherwise it returns a
+   copy of the entire buf."
+  ([buf]
+     (.getBytes buf))
+  ([buf start end]
+     (.getBytes buf start end)))
+
+(defn get-string
+  "Returns a copy of a sub-sequence the buf as a String starting at
+   start and ending at end - 1 in the given encoding (defaulting to
+   UTF-8)."
+  ([buf start end]
+     (.getString buf start end))
+  ([buf start end encoding]
+     (.getString buf start end encoding)))
 
 (defn fixed-parser [size handler] 
   (RecordParser/newFixed size (core/as-handler handler)))
