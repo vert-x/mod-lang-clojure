@@ -18,28 +18,31 @@
   (:require [vertx.core :as core]
             [vertx.utils :refer :all]))
 
-(defn eventbus
+(def ^{:dynamic true
+       :doc "The currently active EventBus instance.
+             If not bound, the eventbus from vertx.core/*vertx* will be used.
+             You should only need to bind this for advanced usage."}
+  *event-bus* nil)
+
+(defn get-event-bus
   "Returns the eventbus for the given vertx.
    If vertx is not provided, it defaults to the default
    vertx (vertx.core/*vertx*)."
-  ([]
-     (eventbus (core/get-vertx)))
-  ([vertx]
-     (.eventBus vertx)))
+  []
+  (or *event-bus* (.eventBus (core/get-vertx))))
 
 (defn send
   ([addr content]
      (send addr content nil))
   ([addr content handler]
-     (send (eventbus) addr content handler))
-  ([eb addr content handler]
-     (.send eb addr (encode content) (core/as-handler handler))))
+     (.send (get-event-bus)
+            addr
+            (encode content)
+            (core/as-handler handler))))
 
 (defn publish
-  ([addr content]
-     (publish (eventbus) addr content))
-  ([eb addr content]
-     (.publish eb addr (encode content))))
+  [addr content]
+  (.publish (get-event-bus) addr (encode content)))
 
 (defn reply
   ([m]
@@ -58,27 +61,23 @@ unregister-handler."
     ([addr handler]
        (register-handler addr handler false))
     ([addr handler local-only?]
-       (register-handler (eventbus) addr handler local-only?))
-    ([eb addr handler local-only?]
        (let [h (core/as-handler handler)
              id (uuid)]
          (if local-only?
-           (.registerLocalHandler eb addr h)
-           (.registerHandler eb addr h))
+           (.registerLocalHandler (get-event-bus) addr h)
+           (.registerHandler (get-event-bus) addr h))
          (swap! registered-handlers assoc id [addr h])
          id)))
 
   (defn unregister-handler
-    ([id]
-       (unregister-handler (eventbus) id))
-    ([eb id]
-       (if-let [[addr h] (@registered-handlers id)]
-         (do
-           (.unregisterHandler eb addr h)
-           (swap! registered-handlers dissoc id))
-         (throw (IllegalArgumentException.
-                 (format "No handler with id %s found." id))))
-       nil)))
+    [id]
+    (if-let [[addr h] (@registered-handlers id)]
+      (do
+        (.unregisterHandler (get-event-bus) addr h)
+        (swap! registered-handlers dissoc id))
+      (throw (IllegalArgumentException.
+              (format "No handler with id %s found." id))))
+    nil))
 
 (defn message-body [m]
   (decode (.body m)))

@@ -116,6 +116,7 @@
   ([buf start end encoding]
      (.getString buf start end encoding)))
 
+;;TODO: doc parsing fns
 (defn fixed-parser [size handler] 
   (RecordParser/newFixed size (core/as-handler handler)))
 

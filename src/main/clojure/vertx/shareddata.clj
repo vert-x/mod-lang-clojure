@@ -20,36 +20,32 @@
   (:import [org.vertx.java.core.shareddata SharedData]))
 
 
-(defn- shared-data [vertx]
-  (.sharedData vertx))
+(def ^{:dynamic true
+       :doc "The currently active SharedData instance.
+             If not bound, the eventbus from vertx.core/*vertx* will be used.
+             You should only need to bind this for advanced usage."}
+  *shared-data*) nil
+
+(defn get-shared-data []
+  (or *shared-data* (.sharedData (core/get-vertx))))
 
 (defn get-map
-  "Return a map with specific name.
-   If vertx is not provided, it defaults to the default
-   vertx (vertx.core/*vertx*)."
-  ([name]
-     (get-map (core/get-vertx) name))
-  ([vertx name]
-     (-> (shared-data vertx) (.getMap name))))
+  "Return a map with specific name, using the SharedData instance from vertx.core/*vertx*."
+  [name]
+  (-> (get-shared-data) (.getMap name)))
 
 (defn get-set
-  "Return a Set with specific name"
-  ([name]
-     (get-set (core/get-vertx) name))
-  ([vertx name]
-     (-> (shared-data vertx) (.getSet name))))
+  "Return a Set with specific name, using the SharedData instance from vertx.core/*vertx*."
+  [name]
+  (-> (get-shared-data) (.getSet name)))
 
 (defn remove-map
-  "Remove the Map with the specific name"
-  ([name]
-     (remove-map (core/get-vertx) name))
-  ([vertx name]
-     (-> (shared-data vertx) (.removeMap name))))
+  "Remove the Map with the specific name, using the SharedData instance from vertx.core/*vertx*."
+  [name]
+  (-> (get-shared-data) (.removeMap name)))
 
 (defn remove-set
-  "Remove the Set with the specific name"
-  ([name]
-     (remove-set (core/get-vertx) name))
-  ([vertx name]
-     (-> (shared-data vertx) (.removeSet name))))
+  "Remove the Set with the specific name, using the SharedData instance from vertx.core/*vertx*."
+  [name]
+  (-> (get-shared-data) (.removeSet name)))
 

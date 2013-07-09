@@ -20,13 +20,15 @@
 
 (defonce ^{:dynamic true
            :doc "The currently active default vertx instance.
-                 The root binding will be set when deployed by vertx."} *vertx*
-           nil)
+                 The root binding will be set on verticle deploymeny by Vert.x.
+                 You should only need to bind this for advanced usage."}
+  *vertx* nil)
 
 (defonce ^{:dynamic true
            :doc "The currently active default vertx container instance.
-                 The root binding will be set when deployed by vertx."} *container*
-    nil)
+                 The root binding will be set on verticle deploymeny by Vert.x.
+                 You should only need to bind this for advanced usage."}
+  *container* nil)
 
 (defn get-vertx
   "Returns the currently active vertx instance (*vertx*), throwing if not set."
@@ -100,19 +102,15 @@
     (as-handler (fn [_#] (f)))))
 
 (defn config
-  "Returns the configuration map from the container.
-   If no container is provided, the default is used."
-  ([]
-     (config (get-container)))
-  ([container]
-     (decode (.config container))))
+  "Returns the configuration map from the current *container*."
+  []
+  (decode (.config (get-container))))
 
 (defn deploy-module
-  "Deploys the module with the given name.
-   If container or instances are not provided, they default to the
-   default container (*container*) and 1, respectively. handler can
-   either be a two-arity fn that will be passed the exception (if any)
-   and module id from the result of the deploy call, or a
+  "Deploys the module with the given name to *container*.
+   If instances is not provided, it defaults to 1. handler can either
+   be a two-arity fn that will be passed the exception (if any) and
+   module id from the result of the deploy call, or a
    org.vertx.java.core.Handler that will be called with the
    AsyncResult object that wraps the exception and id."
   ([module-name]
@@ -122,33 +120,29 @@
   ([module-name config instances]
      (deploy-module module-name config instances nil))
   ([module-name config instances handler]
-     (deploy-module (get-container) module-name config instances handler))
-  ([container module-name config instances handler]
-     (.deployModule container module-name
+     (.deployModule (get-container)
+                    module-name
                     (encode config)
                     (or instances 1)
                     (as-async-result-handler handler))))
 
 (defn undeploy-module
-  "Undeploys the module identified by id.
-   If container is not provided, it defaults to the default
-   container (*container*). handler can either be a single-arity fn
-   that will be passed the exception (if any) from the result of the
-   deploy call, or a org.vertx.java.core.Handler that will be called
-   with the AsyncResult object that wraps the exception."
+  "Undeploys the module identified by id from *container*.
+   handler can either be a single-arity fn that will be passed the
+   exception (if any) from the result of the deploy call, or a
+   org.vertx.java.core.Handler that will be called with the
+   AsyncResult object that wraps the exception."
   ([id]
      (undeploy-module id nil))
   ([id handler]
-     (undeploy-module (get-container) id handler))
-  ([container id handler]
-     (.undeployModule container id (as-async-result-handler handler false))))
+     (.undeployModule (get-container) id
+                      (as-async-result-handler handler false))))
 
 (defn deploy-verticle
-  "Deploys the verticle with the given main file path.
-   If container or instances are not provided, they default to the
-   default container (*container*) and 1, respectively. handler can
-   either be a two-arity fn that will be passed the exception (if any)
-   and verticle id from the result of the deploy call, or a
+  "Deploys the verticle with the given main file path to *container*.
+   If instances is not provided, it defaults to 1. handler can either
+   be a two-arity fn that will be passed the exception (if any) and
+   verticle id from the result of the deploy call, or a
    org.vertx.java.core.Handler that will be called with the
    AsyncResult object that wraps the exception and id."
   ([main]
@@ -158,19 +152,17 @@
   ([main config instances]
      (deploy-verticle main config instances nil))
   ([main config instances handler]
-     (deploy-verticle (get-container) main config instances handler))
-  ([container main config instances handler]
-     (.deployVerticle container main
+     (.deployVerticle (get-container)
+                      main
                       (encode config)
                       (or instances 1)
                       (as-async-result-handler handler))))
 
 (defn deploy-worker-verticle
-  "Deploys the worker verticle with the given main file path.
-   If container, instances, or multi-threaded? not provided, they
-   default to the default container (*container*), 1, and false,
-   respectively. handler can either be a two-arity fn that will be
-   passed the exception (if any) and verticle id from the result of
+  "Deploys the worker verticle with the given main file path to *container*.
+   If instances or multi-threaded? not provided, they default to 1 and
+   false, respectively. handler can either be a two-arity fn that will
+   be passed the exception (if any) and verticle id from the result of
    the deploy call, or a org.vertx.java.core.Handler that will be
    called with the AsyncResult object that wraps the exception and
    id."
@@ -183,27 +175,24 @@
   ([main config instances multi-threaded?]
      (deploy-worker-verticle main config instances multi-threaded? nil))
   ([main config instances multi-threaded? handler]
-     (deploy-worker-verticle (get-container) main config instances multi-threaded? handler))
-  ([container main config instances multi-threaded? handler]
-     (.deployWorkerVerticle container main
+     (.deployWorkerVerticle (get-container)
+                            main
                       (encode config)
                       (or instances 1)
                       multi-threaded?
                       (as-async-result-handler handler))))
 
 (defn undeploy-verticle
-  "Undeploys the verticle identified by id.
-   If container is not provided, it defaults to the default
-   container (*container*). handler can either be a single-arity fn
-   that will be passed the exception (if any) from the result of the
-   deploy call, or a org.vertx.java.core.Handler that will be called
-   with the AsyncResult object that wraps the exception."
+  "Undeploys the verticle identified by id from *container*.
+   handler can either be a single-arity fn that will be passed the
+   exception (if any) from the result of the deploy call, or a
+   org.vertx.java.core.Handler that will be called with the
+   AsyncResult object that wraps the exception."
   ([id]
      (undeploy-verticle id nil))
   ([id handler]
-     (undeploy-verticle (get-container) id handler))
-  ([container id handler]
-     (.undeployVerticle container id (as-async-result-handler handler false))))
+     (.undeployVerticle (get-container) id
+                        (as-async-result-handler handler false))))
 
 ;; bound by ClojureVerticle
 (def ^:dynamic ^:internal ^:no-doc !vertx-stop-fn nil)
@@ -223,15 +212,12 @@
   `(on-stop* (fn [] ~@body)))
 
 (defn timer*
-  "Registers a handler to be called once in delay ms.
-   Returns the id of the timer. If vertx is not provided, it defaults to
-   the default vertx (*vertx*). handler can either be a single-arity
+  "Registers a handler with *vertx* to be called once in delay ms.
+   Returns the id of the timer. handler can either be a single-arity
    fn or an org.vertx.java.core.Handler that will be passed the id of
    the timer. Returns the id of the timer."
-  ([delay handler]
-     (timer* (get-vertx) delay handler))
-  ([vertx delay handler]
-     (.setTimer vertx delay (as-handler handler))))
+  [delay handler]
+  (.setTimer (get-vertx) delay (as-handler handler)))
 
 (defmacro timer
   "Invokes the body in delay ms.
@@ -241,15 +227,12 @@
   `(timer* ~delay (fn [_#] ~@body)))
 
 (defn periodic*
-  "Registers a handler to be called every interval ms until cancelled.
-   Returns the id of the timer. If vertx is not provided, it defaults
-   to the default vertx (*vertx*). handler can either be a
-   single-arity fn or an org.vertx.java.core.Handler that will be
-   passed the id of the timer."
-  ([interval handler]
-     (periodic* (get-vertx) interval handler))
-  ([vertx interval handler]
-     (.setPeriodic vertx interval (as-handler handler))))
+  "Registers a handler with *vertx* to be called every interval ms until cancelled.
+   Returns the id of the timer. handler can either be a single-arity
+   fn or an org.vertx.java.core.Handler that will be passed the id of
+   the timer."
+  [interval handler]
+  (.setPeriodic (get-vertx) interval (as-handler handler)))
 
 (defmacro periodic
   "Invokes the body every interval ms until cancelled.
@@ -259,11 +242,7 @@
   `(periodic* ~interval (fn [_#] ~@body)))
 
 (defn cancel-timer
-  "Cancels the timer specified by id.
-   If vertx is not provided, it defaults to the default
-   vertx (*vertx*)."
-  ([id]
-     (cancel-timer (get-vertx) id))
-  ([vertx id]
-     (.cancelTimer vertx id)))
+  "Cancels the timer specified by id using *vertx*."
+  [id]
+  (.cancelTimer (get-vertx) id))
 
