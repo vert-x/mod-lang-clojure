@@ -26,7 +26,9 @@
              You should only need to bind this for advanced usage."}
   *shared-data*) nil
 
-(defn get-shared-data []
+(defn get-shared-data
+  "Returns the currently active SharedData instance."
+  []
   (or *shared-data* (.sharedData (core/get-vertx))))
 
 (defn get-map

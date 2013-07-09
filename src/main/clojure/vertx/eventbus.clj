@@ -20,14 +20,12 @@
 
 (def ^{:dynamic true
        :doc "The currently active EventBus instance.
-             If not bound, the eventbus from vertx.core/*vertx* will be used.
+             If not bound, the EventBus from vertx.core/*vertx* will be used.
              You should only need to bind this for advanced usage."}
   *event-bus* nil)
 
 (defn get-event-bus
-  "Returns the eventbus for the given vertx.
-   If vertx is not provided, it defaults to the default
-   vertx (vertx.core/*vertx*)."
+  "Returns the currently active EventBus instance."
   []
   (or *event-bus* (.eventBus (core/get-vertx))))
 
