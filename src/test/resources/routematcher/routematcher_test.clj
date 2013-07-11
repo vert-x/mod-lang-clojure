@@ -18,33 +18,32 @@
             [vertx.core :as core]
             [vertx.routematcher :as rm]))
 
-(def ^:dynamic *resp-num* (atom 0))
-
 (defn test-matcher []
   (letfn [(req-handler [params req]
             (t/assert= params (http/params req))
             (http/end (http/server-response req {:status-code 200})))
+          
+          (client-resp-handler-regx [resp]
+            (t/test-complete (t/assert= (int 200) (http/status-code resp))))
 
-          (client-resp-handler [resp]
+          (client-resp-handler [client resp]
             (t/assert= (int 200) (http/status-code resp))
-            (swap! *resp-num* inc)
-            (when (= 2 @*resp-num*)
-              (t/test-complete)))
+            (http/end (http/request client :GET "/bar/v0.2" client-resp-handler-regx)))
 
           (server-listen-handler [orig-server port host matcher err server]
             (t/assert-nil err)
             (t/assert= orig-server server)
             (let [client (http/client {:port port :host host})
                   params1 {:name "foo" :version "v0.1"}
-                  pattern1 "/:name/:version"
-                  params2 {:param0 "foo" :param1 "v0.1"}
+                  pattern1 "/mod/:name/:version/"
+                  params2 {:param0 "bar" :param1 "v0.2"}
                   pattern2 "\\/([^\\/]+)\\/([^\\/]+)"]
 
-              (rm/match matcher :GET pattern1 (partial req-handler params1))
+              (rm/match matcher :POST pattern1 (partial req-handler params1))
               (rm/match-regx matcher :GET pattern2 (partial req-handler params2))
-              (dotimes [_ 2]
-                (http/end (http/request client :GET "/foo/v0.1" client-resp-handler)))
-              ))
+              
+              (http/end (http/request client :POST "/mod/foo/v0.1/" 
+                                      (partial client-resp-handler client)))))
           ]
     (let [server (http/server)
           matcher (rm/matcher)
@@ -54,5 +53,6 @@
           (http/req-handler matcher)
           (http/listen port host
                        (partial server-listen-handler server port host matcher))))))
+
 
 (t/start-tests)
