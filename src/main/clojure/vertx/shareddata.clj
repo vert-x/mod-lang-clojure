@@ -24,7 +24,7 @@
        :doc "The currently active SharedData instance.
              If not bound, the eventbus from vertx.core/*vertx* will be used.
              You should only need to bind this for advanced usage."}
-  *shared-data*) nil
+  *shared-data* nil)
 
 (defn get-shared-data
   "Returns the currently active SharedData instance."
