@@ -96,7 +96,7 @@
 
    The properties map passed to the handler fn will
    contain :creation-time, :last-access-time, :last-modified-time,
-   :directory?, :regular-file? :symbolic-link?, :other?, and :size.
+   :directory?, :regular-file?, :symbolic-link?, :other?, and :size.
 
    If the follow-link? is true (the default) and file is a link, the
    link will be followed."
