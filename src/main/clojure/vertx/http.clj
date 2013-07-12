@@ -20,7 +20,7 @@
             [clojure.string :as string]
             [vertx.utils :as u]))
 
-(defn- parse-mutil-map
+(defn- parse-multi-map
   "Return the value or values with specific key.
    e.g {a \"a\",  b [\"b1\" \"b2\"]}"
   [multi-map]
@@ -31,7 +31,7 @@
                     (if (= 1 (count vals)) (first vals)
                         (into [] vals))))})))
 
-(defn- enc-header
+(defn- encode-header
   "Encode a clojure's map to http header of vertx"
   [header]
   (let [multi-map (CaseInsensitiveMultiMap.)]
@@ -44,11 +44,9 @@
    If vertx is not provided, it defaults to the default
    vertx (vertx.core/*vertx*)."
   ([]
-     (server (core/get-vertx) nil))
+     (server nil))
   ([properties]
-     (server (core/get-vertx) properties))
-  ([vertx properties]
-     (u/set-properties (.createHttpServer vertx) properties)))
+     (u/set-properties (.createHttpServer (core/get-vertx)) properties)))
 
 (defn listen
   "Tells the http-server to start listening for connections on port.
@@ -69,14 +67,14 @@
               (or host "0.0.0.0")
               (core/as-async-result-handler handler))))
 
-(defn req-handler
+(defn on-request
   "Set the request handler for the server to requestHandler.
    As HTTP requests are received by the server, instances of HttpServerRequest
    will be created and passed to this handler."
   [server handler]
   (.requestHandler server (core/as-handler handler)))
 
-(defn ws-handler
+(defn on-websocket
   "Set the websocket handler for the server to wsHandler.
    If a websocket connect handshake is successful a
    new ServerWebSocket instance will be created and passed to the handler."
@@ -109,23 +107,23 @@
 
 (defn params
   "Returns a map of all the parameters in the request of uri, suit to GET"
-  [req] (parse-mutil-map (.params req)))
+  [req] (parse-multi-map (.params req)))
 
-(defn form-attr
+(defn form-attributes
   "Returns a map of all the paramemters in the request of body, suit to form-POST"
-  [req] (parse-mutil-map (.formAttributes req)))
+  [req] (parse-multi-map (.formAttributes req)))
 
 (defn headers
   "Returns a map of header from request or response,
    the value is Vector if key have value more than one"
-  [http] (parse-mutil-map (.headers http)))
+  [http] (parse-multi-map (.headers http)))
 
-(defn trailers 
+(defn trailers
   "Returns HTTP trailers in map from request or response
    the value is Vector if key have value more than one"
-  [http] (parse-mutil-map (.trailers http)))
+  [http] (parse-multi-map (.trailers http)))
 
-(defn remote-addr
+(defn remote-address
   "Return a map which contains {:host 127.0.0.1 :port 5566}"
   [req]
   (let [addr (.remoteAddress req)]
@@ -147,14 +145,14 @@
   ([req properties]
      (u/set-properties (.response req) properties)))
 
-(defn body-handler
+(defn on-body
   "Convenience method for receiving the entire request body in one piece.
    This saves the user having to manually
    set a data and end handler and append the chunks of the body until the whole body received.
    Don't use this if your request body is large - you could potentially run out of RAM."
   [http handler] (.bodyHandler http (core/as-handler handler)))
 
-(defn upload-handler
+(defn on-upload
   "Set the upload handler. The handler will get notified once a
    new file upload was received and so allow to
    get notified by the upload in progress."
@@ -247,11 +245,9 @@
    If vertx is not provided, it defaults to the default
    vertx (vertx.core/*vertx*)."
   ([]
-     (client (core/get-vertx) nil))
+     (client nil))
   ([properties]
-     (client (core/get-vertx) properties))
-  ([vertx properties]
-     (u/set-properties (.createHttpClient vertx) properties)))
+     (u/set-properties (.createHttpClient (core/get-vertx)) properties)))
 
 (defn connect-ws
   ([http-client uri h]
@@ -260,14 +256,14 @@
      (connect-ws http-client uri version nil h))
   ([http-client uri version header h]
      (.connectWebsocket http-client uri (ws-version version)
-                        (enc-header header) (core/as-handler h))))
+                        (encode-header header) (core/as-handler h))))
 
-(defn write-with-bin
+(defn write-binary-frame
   "write data to websocket as a binary frame"
   [ws data]
   (.writeBinaryFrame ws data))
 
-(defn write-with-txt
+(defn write-text-frame
   "write data to websocket as a text frame"
   [ws data]
   (.writeTextFrame ws data))
@@ -278,7 +274,7 @@
    the methods including
    :OPTIONS :GET :HEAD :POST :PUT :DELETE :TRACE :CONNECT :PATCH"
   [http-client method uri resp-h]
-  (.request http-client (clojure.string/upper-case (name method)) uri
+  (.request http-client (string/upper-case (name method)) uri
             (core/as-handler resp-h)))
 
 (defn get-now
@@ -286,7 +282,7 @@
      (get-now http-client uri nil resp-h))
   ([http-client uri header resp-h]
      (.getNow http-client uri
-              (enc-header header)
+              (encode-header header)
               (core/as-handler resp-h))))
 
 
@@ -299,7 +295,7 @@
   (u/set-properties client-request prop))
 
 
-(defn continue-handler
+(defn on-continue
   " If you send an HTTP request with the header set to the value 100-continue
     and the server responds with an interim HTTP response with a status code of 100
     and a continue handler has been set using this method, then the handler will be called.
@@ -320,5 +316,3 @@
 
 (defn status-code [resp] (.statusCode resp))
 (defn status-msg [resp] (.statusMessage resp))
-
-
