@@ -78,18 +78,23 @@
 
 (defn as-async-result-handler
   "Wraps the given fn in a org.vertx.java.core.Handler for handling an AsyncResult.
-   If include-result? is true (the default), the fn will be passed the
-   exception and the result from the AsyncResult, otherwise just the exception.
-   Returns f unmodified if it is nil or already a Handler."
+   If include-result-or-result-fn is true (the default), the fn will
+   be passed the exception and the result from the AsyncResult,
+   otherwise just the exception. If include-result-or-result-fn is a
+   fn, it will be passed the result before passing it to the handler
+   fn. Returns f unmodified if it is nil or already a Handler."
   ([f]
      (as-async-result-handler f true))
-  ([f include-result?]
+  ([f include-result-or-result-fn]
      (if (or (nil? f) (handler? f))
        f
        (as-handler
         (fn [r]
-          (if include-result?
-            (f (.cause r) (.result r))
+          (if include-result-or-result-fn
+            (f (.cause r)
+               (if (fn? include-result-or-result-fn)
+                 (include-result-or-result-fn (.result r))
+                 (.result r)))
             (f (.cause r))))))))
 
 (defn as-void-handler
@@ -246,3 +251,8 @@
   [id]
   (.cancelTimer (get-vertx) id))
 
+;; TODO: this should probably be a protocol
+(defn ^:internal ^:no-doc internal-close
+  "A common close implementation. Should be wrapped by other namespaces."
+  [obj handler]
+  (.close obj (as-async-result-handler handler false)))

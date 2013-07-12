@@ -16,18 +16,30 @@
   (:refer-clojure :exclude [assert])
   (:require [vertx.core :as core]
             [vertx.utils :as utils]
-            [vertx.buffer :as buf])
+            [vertx.buffer :as buf]
+            [clojure.java.io :as io])
   (:import [org.vertx.testtools VertxAssert]))
 
-(defn start-tests []
-  (VertxAssert/initialize (core/get-vertx))
-  ((ns-resolve *ns*
-               (symbol
-                ((core/config) :methodName)))))
+(defn start-tests
+  ([]
+     (start-tests (fn [f] (f))))
+  ([fixture]
+     (VertxAssert/initialize (core/get-vertx))
+     (fixture (ns-resolve *ns*
+                          (symbol
+                           ((core/config) :methodName))))))
+
+(def teardown (atom []))
+
+(defn on-complete [f]
+  (swap! teardown conj f))
 
 (defn test-complete* [f]
   (try
     (f)
+    (doseq [td @teardown]
+      (td))
+    (reset! teardown [])
     (finally (VertxAssert/testComplete))))
 
 (defmacro test-complete [& body]
@@ -61,3 +73,6 @@
   "Compares java arrays for equality."
   [& args]
   (apply = (map (partial into '()) args)))
+
+(defn resource-path [name]
+  (.getCanonicalPath (io/file (io/resource name))))
