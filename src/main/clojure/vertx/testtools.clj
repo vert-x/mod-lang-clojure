@@ -34,13 +34,16 @@
 (defn on-complete [f]
   (swap! teardown conj f))
 
-(defn test-complete* [f]
-  (try
-    (f)
-    (doseq [td @teardown]
-      (td))
-    (reset! teardown [])
-    (finally (VertxAssert/testComplete))))
+(defn test-complete*
+  ([]
+     (test-complete* #()))
+  ([f]
+     (try
+       (f)
+       (doseq [td @teardown]
+         (td))
+       (reset! teardown [])
+       (finally (VertxAssert/testComplete)))))
 
 (defmacro test-complete [& body]
   `(test-complete* (fn [] ~@body)))

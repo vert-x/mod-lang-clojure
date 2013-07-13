@@ -251,6 +251,29 @@
   [id]
   (.cancelTimer (get-vertx) id))
 
+(defn current-context
+  "Returns the current Context for *vertx*."
+  []
+  (.currentContext (get-vertx)))
+
+(defn run-on-context
+  "Put the zero-arity fn on the event queue for the context so it will
+   be run asynchronously ASAP after this event has been processed.
+   If no context is provided, the context from *vertx* is used."
+  ([f]
+     (run-on-context (get-vertx) f))
+  ([context f]
+     (.runOnContext context (as-void-handler f))))
+
+(defn event-loop?
+  "Is the current thread an event loop thread?"
+  []
+  (.isEventLoop (get-vertx)))
+
+(defn worker? []
+  "Is the current thread an worker thread?"
+  (.isWorker (get-vertx)))
+
 ;; TODO: this should probably be a protocol
 (defn ^:internal ^:no-doc internal-close
   "A common close implementation. Should be wrapped by other namespaces."
