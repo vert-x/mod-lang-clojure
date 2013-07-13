@@ -16,8 +16,7 @@
   (:require [vertx.net :as net]
             [vertx.buffer :as buf]
             [vertx.stream :as stream]
-            [vertx.testtools :as t]
-            [clojure.java.io :as io]))
+            [vertx.testtools :as t]))
 
 (defn assert-socket-addresses [socket]
   (t/assert-not-nil (-> socket .localAddress .getAddress))
@@ -36,9 +35,6 @@
       (stream/on-drain #(println "drain"))
       (stream/on-end #(println "end"))
       (net/on-close #(println "close"))))
-
-(defn resource-path [name]
-  (.getAbsolutePath (io/file (io/resource name))))
 
 (defn test-echo []
   (letfn [(client-data-handler [sent-buf! rcv-buf! send-count send-size data]
@@ -101,17 +97,17 @@
             (t/assert-nil err)
             (t/assert= orig-server server)
             (-> (net/client {:SSL true
-                             :key-store-path (resource-path "keystores/server-keystore.jks")
+                             :key-store-path (t/resource-path "keystores/server-keystore.jks")
                              :key-store-password "wibble"
-                             :trust-store-path (resource-path "keystores/server-truststore.jks")
+                             :trust-store-path (t/resource-path "keystores/server-truststore.jks")
                              :trust-store-password "wibble"})
                 (net/connect port "localhost" client-connect-handler)))]
 
     (let [server (net/server
                   {:SSL true
-                   :key-store-path (resource-path "keystores/client-keystore.jks")
+                   :key-store-path (t/resource-path "keystores/client-keystore.jks")
                    :key-store-password "wibble"
-                   :trust-store-path (resource-path "keystores/client-truststore.jks")
+                   :trust-store-path (t/resource-path "keystores/client-truststore.jks")
                    :trust-store-password "wibble"
                    :client-auth-required true})
           port 8080]
