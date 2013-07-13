@@ -16,19 +16,28 @@
   (:require [vertx.testtools :as t]
             [vertx.http :as http]
             [vertx.core :as core]
-            [vertx.routematcher :as rm]))
+            [vertx.http.route :as rm]))
 
 (defn test-matcher []
   (letfn [(req-handler [params req]
             (t/assert= params (http/params req))
             (http/end (http/server-response req {:status-code 200})))
-          
-          (client-resp-handler-regx [resp]
-            (t/test-complete (t/assert= (int 200) (http/status-code resp))))
+
+          (no-match-handler [req]
+            (http/end (http/server-response req) "Not Found"))
+
+          (client-resp-no-match [resp]
+            (t/assert= (int 200) (http/status-code resp))
+            (http/on-body resp (fn [buf] (t/test-complete
+                                           (t/assert= (.toString buf) "Not Found")))))
+
+          (client-resp-handler-regx [client resp]
+            (t/assert= (int 200) (http/status-code resp))
+            (http/end (http/request client :PUT "no-such-uri" (partial client-resp-no-match))))
 
           (client-resp-handler [client resp]
             (t/assert= (int 200) (http/status-code resp))
-            (http/end (http/request client :GET "/bar/v0.2" client-resp-handler-regx)))
+            (http/end (http/request client :GET "/bar/v0.2" (partial client-resp-handler-regx client))))
 
           (server-listen-handler [orig-server port host matcher err server]
             (t/assert-nil err)
@@ -37,12 +46,13 @@
                   params1 {:name "foo" :version "v0.1"}
                   pattern1 "/mod/:name/:version/"
                   params2 {:param0 "bar" :param1 "v0.2"}
-                  pattern2 "\\/([^\\/]+)\\/([^\\/]+)"]
+                  pattern2 #"/([^/]+)/([^/]+)"]
 
               (rm/match matcher :POST pattern1 (partial req-handler params1))
-              (rm/match-regx matcher :GET pattern2 (partial req-handler params2))
-              
-              (http/end (http/request client :POST "/mod/foo/v0.1/" 
+              (rm/match matcher :GET pattern2 (partial req-handler params2))
+              (rm/no-match matcher no-match-handler)
+
+              (http/end (http/request client :POST "/mod/foo/v0.1/"
                                       (partial client-resp-handler client)))))
           ]
     (let [server (http/server)
@@ -50,7 +60,7 @@
           port 8080
           host "localhost"]
       (-> server
-          (http/req-handler matcher)
+          (http/on-request matcher)
           (http/listen port host
                        (partial server-listen-handler server port host matcher))))))
 
