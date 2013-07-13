@@ -12,7 +12,7 @@
 ;; See the License for the specific language governing permissions and
 ;; limitations under the License.
 
-(ns vertx.routematcher
+(ns vertx.http.route
   "Functions for operating on Vertx.x RouteMatcher."
   (:require [clojure.string :as string]
             [vertx.core :as core])
@@ -24,37 +24,25 @@
   "Specify a handler that will be called for a matching HTTP method
    including
    :OPTIONS :GET :HEAD :POST :PUT :DELETE :TRACE :CONNECT :PATCH :ALL
-   ALL is special, which will be called for all Http method
+   ALL is special, which will be called for all Http method.
+   pattern could be a Regex directly.
   "
   ([method pattern handler]
      (match (matcher) method pattern handler))
 
   ([matcher method pattern handler]
-     (clojure.lang.Reflector/invokeInstanceMethod
-      matcher
-      (string/lower-case (name method))
-      (into-array Object [pattern (core/as-handler handler)])) matcher))
+     (let [method-str (string/lower-case (name method))
+           is-regex (if (instance? String pattern) false true)
+           pattern-str (if is-regex (.pattern pattern) pattern)]
+       (clojure.lang.Reflector/invokeInstanceMethod
+        matcher
+        (if is-regex (str method-str "WithRegEx") method-str)
+        (into-array Object [pattern-str (core/as-handler handler)])) matcher)))
 
-(defn match-regx
-  "Specify a handler that will be called for a matching HTTP method
-   including
-   :OPTIONS :GET :HEAD :POST :PUT :DELETE :TRACE :CONNECT :PATCH :ALL
-   ALL is special, which will be called for all Http method
-  "
-  ([method pattern handler]
-     (match-regx (matcher) method pattern handler))
-  ([matcher method pattern handler]
-     (clojure.lang.Reflector/invokeInstanceMethod
-      matcher
-      (str (string/lower-case (name method)) "WithRegEx")
-      (into-array Object [pattern (core/as-handler handler)])) matcher))
-
-(defn no-match 
+(defn no-match
   "Specify a handler that will be called when no other handlers match.
    If this handler is not specified default behaviour is to return a 404"
   ([handler]
      (no-match (matcher handler)))
   ([matcher handler]
      (.noMatch matcher (core/as-handler handler)) matcher))
-
-
