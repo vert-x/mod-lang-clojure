@@ -29,7 +29,7 @@
 (defn test-base-request []
   (letfn [(req-handler [req]
             (let [header (http/headers req)
-                  addr (http/remote-addr req)]
+                  addr (http/remote-address req)]
               (t/assert= :GET (http/method req))
               (t/assert= "/get/now?k=v" (http/uri req))
               (t/assert= "/get/now" (http/path req))
@@ -55,7 +55,7 @@
                             (assert-stauts-code resp)
                             (t/assert= "status-msg" (http/status-msg resp))
                             (t/assert= "add-header" (:add-header (http/headers resp)))
-                            (http/body-handler
+                            (http/on-body
                              resp (fn [buf]
                                     (t/test-complete
                                      (t/assert= (buf/buffer "body-content") buf)))))))
@@ -68,7 +68,7 @@
 
     (let [server (http/server) port 8888 host "localhost"]
       (-> server
-          (http/req-handler req-handler)
+          (http/on-request req-handler)
           (http/listen port host (partial server-listen-handler server port host))
           ))))
 
@@ -79,7 +79,7 @@
             (t/assert (.startsWith (http/uri req) "/form"))
             (let [resp (http/server-response req {:chunked true})]
               (stream/on-end req (fn []
-                                   (let [forms (http/form-attr req)]
+                                   (let [forms (http/form-attributes req)]
                                      (prn forms)
                                      (t/assert= "junit-testUserAlias" (:origin forms))
                                      (t/assert= "admin@foo.bar" (:login forms))
@@ -94,7 +94,7 @@
                   (http/request :POST "/form"
                                 (fn [resp]
                                   (assert-stauts-code resp)
-                                  (http/body-handler resp
+                                  (http/on-body resp
                                                      (fn [body]
                                                        (t/test-complete
                                                         (t/assert= (int 0) (.length body)))))))
@@ -106,7 +106,7 @@
 
     (let [server (http/server) port 8888 host "localhost"]
       (-> server
-          (http/req-handler req-handler)
+          (http/on-request req-handler)
           (http/listen port host (partial server-listen-handler server port host))
           ))))
 
@@ -116,7 +116,7 @@
   (letfn [(req-handler [req]
             (t/assert (.startsWith (http/uri req) "/form"))
             (let [resp (http/server-response req {:chunked true})]
-              (http/upload-handler req
+              (http/on-upload req
                                    (fn [file]
                                      (let [file-info (http/upload-file-info file)]
                                        (t/assert= '("file" "tmp-0" "image/git")
@@ -127,7 +127,7 @@
                                           (t/assert= (buf/buffer "Vert.x Rocks!") data))))))
 
               (stream/on-end req (fn []
-                                   (let [forms (http/form-attr req)]
+                                   (let [forms (http/form-attributes req)]
                                      (t/assert= (int 0) (count forms))
                                      (http/end resp))))))
 
@@ -145,7 +145,7 @@
                   (http/request :POST "/form"
                                 (fn [resp]
                                   (assert-stauts-code resp)
-                                  (http/body-handler resp
+                                  (http/on-body resp
                                                      (fn [body]
                                                        (t/test-complete
                                                         (t/assert= (int 0) (.length body)))))))
@@ -156,7 +156,7 @@
 
     (let [server (http/server) port 8888 host "localhost"]
       (-> server
-          (http/req-handler req-handler)
+          (http/on-request req-handler)
           (http/listen port host (partial server-listen-handler server port host))
           ))))
 
@@ -183,7 +183,7 @@
                 (http/request :GET "/get/ssl/"
                               (fn [resp]
                                 (assert-stauts-code resp)
-                                (http/body-handler resp
+                                (http/on-body resp
                                                    (fn [buf]
                                                      (t/test-complete
                                                       (t/assert= (buf/buffer "body-content") buf))
@@ -199,7 +199,7 @@
           port 4043
           host "localhost"]
       (-> server
-          (http/req-handler req-handler)
+          (http/on-request req-handler)
           (http/listen port host
                        (partial server-listen-handler server port host))))))
 
@@ -252,7 +252,7 @@
           port 8080
           host "localhost"]
       (-> server
-          (http/req-handler req-handler)
+          (http/on-request req-handler)
           (http/listen port host
                        (partial server-listen-handler server port host))))))
 
@@ -282,14 +282,14 @@
                                      (dotimes [_ send-count]
                                        (let [data (t/random-buffer send-size)]
                                          (buf/append! sent-buf! data)
-                                         (http/write-with-bin ws data)))
+                                         (http/write-binary-frame ws data)))
                                      )))))]
 
     (let [server (http/server)
           port 8080
           host "localhost"]
       (-> server
-          (http/ws-handler ws-handler)
+          (http/on-websocket ws-handler)
           (http/listen port host
                        (partial server-listen-handler server port host))))))
 
