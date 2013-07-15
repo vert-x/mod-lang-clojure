@@ -16,33 +16,35 @@
   (:import [org.vertx.java.core.http WebSocketVersion]
            [org.vertx.java.core.impl CaseInsensitiveMultiMap])
   (:require [vertx.core :as core]
+            [vertx.common :as common]
             [vertx.net :as net]
             [clojure.string :as string]
             [vertx.utils :as u]))
 
 (defn- parse-multi-map
-  "Return the value or values with specific key.
-   e.g {a \"a\",  b [\"b1\" \"b2\"]}"
+  "Converts a vertx MultiMap into a clojure map, converting keys to keywords and Arrays into vectors."
   [multi-map]
   (into {} (for [name (.names multi-map)]
              {(keyword (string/replace name #"\s" "-"))
               (let [vals (.getAll multi-map name)]
-                (if (empty? vals) (.get multi-map name)
-                    (if (= 1 (count vals)) (first vals)
-                        (into [] vals))))})))
+                (if (empty? vals)
+                  (.get multi-map name)
+                  (if (= 1 (count vals))
+                    (first vals)
+                    (into [] vals))))})))
 
-(defn- encode-header
-  "Encode a clojure's map to http header of vertx"
+(defn- encode-headers
+  "Encode a clojure map of headers to a vertx MultiMap"
   [header]
   (let [multi-map (CaseInsensitiveMultiMap.)]
-    (doseq [[k v] header] (.set multi-map (name k) v)) multi-map))
+    (doseq [[k v] header]
+      (.set multi-map (name k) v))
+    multi-map))
 
 
 ;;TODO: document properties
 (defn server
-  "Creates a HTTP or HTTPS server (HttpServer) instance.
-   If vertx is not provided, it defaults to the default
-   vertx (vertx.core/*vertx*)."
+  "Creates a HTTP or HTTPS server (HttpServer) instance from vertx.core/*vertx*."
   ([]
      (server nil))
   ([properties]
@@ -84,9 +86,10 @@
 ;;public
 (defn close
   "Close the server. Any open HTTP connections will be closed."
-  ([server] (.close server))
-  ([server h] (.close server (core/as-async-result-handler h))))
-
+  ([server]
+     (close server nil))
+  ([server handler]
+     (common/internal-close server handler)))
 
 ;; HttpServerRequest
 (defn version
@@ -171,9 +174,9 @@
 
 (defn write
   ([http content]
-     (.write http content))
+     (common/internal-write http content))
   ([http content enc]
-     (.write http content enc)))
+     (common/internal-write http content enc)))
 
 (defn send-file
   ([resp filename]
@@ -256,7 +259,7 @@
      (connect-ws http-client uri version nil h))
   ([http-client uri version header h]
      (.connectWebsocket http-client uri (ws-version version)
-                        (encode-header header) (core/as-handler h))))
+                        (encode-headers header) (core/as-handler h))))
 
 (defn write-binary-frame
   "write data to websocket as a binary frame"
@@ -282,7 +285,7 @@
      (get-now http-client uri nil resp-h))
   ([http-client uri header resp-h]
      (.getNow http-client uri
-              (encode-header header)
+              (encode-headers header)
               (core/as-handler resp-h))))
 
 

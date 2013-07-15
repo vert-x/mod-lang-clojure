@@ -28,7 +28,7 @@
 (defn echo-handler [socket]
   (stream/on-data socket
                   (fn [data]
-                    (.write socket data))))
+                    (net/write socket data))))
 
 (defn exercise-handlers [socket]
   (-> socket
@@ -55,7 +55,7 @@
               (dotimes [_ send-count]
                 (let [data (t/random-buffer send-size)]
                   (buf/append! sent-buf! data)
-                  (.write socket data)))))
+                  (net/write socket data)))))
 
           (server-listen-handler [orig-server port err server]
             (t/assert-nil err)
@@ -70,6 +70,34 @@
                                 exercise-handlers))
           (net/listen port "localhost"
                       (partial server-listen-handler server port))))))
+
+(defn test-pump []
+  (letfn [(client-data-handler [sent-buf! rcv-buf! send-count send-size data]
+            (buf/append! rcv-buf! data)
+            (when (= (.length rcv-buf!) (* send-count send-size))
+              (t/test-complete
+               (t/assert= sent-buf! rcv-buf!))))
+
+          (client-connect-handler [err socket]
+            (let [sent-buf! (buf/buffer)
+                  rcv-buf! (buf/buffer)
+                  send-count 10
+                  send-size 100]
+              (stream/on-data socket (partial client-data-handler
+                                              sent-buf! rcv-buf!
+                                              send-count send-size))
+              (dotimes [_ send-count]
+                (let [data (t/random-buffer send-size)]
+                  (buf/append! sent-buf! data)
+                  (net/write socket data)))))]
+
+    (let [server (net/server)
+          port 8080]
+      (-> server
+          (net/on-connect #(stream/pump % % true))
+          (net/listen port "localhost"
+                      (fn [_ _]
+                        (net/connect port client-connect-handler)))))))
 
 (defn test-echo-ssl []
   (letfn [(client-data-handler [sent-buf! rcv-buf! send-count send-size data]
@@ -91,7 +119,7 @@
               (dotimes [_ send-count]
                 (let [data (t/random-buffer send-size)]
                   (buf/append! sent-buf! data)
-                  (.write socket data)))))
+                  (net/write socket data)))))
 
           (server-listen-handler [orig-server port err server]
             (t/assert-nil err)
@@ -131,7 +159,7 @@
                   msg "ham-biscuit"]
               (stream/on-data socket (partial client-data-handler
                                               rcv-buf! msg))
-              (.write socket msg)))
+              (net/write socket msg)))
 
           (server-listen-handler [orig-server port err server]
             (t/assert-nil err)

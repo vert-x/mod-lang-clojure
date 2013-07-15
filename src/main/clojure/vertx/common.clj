@@ -12,23 +12,19 @@
 ;; See the License for the specific language governing permissions and
 ;; limitations under the License.
 
-(ns example.echo.echo-client
-  (:require [vertx.core :as vertx]
-            [vertx.net :as net]
-            [vertx.stream :as stream]
-            [vertx.buffer :as buf]))
+(ns ^:no-doc vertx.common
+    (:require [vertx.core :as c]
+              [vertx.buffer :as buf]))
 
-(defn send-data [socket]
-  (stream/on-data socket #(println "echo client received:" %))
-  (doseq [i (range 10)]
-    (let [s (format "hello %s\n" i)]
-      (println "echo client sending:" s)
-      (net/write socket s))))
+;; TODO: these should probably be a protocol
+(defn ^:internal ^:no-doc internal-close
+  "A common close implementation. Should be wrapped by other namespaces."
+  [obj handler]
+  (.close obj (c/as-async-result-handler handler false)))
 
-(println "Connecting to localhost:1234")
-(net/connect
- 1234 "localhost"
- (fn [err socket]
-   (if err
-     (throw err)
-     (send-data socket))))
+(defn ^:internal ^:no-doc internal-write
+  "A common write implementation. Should be wrapped by other namespaces."
+  ([obj content]
+     (.write obj (buf/as-buffer content)))
+  ([obj content-str enc]
+     (.write obj content-str enc)))

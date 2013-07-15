@@ -17,6 +17,7 @@
    asynchronous methods from org.vertx.java.core.file.FileSystem."
   (:refer-clojure :exclude [read flush])
   (:require [vertx.core :as core]
+            [vertx.common :as common]
             [vertx.buffer :as buf]))
 
 (defonce ^{:dynamic true
@@ -221,7 +222,7 @@
    will be called with the AsyncResult object that wraps the
    exception."
   [path data handler]
-  (.writeFile (get-file-system) path (buf/buffer data)
+  (.writeFile (get-file-system) path (buf/as-buffer data)
               (core/as-async-result-handler handler false)))
 
 (defn open
@@ -304,7 +305,7 @@
    When multiple writes are invoked on the same file there are no
    guarantees as to order in which those writes actually occur."
    [file data pos handler]
-  (.write file (buf/buffer data) pos
+  (.write file (buf/as-buffer data) pos
           (core/as-async-result-handler handler false)))
 
 (defn read
@@ -333,7 +334,7 @@
   ([file]
      (close file nil))
   ([file handler]
-     (core/internal-close file handler)))
+     (common/internal-close file handler)))
 
 (defn flush
   "Flush any writes made to this file to underlying persistent storage, asynchronously.

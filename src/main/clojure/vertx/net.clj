@@ -15,6 +15,7 @@
 (ns vertx.net
   "TODO: docs"
   (:require [vertx.core :as core]
+            [vertx.common :as common]
             [vertx.utils :as u]))
 
 ;;TODO: document properties
@@ -72,6 +73,14 @@
    Returns the socket."
   [socket handler]
   (.closeHandler socket (core/as-void-handler handler)))
+
+(defn write
+  "Write data to the socket.
+   data can anything Bufferable (see vertx.buffer/buffer)."
+  ([socket data]
+     (common/internal-write socket data))
+  ([socket data-str enc]
+     (common/internal-write socket data-str enc)))
 
 (defn connect
   "Attempts to open a connection to a server.
