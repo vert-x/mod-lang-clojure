@@ -14,7 +14,6 @@
 
 (ns example.echo.echo-server
   (:require [vertx.net :as net]
-            [vertx.buffer :as buf]
             [vertx.stream :as stream]))
 
 (defn echo-data [socket]
