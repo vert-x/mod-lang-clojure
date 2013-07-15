@@ -25,6 +25,7 @@
       (println "echo client sending:" s)
       (->> s buf/buffer (.write socket)))))
 
+(println "Connecting to localhost:1234")
 (net/connect
  1234 "localhost"
  (fn [err socket]

@@ -16,12 +16,8 @@
   (:require [vertx.net :as net]
             [vertx.stream :as stream]))
 
-(defn echo-data [socket]
-  (stream/pump socket socket true)
-  (-> socket
-      (stream/on-data #(println "echo server received:" %))
-      (net/on-close #(println "Socket closed"))))
+(println "Starting echo server on localhost:1234")
 
 (-> (net/server)
-    (net/on-connect echo-data)
+    (net/on-connect #(stream/pump % % true))
     (net/listen 1234))
