@@ -83,14 +83,14 @@
    drainHandler will be called, which results in the pump resuming
    the ReadStream.
 
-   If start? is true, the Pump will be started."
+   If start? is true (the default), the Pump will be started."
   ([read-stream write-stream]
-     (Pump/createPump read-stream write-stream))
+     (pump read-stream write-stream true))
   ([read-stream write-stream start?]
-     (let [p (pump read-stream write-stream)]
-       (if start?
-         (.start p)
-         p))))
+     (let [p (Pump/createPump read-stream write-stream)]
+       (when start?
+         (.start p))
+       p)))
 
 
 ;; TODO: pump controls?

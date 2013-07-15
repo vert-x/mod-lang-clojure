@@ -19,5 +19,5 @@
 (println "Starting echo server on localhost:1234")
 
 (-> (net/server)
-    (net/on-connect #(stream/pump % % true))
+    (net/on-connect #(stream/pump % %))
     (net/listen 1234))

@@ -94,7 +94,7 @@
     (let [server (net/server)
           port 8080]
       (-> server
-          (net/on-connect #(stream/pump % % true))
+          (net/on-connect #(stream/pump % %))
           (net/listen port "localhost"
                       (fn [_ _]
                         (net/connect port client-connect-handler)))))))
