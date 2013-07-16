@@ -24,6 +24,8 @@
              You should only need to bind this for advanced usage."}
   *event-bus* nil)
 
+;;TODO: docstrings for all
+
 (defn get-event-bus
   "Returns the currently active EventBus instance."
   []
@@ -54,29 +56,37 @@
 
   (defn register-handler
     "Registers a handler fn to receive messages on an address.
-Returns an id for the handler that can be passed to
-unregister-handler."
+     Returns an id for the handler that can be passed to
+     unregister-handler."
     ([addr handler]
-       (register-handler addr handler false))
-    ([addr handler local-only?]
+       (register-handler addr handler nil false))
+    ([addr handler result-handler]
+       (register-handler addr handler result-handler false))
+    ([addr handler result-handler local-only?]
        (let [h (core/as-handler handler)
              id (uuid)]
          (if local-only?
-           (.registerLocalHandler (get-event-bus) addr h)
-           (.registerHandler (get-event-bus) addr h))
+           (.registerLocalHandler (get-event-bus) addr h
+                                  (core/as-async-result-handler result-handler false))
+           (.registerHandler (get-event-bus) addr h
+                             (core/as-async-result-handler result-handler false)))
          (swap! registered-handlers assoc id [addr h])
          id)))
 
   (defn unregister-handler
-    [id]
-    (if-let [[addr h] (@registered-handlers id)]
-      (do
-        (.unregisterHandler (get-event-bus) addr h)
-        (swap! registered-handlers dissoc id))
-      (throw (IllegalArgumentException.
-              (format "No handler with id %s found." id))))
-    nil))
+    ([id]
+       (unregister-handler id nil))
+    ([id result-handler]
+       (if-let [[addr h] (@registered-handlers id)]
+         (do
+           (.unregisterHandler
+            (get-event-bus) addr h
+            (core/as-async-result-handler result-handler false))
+           (swap! registered-handlers dissoc id))
+         (throw (IllegalArgumentException.
+                 (format "No handler with id %s found." id))))
+       nil)))
 
-(defn message-body [m]
+(defn body [m]
   (decode (.body m)))
 

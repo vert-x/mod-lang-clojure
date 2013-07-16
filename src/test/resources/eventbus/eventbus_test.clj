@@ -26,7 +26,7 @@
              addr
              (fn [m]
                (t/test-complete
-                (t/assert= msg (eb/message-body m))
+                (t/assert= msg (eb/body m))
                 (eb/unregister-handler @id)))))
     (t/assert-not-nil @id)
     (eb/send addr msg)))
@@ -41,14 +41,14 @@
              addr
              (fn [m]
                (t/test-complete
-                (t/assert= msg (eb/message-body m))
+                (t/assert= msg (eb/body m))
                 (eb/reply m reply)))))
     
     (t/assert-not-nil @id)
     (eb/send addr msg
              (fn [m]
                (t/test-complete
-                (t/assert= reply (eb/message-body m))
+                (t/assert= reply (eb/body m))
                 (eb/unregister-handler @id))))))
 
 (defn test-send-unregister-send []
@@ -62,7 +62,7 @@
              (fn [m]
                (if @rcvd
                  (throw (IllegalStateException. "Handler already called")))
-               (t/assert= msg (eb/message-body m))
+               (t/assert= msg (eb/body m))
                (eb/unregister-handler @id)
                (reset! rcvd true)
                (core/timer 100 (t/test-complete)))))
@@ -82,7 +82,7 @@
                 (eb/register-handler
                  addr
                  (fn [m]
-                   (t/assert= msg (eb/message-body m))
+                   (t/assert= msg (eb/body m))
                    (eb/unregister-handler @id)
                    (swap! count inc)
                    (if (= @count total)
@@ -98,15 +98,15 @@
              addr
              (fn [m]
                (t/test-complete
-                (t/assert= "message" (eb/message-body m))
+                (t/assert= "message" (eb/body m))
                 (eb/reply m "reply"
                           (fn [m]
-                            (t/assert= "reply-of-reply" (eb/message-body m))
+                            (t/assert= "reply-of-reply" (eb/body m))
                             (eb/reply m "reply-of-reply-of-reply")))))))
 
     (eb/send addr "message"
              (fn [m]
-               (t/assert= "reply" (eb/message-body m))
+               (t/assert= "reply" (eb/body m))
                (eb/reply m "reply-of-reply"
                          (fn [m]
                            (t/test-complete
@@ -123,12 +123,12 @@
                      addr
                      (fn [m]
                        (eb/unregister-handler @id)
-                       (eb/reply m (eb/message-body m)))))
+                       (eb/reply m (eb/body m)))))
     
             (eb/send addr msg
                      (fn [m]
                        (t/test-complete
-                        (t/assert= msg (eb/message-body m)))))))]
+                        (t/assert= msg (eb/body m)))))))]
     (doseq [m ["ham"
                nil
                true
