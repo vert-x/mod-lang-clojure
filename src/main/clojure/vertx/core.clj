@@ -107,7 +107,7 @@
     (as-handler (fn [_#] (f)))))
 
 (defn config
-  "Returns the configuration map from the current *container*."
+  "Returns the configuration map from the current *container*, with the keys converted to keywords."
   []
   (decode (.config (get-container))))
 
@@ -274,3 +274,12 @@
   "Is the current thread an worker thread?"
   (.isWorker (get-vertx)))
 
+(defn env
+  "Returns a map of environment variables."
+  []
+  (.env (get-container)))
+
+(defn exit
+  "Causes the Vert.x instance to shutdown."
+  []
+  (.exit (get-container)))
