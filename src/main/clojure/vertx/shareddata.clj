@@ -13,11 +13,9 @@
 ;; limitations under the License.
 
 (ns vertx.shareddata
-  "Functions for operating on Vert.x Shareddata.
-   Though shareddata isn't that useful for Clojure,
-   since it already has immutable data structures."
+  "Functions for sharing data between verticles on the same Vert.x instance."
   (:require [vertx.core :as core])
-  (:import [org.vertx.java.core.shareddata SharedData]))
+  (:import org.vertx.java.core.shareddata.SharedData))
 
 
 (def ^{:dynamic true
@@ -50,4 +48,39 @@
   "Remove the Set with the specific name, using the SharedData instance from vertx.core/*vertx*."
   [name]
   (-> (get-shared-data) (.removeSet name)))
+
+(defn add!
+  "Adds values to the SharedData set.
+   This mutates the set in place, returning the set."
+  [s & vals]
+  (.addAll s vals)
+  s)
+
+(defn put!
+  "Adds values to the SharedData map.
+   This mutates the map in place, returning the map."
+  [m & kvs]
+  (if (odd? (count kvs))
+    (throw (IllegalArgumentException. (str "No value for key " (last kvs)))))
+  (loop [[k v] (take 2 kvs)
+         rest (nnext kvs)]
+    (.put m k v)
+    (if (seq rest)
+      (recur (take 2 rest) (nnext rest))
+      m)))
+
+(defn remove!
+  "Removes values from a SharedData set or map.
+   This mutates the hash or set in place, returning the hash or set."
+  [col & vals]
+  (doseq [v vals]
+    (.remove col v))
+  col)
+
+(defn clear!
+  "Clears all values from a SharedData set or map.
+   This mutates the hash or set in place, returning the hash or set."
+  [col]
+  (.clear col)
+  col)
 
