@@ -23,8 +23,9 @@
   (doseq [i (range 10)]
     (let [s (format "hello %s\n" i)]
       (println "echo client sending:" s)
-      (->> s buf/buffer (.write socket)))))
+      (net/write socket s))))
 
+(println "Connecting to localhost:1234")
 (net/connect
  1234 "localhost"
  (fn [err socket]

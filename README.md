@@ -16,18 +16,4 @@ Update `langs.properties` in your VERTX_HOME/conf with:
 
 ## Examples
 
-Run the echo server:
-
-    vertx run examples/echo/echo-server.clj
-
-and, in another shell, run the echo client:
-
-    vertx run examples/echo/echo-client.clj
-
-For the eventbus example:
-
-    vertx run examples/eventbus/handler.clj -cluster
-    
-and in another shell:
-
-    vertx run examples/eventbus/sender.clj -cluster
+See `examples/README.md`.

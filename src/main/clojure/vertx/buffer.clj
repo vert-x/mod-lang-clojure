@@ -31,6 +31,12 @@
   ([str enc]
      (Buffer. str enc)))
 
+(defn as-buffer
+  "Wraps data in a buffer unless it is already one."
+  [data]
+  (if (or (nil? data) (instance? Buffer data))
+    data
+    (buffer data)))
 
 (let [byte-arr (Class/forName "[B")]
   ;; TODO: doc types and type coercion/loss of precision

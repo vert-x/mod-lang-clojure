@@ -274,8 +274,3 @@
   "Is the current thread an worker thread?"
   (.isWorker (get-vertx)))
 
-;; TODO: this should probably be a protocol
-(defn ^:internal ^:no-doc internal-close
-  "A common close implementation. Should be wrapped by other namespaces."
-  [obj handler]
-  (.close obj (as-async-result-handler handler false)))

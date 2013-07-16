@@ -12,7 +12,7 @@
 ;; See the License for the specific language governing permissions and
 ;; limitations under the License.
 
-(ns example.handler
+(ns example.receiver
   (:require [vertx.eventbus :as eb]))
 
 (def address "example.address")
@@ -20,4 +20,5 @@
 (eb/register-handler
  address
  (fn [msg]
-   (println "Received message" (eb/message-body msg))))
+   (println "Received message" (eb/message-body msg))
+   (eb/reply msg (str "pong:" (eb/message-body msg)))))
