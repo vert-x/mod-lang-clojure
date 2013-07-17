@@ -22,10 +22,10 @@
 
     (t/test-complete
      (.put shared-map "key" "value")
-     (t/assert= (.get (shared/get-map name) "key") "value")
+     (t/assert= (get (shared/get-map name) "key") "value")
 
      (.remove shared-map "key")
-     (t/assert-nil (.get (shared/get-map name) "key"))
+     (t/assert-nil (get (shared/get-map name) "key"))
      
      (t/assert (shared/remove-map name)))))
 
@@ -36,12 +36,48 @@
 
     (t/test-complete
      (.add shared-set "value")
-     (t/assert (.contains (shared/get-set name) "value"))
+     (t/assert (contains? (shared/get-set name) "value"))
 
      (.remove shared-set "value")
-     (t/assert (not (.contains (shared/get-set name) "value")))
+     (t/assert (not (contains? (shared/get-set name) "value")))
      
      (t/assert (shared/remove-set name)))))
+
+(defn test-set-add []
+  (let [set (shared/get-set "foo")]
+    (shared/add! set "a")
+    (shared/add! set "b" "c")
+    (t/test-complete
+     (t/assert (contains? set "a"))
+     (t/assert (contains? set "b"))
+     (t/assert (contains? set "c")))))
+
+(defn test-set-remove []
+  (let [set (shared/get-set "foo")]
+    (shared/add! set "a" "b" "c")
+    (shared/remove! set "a")
+    (t/test-complete
+     (t/assert (not (contains? set "a")))
+     (t/assert (contains? set "b"))
+     (t/assert (contains? set "c"))
+     (shared/remove! set "b" "c")
+     (t/assert (not (contains? set "b")))
+     (t/assert (not (contains? set "c"))))))
+
+(defn test-map-put []
+  (let [m (shared/get-map "foo")]
+    (shared/put! m "a" "b")
+    (shared/put! m "c" "d" "e" "f")
+    (t/test-complete
+     (t/assert= "b" (get m "a"))
+     (t/assert= "d" (get m "c"))
+     (t/assert= "f" (get m "e")))))
+
+(defn test-map-put-invalid-args []
+  (try
+    (shared/put! (shared/get-map "blah") :a)
+    (catch IllegalArgumentException _
+      (t/test-complete))))
 
 (t/start-tests)
 

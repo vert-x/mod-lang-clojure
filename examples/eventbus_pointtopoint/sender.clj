@@ -24,5 +24,5 @@
  (let [msg (str "some-message-" (swap! msg-count inc))]
    (eb/send address msg
             (fn [reply]
-              (println "received:" (eb/message-body reply))))
+              (println "received:" (eb/body reply))))
    (println "sent message" msg)))
