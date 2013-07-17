@@ -217,8 +217,9 @@
                    (t/test-complete
                     (t/assert-nil err)
                     (t/assert (vector? files))
-                    (t/assert= [(resource-path "test-data/dir/a")
-                                (resource-path "test-data/dir/xyz")] files))))))
+                    (t/assert= #{(resource-path "test-data/dir/a")
+                                 (resource-path "test-data/dir/xyz")}
+                               (set files)))))))
 
 (defn test-read-dir-with-filter []
   (let [dir (resource-path "test-data/dir")]
