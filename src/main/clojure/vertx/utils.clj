@@ -17,13 +17,18 @@
   (:require [clojure.string :as s]
             [clojure.data.json :as json])
   (:import [org.vertx.java.core.json JsonArray JsonObject]
-           java.util.UUID))
+           [clojure.lang BigInt Ratio Seqable]
+           [java.util Map UUID]
+           java.math.BigDecimal))
 
 (defn encode
   [data]
   (condp instance? data
-    java.util.Map (JsonObject. (json/write-str data))
-    java.util.List (JsonArray. (json/write-str data))
+    BigDecimal (double data)
+    BigInt (long data)
+    Map (JsonObject. (json/write-str data))
+    Ratio (double data)
+    Seqable (JsonArray. (json/write-str data))
     data))
 
 (defn decode

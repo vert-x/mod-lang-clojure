@@ -37,7 +37,17 @@
     <version.clojure>1.5.1</version.clojure>
     <version.json>0.2.2</version.json>
     <version.nrepl>0.2.3</version.nrepl>
+    <version.clj-stacktrace>0.2.5</version.clj-stacktrace>
+    <version.clojure-complete>0.2.3</version.clojure-complete>
   </properties>
+
+  <repositories>
+    <repository>
+      <id>clojars</id>
+      <name>Clojure Jars</name>
+      <url>http://clojars.org/repo/</url>
+    </repository>
+  </repositories>
 
   <dependencies>
     <dependency>
@@ -64,14 +74,26 @@
       <version>${version.json}</version>
       <scope>compile</scope>
     </dependency>
-
-    <!-- test dependencies -->
     <dependency>
       <groupId>org.clojure</groupId>
       <artifactId>tools.nrepl</artifactId>
       <version>${version.nrepl}</version>
-      <scope>test</scope>
+      <scope>compile</scope>
     </dependency>
+    <dependency>
+      <groupId>clj-stacktrace</groupId>
+      <artifactId>clj-stacktrace</artifactId>
+      <version>${version.clj-stacktrace}</version>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>clojure-complete</groupId>
+      <artifactId>clojure-complete</artifactId>
+      <version>${version.clojure-complete}</version>
+      <scope>compile</scope>
+    </dependency>
+
+    <!-- test dependencies -->
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
