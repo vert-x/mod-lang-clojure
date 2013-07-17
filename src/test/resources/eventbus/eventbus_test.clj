@@ -43,7 +43,6 @@
                (t/test-complete
                 (t/assert= msg m)
                 (eb/reply reply)))))
-    
     (t/assert-not-nil @id)
     (eb/send addr msg
              (fn [m]

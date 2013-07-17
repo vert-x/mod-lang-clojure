@@ -78,8 +78,8 @@
 
 (defn register-handler
   "Registers a handler fn to receive messages on an address.
-     Returns an id for the handler that can be passed to
-     unregister-handler."
+   Returns an id for the handler that can be passed to
+   unregister-handler."
   ([addr handler]
      (register-handler addr handler nil false))
   ([addr handler result-handler]
@@ -109,4 +109,3 @@
        (throw (IllegalArgumentException.
                (format "No handler with id %s found." id))))
      nil))
-

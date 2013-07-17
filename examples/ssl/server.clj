@@ -12,17 +12,17 @@
 ;; See the License for the specific language governing permissions and
 ;; limitations under the License.
 
-(ns example.sender
-  (:require [vertx.core :as vertx]
-            [vertx.eventbus :as eb]))
+(ns example.ssl.server
+  (:require [vertx.net :as net]
+            [vertx.stream :as stream]))
 
-(def address "example.address")
-(def msg-count (atom 0))
 
-(vertx/periodic
- 1000
- (let [msg (str "some-message-" (swap! msg-count inc))]
-   (eb/send address msg
-            (fn [reply]
-              (println "received:" (eb/body reply))))
-   (println "sent message" msg)))
+(-> (net/server {:SSL true
+                 :key-store-path "server-keystore.jks"
+                 :key-store-password "wibble"})
+    (net/on-connect
+     (fn [sock]
+       (stream/on-data sock
+                       (fn [buf]
+                         (net/write sock buf)))))
+    (net/listen 1234 "localhost" (println "Start Net Server with SSL on localhost 1234")))

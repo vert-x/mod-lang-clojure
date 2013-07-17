@@ -82,11 +82,10 @@
 
 (defn start-repl
   "Starts an nREPL server, asynchrously.
-     port defaults to 0, which means \"any available port\". host
-     defaults to \"127.0.0.1\". Returns an id for the server that can
-     be passed to stop-repl to shut it down. the repl will
-     automatically be shutdown when the verticle that started it is
-     stopped."
+   port defaults to 0, which means \"any available port\". host
+   defaults to \"127.0.0.1\". Returns an id for the server that can be
+   passed to stop-repl to shut it down. the repl will automatically be
+   shutdown when the verticle that started it is stopped."
   ([]
      (start-repl 0))
   ([port]

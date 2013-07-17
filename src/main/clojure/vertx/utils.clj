@@ -21,8 +21,8 @@
            [java.util Map UUID]
            java.math.BigDecimal))
 
-;; TODO: implement as protocols?
 
+;; TODO: implement as protocols?
 (defn encode
   [data]
   (condp instance? data
