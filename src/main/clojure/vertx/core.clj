@@ -263,7 +263,8 @@
   ([f]
      (run-on-context (get-vertx) f))
   ([context f]
-     (.runOnContext context (as-void-handler f))))
+     (.runOnContext context (as-void-handler
+                             (bound-fn [] (f))))))
 
 (defn event-loop?
   "Is the current thread an event loop thread?"
