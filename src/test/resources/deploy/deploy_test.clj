@@ -22,7 +22,7 @@
    "test.data"
    (fn [m]
      (t/test-complete
-      (t/assert= "started" (.body m)))))
+      (t/assert= "started" m))))
   
   (core/deploy-verticle "deploy/child.clj" {:ham "biscuit"}))
 
@@ -46,7 +46,7 @@
   (eb/register-handler
    "test.data"
    (fn [m]
-     (when (= "stopped" (.body m))
+     (when (= "stopped" m)
        (t/test-complete))))
 
   (core/deploy-verticle

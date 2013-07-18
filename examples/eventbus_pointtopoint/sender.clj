@@ -22,7 +22,5 @@
 (vertx/periodic
  1000
  (let [msg (str "some-message-" (swap! msg-count inc))]
-   (eb/send address msg
-            (fn [reply]
-              (println "received:" (eb/body reply))))
+   (eb/send address msg (partial println "received:"))
    (println "sent message" msg)))

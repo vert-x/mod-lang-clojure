@@ -20,5 +20,5 @@
 (eb/register-handler
  address
  (fn [msg]
-   (println "Received message" (eb/body msg))
-   (eb/reply msg (str "pong:" (eb/body msg)))))
+   (println "Received message" msg)
+   (eb/reply (str "pong:" msg))))

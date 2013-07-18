@@ -31,6 +31,16 @@
   []
   (or *event-bus* (.eventBus (core/get-vertx))))
 
+(def ^:dynamic *current-message* nil)
+
+(defn ^:private message-handler [handler]
+  (if (core/handler? handler)
+    handler
+    (core/as-handler
+     (fn [m]
+       (binding [*current-message* m]
+         (handler (decode (.body m))))))))
+
 (defn send
   ([addr content]
      (send addr content nil))
@@ -38,13 +48,13 @@
      (.send (get-event-bus)
             addr
             (encode content)
-            (core/as-handler handler))))
+            (message-handler handler))))
 
 (defn publish
   [addr content]
   (.publish (get-event-bus) addr (encode content)))
 
-(defn reply
+(defn reply*
   ([m]
      (.reply m))
   ([m content]
@@ -52,41 +62,44 @@
   ([m content handler]
      (.reply m (encode content)) (core/as-handler handler)))
 
-(let [registered-handlers (atom {})]
+(defn reply
+  ([content]
+     (reply* *current-message* content))
+  ([content handler]
+     (reply* *current-message* content handler)))
 
-  (defn register-handler
-    "Registers a handler fn to receive messages on an address.
+(defonce ^:private registered-handlers (atom {}))
+
+(defn register-handler
+  "Registers a handler fn to receive messages on an address.
      Returns an id for the handler that can be passed to
      unregister-handler."
-    ([addr handler]
-       (register-handler addr handler nil false))
-    ([addr handler result-handler]
-       (register-handler addr handler result-handler false))
-    ([addr handler result-handler local-only?]
-       (let [h (core/as-handler handler)
-             id (uuid)]
-         (if local-only?
-           (.registerLocalHandler (get-event-bus) addr h
-                                  (core/as-async-result-handler result-handler false))
-           (.registerHandler (get-event-bus) addr h
-                             (core/as-async-result-handler result-handler false)))
-         (swap! registered-handlers assoc id [addr h])
-         id)))
+  ([addr handler]
+     (register-handler addr handler nil false))
+  ([addr handler result-handler]
+     (register-handler addr handler result-handler false))
+  ([addr handler result-handler local-only?]
+     (let [h (message-handler handler)
+           id (uuid)]
+       (if local-only?
+         (.registerLocalHandler (get-event-bus) addr h
+                                (core/as-async-result-handler result-handler false))
+         (.registerHandler (get-event-bus) addr h
+                           (core/as-async-result-handler result-handler false)))
+       (swap! registered-handlers assoc id [addr h])
+       id)))
 
-  (defn unregister-handler
-    ([id]
-       (unregister-handler id nil))
-    ([id result-handler]
-       (if-let [[addr h] (@registered-handlers id)]
-         (do
-           (.unregisterHandler
-            (get-event-bus) addr h
-            (core/as-async-result-handler result-handler false))
-           (swap! registered-handlers dissoc id))
-         (throw (IllegalArgumentException.
-                 (format "No handler with id %s found." id))))
-       nil)))
-
-(defn body [m]
-  (decode (.body m)))
+(defn unregister-handler
+  ([id]
+     (unregister-handler id nil))
+  ([id result-handler]
+     (if-let [[addr h] (@registered-handlers id)]
+       (do
+         (.unregisterHandler
+          (get-event-bus) addr h
+          (core/as-async-result-handler result-handler false))
+         (swap! registered-handlers dissoc id))
+       (throw (IllegalArgumentException.
+               (format "No handler with id %s found." id))))
+     nil))
 

@@ -66,9 +66,8 @@
 
 
 (defn ^:internal ^:no-doc dispatch-handler [msg]
-  (let [body (eb/body msg)
-        f (resolve (symbol (format "vertx.repl/-%s-repl" (:cmd body))))]
-    (f body)))
+  (let [f (resolve (symbol (format "vertx.repl/-%s-repl" (:cmd body))))]
+    (f msg)))
 
 (defonce ^:private repl-worker-address (atom nil))
 
