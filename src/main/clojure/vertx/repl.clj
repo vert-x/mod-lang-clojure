@@ -17,6 +17,7 @@
   (:require [vertx.core :as core]
             [vertx.utils :as u]
             [vertx.logging :as log]
+            [vertx.eventbus :as eb]
             [clojure.tools.nrepl.server :as nrepl]
             [clojure.tools.nrepl.middleware :as mware]))
 
@@ -36,49 +37,74 @@
 (defn ^:private repl-host [server]
   (-> server deref :ss .getInetAddress .getHostAddress))
 
-(let [repls (atom {})]
+(defonce ^:private repls (atom {}))
 
-  ;; TODO: take a handler fn?
-  (defn stop-repl
-    "Stops the nREPL server with the given id, asynchronously."
-    [id]
-    (core/run-on-context
-     (fn []
-       (when-let [server (get @repls id)]
-         (log/info "Stopping nREPL on %s:%s"
-                   (repl-host server)
-                   (repl-port server))
-         (swap! repls dissoc id)
-         (.close server)))))
+(defn ^:private -stop-repl
+  "Stops the nREPL server with the given id. Should only be used from the worker verticle."
+  [{:keys [id]}]
+  (when-let [server (get @repls id)]
+    (log/info "Stopping nREPL on %s:%s"
+              (repl-host server)
+              (repl-port server))
+    (swap! repls dissoc id)
+    (.close server)))
 
-  ;; TODO: take a handler fn?
-  (defn start-repl
-    "Starts an nREPL server, asynchrously.
+
+(defn ^:private -start-repl
+  "Starts an nREPL server. Should only be used from the worker verticle."
+  [{:keys [id port host]}]
+  (log/info (format "Starting nREPL at %s:%s" host port))
+  (let [server
+        (nrepl/start-server
+         :handler (nrepl/default-handler #'nrepl-init-handler)
+         :port port
+         :bind host)]
+    (log/info (format "nREPL bound to %s:%s"
+                      (repl-host server)
+                      (repl-port server)))
+    (swap! repls assoc id server)))
+
+
+(defn ^:internal ^:no-doc dispatch-handler [msg]
+  (let [body (eb/body msg)
+        f (resolve (symbol (format "vertx.repl/-%s-repl" (:cmd body))))]
+    (f body)))
+
+(defonce ^:private repl-worker-address (atom nil))
+
+(defn stop-repl
+  "Stops the nREPL server with the given id, asynchronously."
+  [id]
+  (if @repl-worker-address
+    (eb/send @repl-worker-address {:cmd "stop" :id id})))
+
+(defn start-repl
+  "Starts an nREPL server, asynchrously.
      port defaults to 0, which means \"any available port\". host
      defaults to \"127.0.0.1\". Returns an id for the server that can
      be passed to stop-repl to shut it down. the repl will
      automatically be shutdown when the verticle that started it is
      stopped."
-    ([]
-       (start-repl 0))
-    ([port]
-       (start-repl 0 "127.0.0.1"))
-    ([port host]
-       (let [id (str "repl-" (u/uuid))]
-         (core/run-on-context
-          (fn []
-            (log/info (format "Starting nREPL at %s:%s" host port))
-            (let [server
-                  (nrepl/start-server
-                   :handler (nrepl/default-handler #'nrepl-init-handler)
-                   :port port
-                   :bind host)]
-              (log/info (format "nREPL bound to %s:%s"
-                                (repl-host server)
-                                (repl-port server)))
-              ;; FIXME: need to check to see if stop was called before
-              ;; we got this far
-              (core/on-stop* (partial stop-repl id))
-              (swap! repls assoc id server))))
-         id))))
-
+  ([]
+     (start-repl 0))
+  ([port]
+     (start-repl 0 "127.0.0.1"))
+  ([port host]
+     (let [id (str "repl-" (u/uuid))
+           start (bound-fn [& args]
+                   (if (first args)
+                     (log/error "repl_worker init failed:" (first args))
+                     (do
+                       (core/on-stop* (partial stop-repl id))
+                       (eb/send @repl-worker-address {:cmd "start"
+                                                      :id id
+                                                      :host host
+                                                      :port port}))))]
+       (if @repl-worker-address
+         (start)
+         (do
+           (reset! repl-worker-address (u/uuid))
+           (core/deploy-worker-verticle "repl_worker.clj"
+                                        {:address @repl-worker-address}
+                                        1 true start)))
+       id)))
