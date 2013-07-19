@@ -21,21 +21,23 @@
            [java.util Map UUID]
            java.math.BigDecimal))
 
+;; TODO: implement as protocols?
+
 (defn encode
   [data]
   (condp instance? data
     BigDecimal (double data)
-    BigInt (long data)
-    Map (JsonObject. (json/write-str data))
-    Ratio (double data)
-    Seqable (JsonArray. (json/write-str data))
+    BigInt     (long data)
+    Map        (JsonObject. (json/write-str data))
+    Ratio      (double data)
+    Seqable    (JsonArray. (json/write-str data))
     data))
 
 (defn decode
   [j]
   (condp instance? j
     JsonObject (json/read-str (.encode j) :key-fn keyword)
-    JsonArray (json/read-str (.encode j) :key-fn keyword)
+    JsonArray  (json/read-str (.encode j) :key-fn keyword)
     j))
 
 (defn uuid

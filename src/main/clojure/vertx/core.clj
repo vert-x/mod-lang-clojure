@@ -218,9 +218,9 @@
 
 (defn timer*
   "Registers a handler with *vertx* to be called once in delay ms.
-   Returns the id of the timer. handler can either be a single-arity
-   fn or an org.vertx.java.core.Handler that will be passed the id of
-   the timer. Returns the id of the timer."
+   handler can either be a single-arity fn or an
+   org.vertx.java.core.Handler that will be passed the id of the
+   timer. Returns the id of the timer."
   [delay handler]
   (.setTimer (get-vertx) delay (as-handler handler)))
 
@@ -233,9 +233,9 @@
 
 (defn periodic*
   "Registers a handler with *vertx* to be called every interval ms until cancelled.
-   Returns the id of the timer. handler can either be a single-arity
-   fn or an org.vertx.java.core.Handler that will be passed the id of
-   the timer."
+   handler can either be a single-arity fn or an
+   org.vertx.java.core.Handler that will be passed the id of the
+   timer. Returns the id of the timer."
   [interval handler]
   (.setPeriodic (get-vertx) interval (as-handler handler)))
 
