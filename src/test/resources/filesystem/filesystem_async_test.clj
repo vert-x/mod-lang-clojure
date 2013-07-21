@@ -23,9 +23,8 @@
 
 (def ^:dynamic *tmp-dir* nil)
 
-(defn tmp-dir-wrapper [f]
-  (let [tmp-dir (str (System/getProperty "java.io.tmpdir")
-                     "/mod-lang-clojure-tests-" (u/uuid) "/")]
+(defn with-tmp-dir [f]
+  (let [tmp-dir (str "target/mod-lang-clojure-tests-" (u/uuid) "/")]
     (fs/mkdir
      tmp-dir
      (fn [err]
@@ -373,4 +372,4 @@
               (t/assert= "hello" (slurp path))))))))
      :flush false)))
 
-(t/start-tests tmp-dir-wrapper)
+(t/start-tests with-tmp-dir)
