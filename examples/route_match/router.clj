@@ -16,16 +16,16 @@
   (:require [vertx.http :as http]
             [vertx.http.route :as rm]))
 
-(let [router rm/matcher]
+(let [router (rm/matcher)]
   (doto router
-    (match :GET "/details/:user/:id"
+    (rm/match :GET "/details/:user/:id"
            (fn [req]
              (let [params (http/params req)
                    resp (http/server-response req)]
-               (http/end resp "User: " (:user params) "ID: " (:id params)))))
+               (http/end resp (str "User: " (:user params) "ID: " (:id params))))))
 
     ;;Catch all - serve the index page
-    (match :ALL #".*"
+    (rm/match :ALL #".*"
            (fn [req]
              (http/send-file (http/server-response req) "route_match/index.html"))))
 

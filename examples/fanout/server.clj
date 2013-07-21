@@ -22,9 +22,9 @@
   (-> (net/server)
       (net/on-connect
        (fn [sock]
-         (shared/add! conns (.writeHandlerID sock)))
-       (stream/on-data sock (fn [data]
-                              (doseq [sock-id conns]
-                                (eb/send sock-id data))))
-       (net/on-close sock #(shared/remove! conns (.writeHandlerID sock))))
+         (shared/add! conns (.writeHandlerID sock))
+         (stream/on-data sock (fn [data]
+                                (doseq [sock-id conns]
+                                  (eb/send sock-id data))))
+         (net/on-close sock #(shared/remove! conns (.writeHandlerID sock)))))
       (net/listen 1234)))

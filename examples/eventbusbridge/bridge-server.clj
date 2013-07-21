@@ -25,22 +25,27 @@
 (let [server (-> (http/server)
                  (http/on-request req-handler))]
   ;;Create a SockJS bridge which lets everything through (be careful!)
-  (-> (sockjs/server server)
+  (-> (sockjs/sockjs-server server)
       (sockjs/set-hook
        :closed (fn [sock] (println "handleSocketClosed, sock = " sock))
 
        :send (fn [sock msg address] (println "handleSend, sock = " sock
                                              "address = " address
                                              "msg = " msg) true)
+
        :publish (fn [sock msg address] (println "handlePub, sock = " sock
                                                 "address = " address
                                                 "msg = " msg) true)
        :pre-register (fn [sock address]
                        (println "handlePreRegister, sock = "sock", address = " address))
+
        :post-register (fn [sock address]
                         (println "handlePostRegister,sock = "sock", address = " address))
+
        :unregister (fn [sock address]
                      (println "handleUnregister,sock = "sock", address = "address) true))
 
       (sockjs/bridge {:prefix "/eventbus"} [] []))
-  (http/listen 8080 server "localhost" (println "Starting Http server on localhost:8080")))
+
+  (http/listen server 8080 "localhost"
+               (println "Starting Http server on localhost:8080")))

@@ -13,11 +13,11 @@
 ;; limitations under the License.
 
 (ns example.ssl.server
-  (:require [vertx.net :as net
-             vertx.stream :as stream]))
+  (:require [vertx.net :as net]
+            [vertx.stream :as stream]))
 
 
-(-> (net/server {:ssl true
+(-> (net/server {:SSL true
                  :key-store-path "server-keystore.jks"
                  :key-store-password "wibble"})
     (net/on-connect

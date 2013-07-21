@@ -26,7 +26,7 @@
                                         (do
                                           (http/end (http/server-response req))
                                           (println "Uploaded " (.bytesPumped pump) " bytes"))
-                                        (.printStackTrace (.cause ar))))))
+                                        ((.printStackTrace (.cause ar)))))))
     (.start pump)))
 
 (defn req-handler [req]
@@ -40,4 +40,4 @@
 
 (-> (http/server)
     (http/on-request req-handler)
-    (http/listen 8080))
+    (http/listen 8080 "localhost"))

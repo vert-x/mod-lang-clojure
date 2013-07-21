@@ -24,9 +24,9 @@
 
 (let [server (-> (http/server)
                  (http/on-request req-handler))]
-  (-> (sockjs/server server)
+  (-> (sockjs/sockjs-server server)
       (sockjs/install-app {:prefix "/testapp"}
                           (fn [sock]
-                            (stream/on-data (fn [data]
-                                              (net/write data sock))))))
-  (http/listen 8080 "localhost" (println "Starting Http server on localhost:8080")))
+                            (stream/on-data sock (fn [data]
+                                              (net/write sock data))))))
+  (http/listen server 8080 "localhost" (println "Starting Http server on localhost:8080")))

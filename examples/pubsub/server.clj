@@ -41,7 +41,7 @@
                                    (doseq [target (shared/get-set topic-name)]
                                      (bus/send target content)))
                       (str "unexpected value " (first line-vec))))))]
-    (stream/on-data parser)))
+    (stream/on-data sock parser)))
 
 (-> (net/server)
     (net/on-connect connect-handler)

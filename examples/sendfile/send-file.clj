@@ -19,9 +19,7 @@
      (fn [req]
        (let [root-path "sendfile/"
              resp (http/server-response req)]
-         (if (= "/" (http/path req)))
-         (http/send-file resp (str root-path "index.html"))
-         ;;Clearly in a real server you would check the path for better security!!
-         (http/send-file resp (str root-path (http/path req)))
-         )))
+         (if (= "/" (http/path req))
+           (http/send-file resp (str root-path "index.html"))
+           (http/send-file resp (str root-path (http/path req)))))))
     (http/listen 8080 "localhost" (println "Starting Http server on localhost:8080")))

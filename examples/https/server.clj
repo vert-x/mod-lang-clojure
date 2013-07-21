@@ -24,6 +24,6 @@
       (http/put-header "Content-Type" "text/html; charset=UTF-8")
       (http/end "<html><body><h1>Hello from vert.x! in SSL</h1></body></html>"))))
 
-(-> (http/server {:ssl true :key-store-path "server-keystore.jks" :key-store-password "wibble"})
+(-> (http/server {:SSL true :key-store-path "server-keystore.jks" :key-store-password "wibble"})
     (http/on-request req-handler)
     (http/listen 4443 "localhost" (println "Starting echo server on localhost:4443")))

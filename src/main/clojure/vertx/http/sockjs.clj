@@ -51,7 +51,7 @@
 (defn install-app
   "Install an application with A handler that will be called when new SockJS sockets are created"
   [server config handler]
-  (.installApp server config (core/as-handler handler)))
+  (.installApp server (u/encode config) (core/as-handler handler)))
 
 (defn bridge
   "Install an app which bridges the SockJS server to the event bus
@@ -67,7 +67,7 @@
      (bridge server app-config inbound-permitted outbound-permitted auth-timeout nil))
 
   ([server app-config inbound-permitted outbound-permitted auth-timeout auth-address]
-     (.bridge server (u/encode app-config) (u/encode inbound-permitted) 
+     (.bridge server (u/encode app-config) (u/encode inbound-permitted)
               (u/encode outbound-permitted) auth-timeout auth-address)))
 
 (defn- eb-bridge-hook
@@ -75,10 +75,7 @@
   [kvs]
   (if (odd? (count kvs))
     (throw (IllegalArgumentException. (str "No value for key " (last kvs)))))
-  (let [n-h {}]
-    (loop [kv (take 2 kvs) rest (nnext kvs)]
-      (conj n-h kv)
-      (when (seq rest) (recur (take 2 rest) (nnext rest))))
+  (let [n-h (apply hash-map kvs)]
 
     (reify EventBusBridgeHook
       (handleSocketClosed [_# sock#]

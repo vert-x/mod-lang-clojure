@@ -26,7 +26,7 @@
       (net/write socket s))))
 
 (println "Connecting to localhost:1234")
-(-> (net/client {:ssl true :trust-all true})
+(-> (net/client {:SSL true :trust-all true})
     (net/connect 1234 "localhost"
                  (fn [err socket]
                    (if err

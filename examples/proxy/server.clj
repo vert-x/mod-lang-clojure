@@ -22,10 +22,10 @@
   (println "Headers are: ")
   (doseq [[k v] (http/headers req)] (println k ":" v))
   (stream/on-data req #(println "Got data" %))
-  (stream/on-end #(let [resp (http/server-response req {:chunked true})]
-                    (dotimes [n 10]  (http/write (str "server-data-chunk-" n)))
+  (stream/on-end req #(let [resp (http/server-response req {:chunked true})]
+                    (dotimes [n 10] (http/write resp (str "server-data-chunk-" n)))
                     (http/end resp))))
 
 (-> (http/server)
     (http/on-request req-handler)
-    (http/listen 8282))
+    (http/listen 8282 "localhost"))

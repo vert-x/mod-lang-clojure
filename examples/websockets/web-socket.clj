@@ -28,4 +28,4 @@
     (http/on-request (fn [req]
                        (when (= "/" (http/path req))
                          (http/send-file (http/server-response req) "websockets/ws.html"))))
-    (htt/listen 8080 "localhost" (println "String http Server on localhost:8080")))
+    (http/listen 8080 "localhost" (println "String http Server on localhost:8080")))

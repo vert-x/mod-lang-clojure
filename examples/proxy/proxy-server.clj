@@ -23,8 +23,8 @@
                                           {:status-code (http/status-code client-resp)
                                            :chunked true})]
     (.set (.headers server-req) (.headers client-resp))
-    (stream/on-data #((println "Proxying response body:" %)
-                      (http/write server-req %)))
+    (stream/on-data client-resp #((println "Proxying response body:" %)
+                      (http/write (http/server-response server-req) %)))
     (stream/on-end client-resp #(http/end server-resp))))
 
 (defn req-handler [client req]
@@ -47,4 +47,4 @@
 
   (doto server
     (http/on-request (partial req-handler client))
-    (http/listen 8080)))
+    (http/listen 8080 "localhost")))

@@ -18,4 +18,4 @@
 
 (eb/register-handler "news-feed"
                      (fn [msg]
-                       (println "receive news " msg)))
+                       (println "receive news " (eb/body msg))))
