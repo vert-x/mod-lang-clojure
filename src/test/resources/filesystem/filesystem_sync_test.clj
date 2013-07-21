@@ -25,9 +25,8 @@
 
 (def ^:dynamic *tmp-dir* nil)
 
-(defn tmp-dir-wrapper [f]
-  (let [tmp-dir (str (System/getProperty "java.io.tmpdir")
-                     "/mod-lang-clojure-tests-" (u/uuid) "/")]
+(defn with-tmp-dir [f]
+  (let [tmp-dir (str "target/mod-lang-clojure-tests-" (u/uuid) "/")]
     (fs/mkdir tmp-dir)
     (t/on-complete
      (partial fs/delete tmp-dir true))
@@ -171,8 +170,9 @@
         files (fs/read-dir dir)]
     (t/test-complete
      (t/assert (vector? files))
-     (t/assert= [(resource-path "test-data/dir/a")
-                 (resource-path "test-data/dir/xyz")] files))))
+     (t/assert= #{(resource-path "test-data/dir/a")
+                  (resource-path "test-data/dir/xyz")}
+                (set files)))))
 
 (defn test-read-dir-with-filter []
   (let [dir (resource-path "test-data/dir")
@@ -233,4 +233,4 @@
                                           :usable-space])
                             vals))))))
 
-(t/start-tests tmp-dir-wrapper)
+(t/start-tests with-tmp-dir)

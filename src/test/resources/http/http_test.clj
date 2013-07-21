@@ -37,7 +37,7 @@
               (t/assert= {:k "v"} (http/params req))
               (t/assert= "dummy" (:dummy header))
               (t/assert= ["v1" "v2"] (:dummy-v header))
-              (t/assert= "localhost" (:host addr))
+              (t/assert  (.startsWith (:host addr) "localhost"))
               (t/assert  (> (:port addr) -1))
               (t/assert-not-nil (-> req http/absolute-uri)))
 
