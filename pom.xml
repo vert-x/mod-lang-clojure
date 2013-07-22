@@ -248,7 +248,7 @@
             </property>
             <property>
               <name>vertx.test.timeout</name>
-              <value>60</value>
+              <value>15</value>
             </property>            
           </systemProperties>
           <environmentVariables>
