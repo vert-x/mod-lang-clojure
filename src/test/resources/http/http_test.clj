@@ -95,9 +95,9 @@
                                 (fn [resp]
                                   (assert-stauts-code resp)
                                   (http/on-body resp
-                                                     (fn [body]
-                                                       (t/test-complete
-                                                        (t/assert= (int 0) (.length body)))))))
+                                                (fn [body]
+                                                  (t/test-complete
+                                                   (t/assert= (int 0) (.length body)))))))
 
                   (http/put-header :content-length (str (.length body)))
                   (http/put-header :content-type (str "application/x-www-form-urlencoded"))
@@ -117,14 +117,14 @@
             (t/assert (.startsWith (http/uri req) "/form"))
             (let [resp (http/server-response req {:chunked true})]
               (http/on-upload req
-                                   (fn [file]
-                                     (let [file-info (http/upload-file-info file)]
-                                       (t/assert= '("file" "tmp-0" "image/git")
-                                                  (apply (map (fn [[k v]] v) file-info)))
-                                       (stream/on-data
-                                        file
-                                        (fn [data]
-                                          (t/assert= (buf/buffer "Vert.x Rocks!") data))))))
+                              (fn [file]
+                                (let [file-info (http/upload-file-info file)]
+                                  (t/assert= '("file" "tmp-0" "image/git")
+                                             (apply (map (fn [[k v]] v) file-info)))
+                                  (stream/on-data
+                                   file
+                                   (fn [data]
+                                     (t/assert= (buf/buffer "Vert.x Rocks!") data))))))
 
               (stream/on-end req (fn []
                                    (let [forms (http/form-attributes req)]
@@ -146,9 +146,9 @@
                                 (fn [resp]
                                   (assert-stauts-code resp)
                                   (http/on-body resp
-                                                     (fn [body]
-                                                       (t/test-complete
-                                                        (t/assert= (int 0) (.length body)))))))
+                                                (fn [body]
+                                                  (t/test-complete
+                                                   (t/assert= (int 0) (.length body)))))))
 
                   (http/put-header :content-length (str (.length body)))
                   (http/put-header :content-type (str "multipart/form-data; boundary="boundary))
@@ -184,10 +184,10 @@
                               (fn [resp]
                                 (assert-stauts-code resp)
                                 (http/on-body resp
-                                                   (fn [buf]
-                                                     (t/test-complete
-                                                      (t/assert= (buf/buffer "body-content") buf))
-                                                     ))))
+                                              (fn [buf]
+                                                (t/test-complete
+                                                 (t/assert= (buf/buffer "body-content") buf))
+                                                ))))
                 (http/end)))]
 
     (let [server (http/server {:SSL true

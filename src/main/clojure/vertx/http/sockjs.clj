@@ -53,6 +53,9 @@
   [server config handler]
   (.installApp server (u/encode config) (core/as-handler handler)))
 
+(def default-auth-timeout ^:const (* 5 60 1000))
+(def default-auth-address ^:const (str "vertx.basicauthmanager.authorise"))
+
 (defn bridge
   "Install an app which bridges the SockJS server to the event bus
    app-config The config for the app
@@ -61,10 +64,12 @@
    authTimeout Default time an authorisation will be cached for in the bridge (defaults to 5 minutes)
    authAddress Address of auth manager. Defaults to 'vertx.basicauthmanager.authorise'"
   ([server app-config inbound-permitted outbound-permitted]
-     (bridge server app-config inbound-permitted outbound-permitted nil nil))
+     (bridge server app-config inbound-permitted outbound-permitted
+             default-auth-timeout default-auth-address))
 
   ([server app-config inbound-permitted outbound-permitted auth-timeout]
-     (bridge server app-config inbound-permitted outbound-permitted auth-timeout nil))
+     (bridge server app-config inbound-permitted outbound-permitted auth-timeout
+             default-auth-address))
 
   ([server app-config inbound-permitted outbound-permitted auth-timeout auth-address]
      (.bridge server (u/encode app-config) (u/encode inbound-permitted)
@@ -82,7 +87,7 @@
         ((:closed n-h) sock#))
 
       (handleSendOrPub [_# sock# is-send# msg# address#]
-        (if (is-send#)
+        (if is-send#
           ((:send n-h) sock# msg# address#)
           ((:publish n-h) sock# msg# address#)))
 

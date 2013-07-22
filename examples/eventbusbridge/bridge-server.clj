@@ -18,9 +18,9 @@
             [vertx.http.sockjs :as sockjs]))
 
 (defn req-handler [req]
-  (condp (= (http/uri req))
+  (condp = (http/uri req)
       "/" (http/send-file (http/server-response req) "eventbusbridge/index.html")
-      "vertxbus.js" (http/send-file (http/server-response req) "eventbusbridge/vertxbus.js")))
+      "/vertxbus.js" (http/send-file (http/server-response req) "eventbusbridge/vertxbus.js")))
 
 (let [server (-> (http/server)
                  (http/on-request req-handler))]
@@ -37,7 +37,7 @@
                                                 "address = " address
                                                 "msg = " msg) true)
        :pre-register (fn [sock address]
-                       (println "handlePreRegister, sock = "sock", address = " address))
+                       (println "handlePreRegister, sock = "sock", address = " address) true)
 
        :post-register (fn [sock address]
                         (println "handlePostRegister,sock = "sock", address = " address))
