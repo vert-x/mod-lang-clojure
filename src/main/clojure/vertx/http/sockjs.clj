@@ -17,7 +17,7 @@
   <p>SockJS enables browsers to communicate with the server using a simple WebSocket-like api for sending
   and receiving messages. Under the bonnet SockJS chooses to use one of several protocols depending on browser
   capabilities and what appears to be working across the network.<p>
-  Available protocols include:<p>
+  Available protocols include:
   <ul>
     <li>WebSockets</li>
     <li>xhr-polling</li>
@@ -77,30 +77,26 @@
 
 (defn- eb-bridge-hook
   "Make a implememtion of EventBusBridgeHook, take a kv pair as handlers."
-  [kvs]
-  (if (odd? (count kvs))
-    (throw (IllegalArgumentException. (str "No value for key " (last kvs)))))
-  (let [n-h (apply hash-map kvs)]
+  [n-h]
+  (reify EventBusBridgeHook
+    (handleSocketClosed [_# sock#]
+      ((:closed n-h) sock#))
 
-    (reify EventBusBridgeHook
-      (handleSocketClosed [_# sock#]
-        ((:closed n-h) sock#))
+    (handleSendOrPub [_# sock# is-send# msg# address#]
+      (if is-send#
+        ((:send n-h) sock# msg# address#)
+        ((:publish n-h) sock# msg# address#)))
 
-      (handleSendOrPub [_# sock# is-send# msg# address#]
-        (if is-send#
-          ((:send n-h) sock# msg# address#)
-          ((:publish n-h) sock# msg# address#)))
+    (handlePreRegister [_# sock# address#]
+      ((:pre-register n-h) sock# address#))
 
-      (handlePreRegister [_# sock# address#]
-        ((:pre-register n-h) sock# address#))
+    (handlePostRegister [_# sock# address#]
+      ((:post-register n-h) sock# address#))
 
-      (handlePostRegister [_# sock# address#]
-        ((:post-register n-h) sock# address#))
+    (handleUnregister [_# sock# address#]
+      ((:unregister n-h) sock# address#))))
 
-      (handleUnregister [_# sock# address#]
-        ((:unregister n-h) sock# address#)))))
-
-(defn set-hook
+(defn set-hooks
   "Set a ```EventBusBridgeHook``` to the server.
    name-handlers are six pair of kv, v is implementation of EventBusBridgeHook,
    k is keyworkd and meaning is:
@@ -110,5 +106,5 @@
    :pre-register  Called before client registers a handler
    :post-register Called after client registers a handler
    :unregister    Client is unregistering a handler"
-  [server & name-handlers]
+  [server & {:as name-handlers}]
   (.setHook server (eb-bridge-hook name-handlers)))
