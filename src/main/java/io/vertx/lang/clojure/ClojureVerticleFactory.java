@@ -64,7 +64,7 @@ public class ClojureVerticleFactory implements VerticleFactory {
 
     @Override
     public void reportException(Logger logger, Throwable t) {
-        logger.error("Unexpected exception in Clojure verticle", t);
+        log.error("Unexpected exception in Clojure verticle", t);
     }
 
     @Override
@@ -83,7 +83,7 @@ public class ClojureVerticleFactory implements VerticleFactory {
             Var.pushThreadBindings(PersistentHashMap.create(stopVar, this.stopFn));
             try {
                 RT.loadResourceScript(scriptName);
-            } catch (IOException e) {
+            } catch (Exception e) {
                 throw new VertxException(e);
             } finally {
                 Var.popThreadBindings();
