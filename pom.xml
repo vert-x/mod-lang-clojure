@@ -32,8 +32,8 @@
     <clojure.maven.plugin.version>1.3.17</clojure.maven.plugin.version>
 
     <!-- dependency versions -->
-    <version.vertx>2.0.0-CR2</version.vertx>
-    <version.vertx.testtools>2.0.0-CR2</version.vertx.testtools>
+    <version.vertx>2.0.0-CR3</version.vertx>
+    <version.vertx.testtools>2.0.0-final</version.vertx.testtools>
     <version.clojure>1.5.1</version.clojure>
     <version.json>0.2.2</version.json>
     <version.nrepl>0.2.3</version.nrepl>
