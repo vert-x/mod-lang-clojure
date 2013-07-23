@@ -16,7 +16,8 @@
   (:require [vertx.http :as http]
             [vertx.stream :as stream]
             [vertx.utils :as u]
-            [vertx.filesystem :as file])
+            [vertx.filesystem.sync :as fss]
+            [vertx.filesystem :as fs])
   (:import [java.nio.file Files]
            [java.nio.file Paths]))
 
@@ -27,19 +28,17 @@
 
   ;; For a chunked upload you don't need to specify size
   ;; just do set req to chunked true
-  (http/put-header req "Content-Length"
-                   (str (Files/size (Paths/get filename))))
+  (http/put-header req "Content-Length" (str (:size (fss/properties filename))))
 
-  (file/open filename (fn [ar]
-                        (let [file (.result ar)
-                              pump (stream/pump file req)]
-                          (.start pump)
-                          (stream/on-end #((file/close
-                                            file
-                                            (fn [ar]
-                                              (if (.succeeded ar)
-                                                (do
-                                                  (http/end req)
-                                                  (println "Sent request"))
-                                                (.printStackTrace (.cause ar))))))))))
+  (fs/open filename (fn [err file]
+                      (let [pump (stream/pump file req)]
+                        (.start pump)
+                        (stream/on-end file
+                                       #(fs/close file
+                                                  (fn [err]
+                                                    (if (nil? err)
+                                                      (do
+                                                        (http/end req)
+                                                        (println "Sent request"))
+                                                      (.printStackTrace (.cause err)))))))))
   )

@@ -16,26 +16,26 @@
   (:require [vertx.http :as http]
             [vertx.stream :as stream]
             [vertx.utils :as u]
-            [vertx.filesystem :as file]))
+            [vertx.filesystem :as fs]))
 
 (defn handle-file [async-file req]
   (let [pump (stream/pump req async-file)]
-    (stream/on-end req #(file/close async-file
-                                    (fn [ar]
-                                      (if (.succeeded ar)
+    (stream/on-end req #(fs/close async-file
+                                    (fn [err]
+                                      (if (nil? err)
                                         (do
                                           (http/end (http/server-response req))
                                           (println "Uploaded " (.bytesPumped pump) " bytes"))
-                                        ((.printStackTrace (.cause ar)))))))
+                                        ((.printStackTrace (.cause err)))))))
     (.start pump)))
 
 (defn req-handler [req]
-  (let [filename (str "upload/file-" u/uuid ".upload")]
+  (let [filename (str "upload/file-" (u/uuid) ".upload")]
     (stream/pause req)
-    (file/open filename (fn [ar]
-                          (if (.failed ar)
-                            (.printStackTrace (.cause ar))
-                            (handle-file (.result ar) req))))
+    (fs/open filename (fn [err res]
+                          (if (nil? err)
+                            (handle-file res req)
+                            (.printStackTrace (.cause err)))))
     (stream/resume req)))
 
 (-> (http/server)
