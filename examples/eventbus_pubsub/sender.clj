@@ -12,17 +12,9 @@
 ;; See the License for the specific language governing permissions and
 ;; limitations under the License.
 
-(ns example.sender
+(ns example.eventbus-pubsub.sender
   (:require [vertx.core :as vertx]
             [vertx.eventbus :as eb]))
 
-(def address "example.address")
-(def msg-count (atom 0))
-
-(vertx/periodic
- 1000
- (let [msg (str "some-message-" (swap! msg-count inc))]
-   (eb/send address msg
-            (fn [reply]
-              (println "received:" (eb/body reply))))
-   (println "sent message" msg)))
+(vertx/periodic 1000 (eb/publish "news-feed" "some news")
+                (println "published message some news"))

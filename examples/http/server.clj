@@ -12,17 +12,18 @@
 ;; See the License for the specific language governing permissions and
 ;; limitations under the License.
 
-(ns example.sender
-  (:require [vertx.core :as vertx]
-            [vertx.eventbus :as eb]))
+(ns example.http.server
+  (:require [vertx.http :as http]))
 
-(def address "example.address")
-(def msg-count (atom 0))
+(defn req-handler [req]
+  (println "Got request: " (http/uri req))
+  (println "Headers are: ")
+  (doseq [[k v] (http/headers req)] (println k ":" v))
+  (let [resp (http/server-response req)]
+    (doto resp
+      (http/put-header "Content-Type" "text/html; charset=UTF-8")
+      (http/end "<html><body><h1>Hello from vert.x!</h1></body></html>"))))
 
-(vertx/periodic
- 1000
- (let [msg (str "some-message-" (swap! msg-count inc))]
-   (eb/send address msg
-            (fn [reply]
-              (println "received:" (eb/body reply))))
-   (println "sent message" msg)))
+(-> (http/server)
+    (http/on-request req-handler)
+    (http/listen 8080 "localhost" (println "Starting Http server on localhost:8080")))

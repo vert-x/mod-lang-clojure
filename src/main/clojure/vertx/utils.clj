@@ -62,4 +62,3 @@
   (mapv (fn [[prop value]]
           (set-property obj prop value)) props)
   obj)
-
