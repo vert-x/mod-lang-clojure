@@ -64,7 +64,7 @@ public class ClojureVerticleFactory implements VerticleFactory {
 
     @Override
     public void reportException(Logger logger, Throwable t) {
-        log.error("Unexpected exception in Clojure verticle", t);
+        logger.error("Unexpected exception in Clojure verticle", t);
     }
 
     @Override
