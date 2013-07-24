@@ -12,17 +12,12 @@
 ;; See the License for the specific language governing permissions and
 ;; limitations under the License.
 
-(ns example.sender
-  (:require [vertx.core :as vertx]
-            [vertx.eventbus :as eb]))
+(ns example.http.client
+  (:require [vertx.http :as http]))
 
-(def address "example.address")
-(def msg-count (atom 0))
-
-(vertx/periodic
- 1000
- (let [msg (str "some-message-" (swap! msg-count inc))]
-   (eb/send address msg
-            (fn [reply]
-              (println "received:" (eb/body reply))))
-   (println "sent message" msg)))
+(-> (http/client {:port 8080 :host "localhost"})
+    (http/get-now "/"
+                  (fn [resp]
+                    (http/on-body resp
+                                  (fn [buf]
+                                    (println (.toString buf)))))))
