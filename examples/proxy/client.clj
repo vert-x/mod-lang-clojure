@@ -12,17 +12,22 @@
 ;; See the License for the specific language governing permissions and
 ;; limitations under the License.
 
-(ns example.sender
-  (:require [vertx.core :as vertx]
-            [vertx.eventbus :as eb]))
+(ns example.proxy.client
+  (:require [vertx.http :as http]
+            [vertx.stream :as stream]
+            [vertx.buffer :as buf]))
 
-(def address "example.address")
-(def msg-count (atom 0))
 
-(vertx/periodic
- 1000
- (let [msg (str "some-message-" (swap! msg-count inc))]
-   (eb/send address msg
-            (fn [reply]
-              (println "received:" (eb/body reply))))
-   (println "sent message" msg)))
+(defn write-data [req]
+  (dotimes [n 10] (http/write req (str "client-data-chunk-" n))) req)
+
+(-> (http/client {:port 8080 :host "localhost"})
+    (http/request :PUT "/some-url"
+                  (fn [resp]
+                    (stream/on-data resp
+                                    (fn [data]
+                                      (println "Got response data" data)))))
+
+    (http/request-prop {:chunked true})
+    (write-data)
+    (http/end))

@@ -12,17 +12,19 @@
 ;; See the License for the specific language governing permissions and
 ;; limitations under the License.
 
-(ns example.sender
-  (:require [vertx.core :as vertx]
-            [vertx.eventbus :as eb]))
+(ns example.fanout.server
+  (:require [vertx.net :as net]
+            [vertx.shareddata :as shared]
+            [vertx.eventbus :as eb]
+            [vertx.stream :as stream]))
 
-(def address "example.address")
-(def msg-count (atom 0))
-
-(vertx/periodic
- 1000
- (let [msg (str "some-message-" (swap! msg-count inc))]
-   (eb/send address msg
-            (fn [reply]
-              (println "received:" (eb/body reply))))
-   (println "sent message" msg)))
+(let [conns (shared/get-set "conns")]
+  (-> (net/server)
+      (net/on-connect
+       (fn [sock]
+         (shared/add! conns (.writeHandlerID sock))
+         (stream/on-data sock (fn [data]
+                                (doseq [sock-id conns]
+                                  (eb/send sock-id data))))
+         (net/on-close sock #(shared/remove! conns (.writeHandlerID sock)))))
+      (net/listen 1234)))
