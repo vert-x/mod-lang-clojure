@@ -1052,7 +1052,7 @@ itself. This enables you to write data to a NetSocket which is
 potentially in a completely different verticle or even in a different
 Vert.x instance by sending the buffer to the address of that handler.
 
-The address of the handler is provided by the `writeHandlerID` Java
+The address of the handler is provided by the `.writeHandlerID` Java
 method.
 
 For example to write some data to the NetSocket from a completely
@@ -2531,6 +2531,19 @@ websocket.
               (.reject ws))))
         (listen 8080))
         
+### Event Bus Write Handler
+
+Like NetSockets, every WebSocket automatically registers handlers on
+the event bus, and when any buffers are received in those handlers, it
+writes them to itself. This enables you to write data to a WebSocket
+which is potentially in a completely different verticle or even in a
+different Vert.x instance by sending the buffer to the address of that
+handler.
+
+There are two handlers registered for each WebSocket: one for text
+data, the other for binary. The address of each handler is provided by
+the `.textHandlerID` and `.binaryHandlerID` methods, respectively.
+
 ### Headers on the websocket
 
 You can use the `vertx.http/headers` function to retrieve the headers
