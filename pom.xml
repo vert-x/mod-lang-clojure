@@ -30,6 +30,7 @@
     <maven.clean.plugin.version>2.5</maven.clean.plugin.version>
     <maven.source.plugin.version>2.2.1</maven.source.plugin.version>
     <clojure.maven.plugin.version>1.3.17</clojure.maven.plugin.version>
+    <version.codox>0.6.3.1</version.codox>
 
     <!-- dependency versions -->
     <version.vertx>2.0.0-CR3</version.vertx>
@@ -93,6 +94,7 @@
       <scope>compile</scope>
     </dependency>
 
+    
     <!-- test dependencies -->
     <dependency>
       <groupId>junit</groupId>
@@ -106,7 +108,15 @@
       <version>${version.vertx.testtools}</version>
       <scope>test</scope>
     </dependency>
+
+    <dependency>
+      <groupId>org.clojars.tcrawley</groupId>
+      <artifactId>codox.core</artifactId>
+      <version>${version.codox}</version>
+      <scope>provided</scope>
+    </dependency>
   </dependencies>
+
   <build>
 
     <resources>
@@ -140,6 +150,18 @@
             <goals>
               <goal>test</goal>
             </goals>
+          </execution>
+           <execution>
+            <id>generate-codox</id>
+            <goals>
+              <goal>run</goal>
+            </goals>
+            <phase>package</phase>
+            <configuration>
+              <runWithTests>true</runWithTests>
+              <includePluginDependencies>true</includePluginDependencies>
+              <script>${basedir}/target/generate_codox.clj</script>
+            </configuration>
           </execution>
         </executions>
       </plugin>
@@ -194,6 +216,28 @@
               </resources>
             </configuration>
           </execution>
+
+          <execution>
+            <id>codox-script</id>
+            <goals>
+              <goal>copy-resources</goal>
+            </goals>
+            <phase>process-resources</phase>
+
+            <configuration>
+              <resources>
+                <resource>
+                  <filtering>true</filtering>
+                  <directory>src/build</directory>
+                  <includes>
+                    <include>generate_codox.clj</include>
+                  </includes>
+                </resource>
+              </resources>
+              <outputDirectory>target</outputDirectory>
+            </configuration>
+          </execution>
+
         </executions>
       </plugin>
       <plugin>
