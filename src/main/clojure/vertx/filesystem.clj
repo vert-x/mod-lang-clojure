@@ -235,12 +235,12 @@
    The behavior of the open call is further controlled by a set of
    kwarg arguments [default]:
 
-   * create? - create the file if it does not already exist [true]
-   * read?   - open the file for reading [true]
-   * write?  - open the file for writing [true]
-   * flush?  - the opened file will auto-flush writes [false]
-   * perms   - the permissions used to create the file, if necessary
-               (see create-file) [nil]"
+   * :create? - create the file if it does not already exist [true]
+   * :read?   - open the file for reading [true]
+   * :write?  - open the file for writing [true]
+   * :flush?  - the opened file will auto-flush writes [false]
+   * :perms   - the permissions used to create the file, if necessary
+                (see create-file) [nil]"
   [path handler & {:keys [perms read? write? create? flush?]
                    :or {read? true write? true create? true}}]
   (.open (get-file-system) path perms
