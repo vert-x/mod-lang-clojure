@@ -48,8 +48,8 @@
                   params2 {:param0 "bar" :param1 "v0.2"}
                   pattern2 #"/([^/]+)/([^/]+)"]
 
-              (rm/match matcher :POST pattern1 (partial req-handler params1))
-              (rm/match matcher :GET pattern2 (partial req-handler params2))
+              (rm/post matcher pattern1 (partial req-handler params1))
+              (rm/get matcher pattern2 (partial req-handler params2))
               (rm/no-match matcher no-match-handler)
 
               (http/end (http/request client :POST "/mod/foo/v0.1/"
