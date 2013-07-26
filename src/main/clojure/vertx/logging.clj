@@ -37,36 +37,42 @@
   (.isTraceEnabled (get-logger)))
 
 (defn fatal*
+  "TODO: docs"
   ([obj]
      (.fatal (get-logger) obj))
   ([obj throwable]
      (.fatal (get-logger) obj throwable)))
 
 (defn error*
+  "TODO: docs"
   ([obj]
      (.error (get-logger) obj))
   ([obj throwable]
      (.error (get-logger) obj throwable)))
 
 (defn warn*
+  "TODO: docs"
   ([obj]
      (.warn (get-logger) obj))
   ([obj throwable]
      (.warn (get-logger) obj throwable)))
 
 (defn info*
+  "TODO: docs"
   ([obj]
      (.info (get-logger) obj))
   ([obj throwable]
      (.info (get-logger) obj throwable)))
 
 (defn debug*
+  "TODO: docs"
   ([obj]
      (.debug (get-logger) obj))
   ([obj throwable]
      (.debug (get-logger) obj throwable)))
 
 (defn trace*
+  "TODO: docs"
   ([obj]
      (.trace (get-logger) obj))
   ([obj throwable]

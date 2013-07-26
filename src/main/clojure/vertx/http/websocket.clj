@@ -13,6 +13,7 @@
 ;; limitations under the License.
 
 (ns vertx.http.websocket
+  "TODO: docs"
   (:require [vertx.buffer :as buf]
             [vertx.core :as core]
             [vertx.http :as http])
@@ -40,6 +41,7 @@
                 WebSocketVersion/HYBI_08 :HYBI-08)))
 
 (defn connect
+  "TODO: docs"
   ([http-client uri h]
      (connect http-client uri nil nil h))
   ([http-client uri version h]

@@ -19,7 +19,9 @@
             [vertx.core :as core])
   (:import [org.vertx.java.core.http RouteMatcher]))
 
-(defn matcher [] (RouteMatcher.))
+(defn matcher
+  "TODO: docs"
+  [] (RouteMatcher.))
 
 (defmacro ^:private def-match-fn [name]
   (let [doc (format "Specify a handler that will be called for a matching HTTP %s"

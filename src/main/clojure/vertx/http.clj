@@ -13,6 +13,7 @@
 ;; limitations under the License.
 
 (ns vertx.http
+  "TODO: docs"
   (:refer-clojure :exclude [get])
   (:require [clojure.string :as string]
             [vertx.buffer :as buf]
@@ -213,12 +214,14 @@
     (add-trailer req-or-resp k v)))
 
 (defn send-file
+  "TODO: docs"
   ([resp filename]
      (.sendFile resp filename))
   ([resp filename not-found]
      (.sendFile resp filename not-found)))
 
 (defn end
+  "TODO: docs"
   ([http]
      (.end http))
   ([http content]
@@ -251,6 +254,7 @@
             (core/as-handler resp-h)))
 
 (defn get-now
+  "TODO: docs"
   ([http-client uri resp-h]
      (get-now http-client uri nil resp-h))
   ([http-client uri headers resp-h]
