@@ -14,7 +14,8 @@
 
 (ns vertx.stream
   "Functions that operate on Vert.x ReadStreams and WriteStreams."
-  (:require [vertx.core :as core])
+  (:require [vertx.buffer :as buf]
+            [vertx.core :as core])
   (:import (org.vertx.java.core.streams Pump)))
 
 (defn on-data
@@ -51,18 +52,13 @@
   [stream handler]
   (.exceptionHandler stream (core/as-handler handler)))
 
-(defn pause
-  "Pause the ReadStream.
-   While the stream is paused, no data will be sent to the on-data handler.
-   Returns the stream."
-  [stream]
-  (.pause stream))
-
-(defn resume
-  "Resumes reading on the ReadStream.
-   Returns the stream."
-  [stream]
-  (.resume stream))
+(defn write
+  "Write data to the stream.
+   data can anything Bufferable (see vertx.buffer/buffer)."
+  ([stream data]
+     (.write stream (buf/as-buffer data)))
+  ([stream data-str enc]
+     (.write stream (buf/buffer data-str enc))))
 
 (defn pump
   "Creates a Pump instance.
@@ -91,8 +87,3 @@
        (when start?
          (.start p))
        p)))
-
-
-;; TODO: pump controls?
-;; TODO: readstream controls?
-;; TODO: writestream controls and options?

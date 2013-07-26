@@ -22,9 +22,3 @@
   [obj handler]
   (.close obj (c/as-async-result-handler handler false)))
 
-(defn ^:internal ^:no-doc internal-write
-  "A common write implementation. Should be wrapped by other namespaces."
-  ([obj content]
-     (.write obj (buf/as-buffer content)))
-  ([obj content-str enc]
-     (.write obj content-str enc)))

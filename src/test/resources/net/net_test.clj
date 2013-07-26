@@ -28,7 +28,7 @@
 (defn echo-handler [socket]
   (stream/on-data socket
                   (fn [data]
-                    (net/write socket data))))
+                    (stream/write socket data))))
 
 (defn exercise-handlers [socket]
   (-> socket
@@ -55,7 +55,7 @@
               (dotimes [_ send-count]
                 (let [data (t/random-buffer send-size)]
                   (buf/append! sent-buf! data)
-                  (net/write socket data)))))
+                  (stream/write socket data)))))
 
           (server-listen-handler [orig-server port err server]
             (t/assert-nil err)
@@ -89,7 +89,7 @@
               (dotimes [_ send-count]
                 (let [data (t/random-buffer send-size)]
                   (buf/append! sent-buf! data)
-                  (net/write socket data)))))]
+                  (stream/write socket data)))))]
 
     (let [server (net/server)
           port 8080]
@@ -119,7 +119,7 @@
               (dotimes [_ send-count]
                 (let [data (t/random-buffer send-size)]
                   (buf/append! sent-buf! data)
-                  (net/write socket data)))))
+                  (stream/write socket data)))))
 
           (server-listen-handler [orig-server port err server]
             (t/assert-nil err)
@@ -159,7 +159,7 @@
                   msg "ham-biscuit"]
               (stream/on-data socket (partial client-data-handler
                                               rcv-buf! msg))
-              (net/write socket msg)))
+              (stream/write socket msg)))
 
           (server-listen-handler [orig-server port err server]
             (t/assert-nil err)
