@@ -16,7 +16,6 @@
 
 package io.vertx.lang.clojure;
 
-import clojure.core.Vec;
 import clojure.lang.Atom;
 import clojure.lang.IFn;
 import clojure.lang.PersistentHashMap;
