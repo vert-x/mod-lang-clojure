@@ -14,30 +14,38 @@
 
 (ns vertx.http.route
   "Functions for operating on Vertx.x RouteMatcher."
+  (:refer-clojure :exclude [get])
   (:require [clojure.string :as string]
             [vertx.core :as core])
   (:import [org.vertx.java.core.http RouteMatcher]))
 
-(defn matcher [] (RouteMatcher.))
+(defn matcher
+  "TODO: docs"
+  [] (RouteMatcher.))
 
-(defn match
-  "Specify a handler that will be called for a matching HTTP method
-   including
-   :OPTIONS :GET :HEAD :POST :PUT :DELETE :TRACE :CONNECT :PATCH :ALL
-   ALL is special, which will be called for all Http method.
-   pattern could be a Regex directly.
-  "
-  ([method pattern handler]
-     (match (matcher) method pattern handler))
+(defmacro ^:private def-match-fn [name]
+  (let [doc (format "Specify a handler that will be called for a matching HTTP %s"
+                    (string/upper-case name))
+        method (symbol (str "." name))
+        re-method (symbol (str "." name "WithRegEx"))]
+    `(defn ~name ~doc
+       ([~'pattern ~'handler]
+          (~name (matcher) ~'pattern ~'handler))
+       ([~'matcher ~'pattern ~'handler]
+          (if (instance? java.util.regex.Pattern ~'pattern)
+            (~re-method ~'matcher (str ~'pattern) (core/as-handler ~'handler))
+            (~method ~'matcher ~'pattern (core/as-handler ~'handler)))))))
 
-  ([matcher method pattern handler]
-     (let [method-str (string/lower-case (name method))
-           is-regex (if (instance? String pattern) false true)
-           pattern-str (if is-regex (.pattern pattern) pattern)]
-       (clojure.lang.Reflector/invokeInstanceMethod
-        matcher
-        (if is-regex (str method-str "WithRegEx") method-str)
-        (into-array Object [pattern-str (core/as-handler handler)])) matcher)))
+(def-match-fn get)
+(def-match-fn put)
+(def-match-fn post)
+(def-match-fn delete)
+(def-match-fn head)
+(def-match-fn options)
+(def-match-fn connect)
+(def-match-fn trace)
+(def-match-fn patch)
+(def-match-fn all)
 
 (defn no-match
   "Specify a handler that will be called when no other handlers match.

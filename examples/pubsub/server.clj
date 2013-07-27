@@ -26,7 +26,7 @@
         (buf/parse-delimited
          "/n" (fn [line]
                 (let [line-vec (string/split line #",")]
-                  (condp (= (first line-vec))
+                  (condp = (first line-vec)
                       "subscribe" #(let [topic-name (second line-vec)]
                                      (println (str "subscribing to " topic-name))
                                      (shared/add! (shared/get-set topic-name) (.writeHandlerID sock)))

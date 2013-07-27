@@ -14,6 +14,7 @@
 
 (ns vertx.http-test
   (:require [vertx.http :as http]
+            [vertx.http.websocket :as ws]
             [vertx.buffer :as buf]
             [vertx.stream :as stream]
             [vertx.testtools :as t]
@@ -30,7 +31,7 @@
   (letfn [(req-handler [req]
             (let [header (http/headers req)
                   addr (http/remote-address req)]
-              (t/assert= :GET (http/method req))
+              (t/assert= :GET (http/request-method req))
               (t/assert= "/get/now?k=v" (http/uri req))
               (t/assert= "/get/now" (http/path req))
               (t/assert= "k=v" (http/query req))
@@ -45,7 +46,7 @@
                                                   :status-message "status-msg"
                                                   :chunked false})]
               (doto resp
-                (http/put-header "add-header" "add-header")
+                (http/add-header "add-header" "add-header")
                 (http/end "body-content"))))
 
           (client-request [client]
@@ -89,19 +90,19 @@
           (server-listen-handler [orig-server port host err server]
             (t/assert-nil err)
             (t/assert= orig-server server)
-            (let [body (buf/buffer "origin=junit-testUserAlias&login=admin%40foo.bar&pass+word=admin")]
+            (let [body "origin=junit-testUserAlias&login=admin%40foo.bar&pass+word=admin"]
               (-> (http/client {:port port :host host})
-                  (http/request :POST "/form"
-                                (fn [resp]
-                                  (assert-stauts-code resp)
-                                  (http/on-body resp
-                                                (fn [body]
+                  (http/post "/form"
+                             (fn [resp]
+                               (assert-stauts-code resp)
+                               (http/on-body resp
+                                             (fn [body]
                                                   (t/test-complete
                                                    (t/assert= (int 0) (.length body)))))))
-
-                  (http/put-header :content-length (str (.length body)))
-                  (http/put-header :content-type (str "application/x-www-form-urlencoded"))
-                  (http/write body) (http/end))))
+                  
+                  (http/add-header :content-length (str (.length body)))
+                  (http/add-header :content-type (str "application/x-www-form-urlencoded"))
+                  (http/end body))))
           ]
 
     (let [server (http/server) port 8888 host "localhost"]
@@ -117,15 +118,15 @@
             (t/assert (.startsWith (http/uri req) "/form"))
             (let [resp (http/server-response req {:chunked true})]
               (http/on-upload req
-                              (fn [file]
-                                (let [file-info (http/upload-file-info file)]
-                                  (t/assert= '("file" "tmp-0" "image/git")
-                                             (apply (map (fn [[k v]] v) file-info)))
-                                  (stream/on-data
-                                   file
-                                   (fn [data]
-                                     (t/assert= (buf/buffer "Vert.x Rocks!") data))))))
-
+                              (fn [file-info]
+                                (t/assert= "file" (:name file-info))
+                                (t/assert= "tmp-0.txt" (:filename file-info))
+                                (t/assert= "image/gif" (:content-type file-info))
+                                (stream/on-data
+                                 (:stream file-info)
+                                 (fn [data]
+                                   (t/assert= (buf/buffer "Vert.x Rocks!") data)))))
+              
               (stream/on-end req (fn []
                                    (let [forms (http/form-attributes req)]
                                      (t/assert= (int 0) (count forms))
@@ -135,24 +136,24 @@
             (t/assert-nil err)
             (t/assert= orig-server server)
             (let [boundary "dLV9Wyq26L_-JQxk6ferf-RT153LhOO"
-                  body (buf/buffer (str "--" boundary "\r\n"
-                                        "Content-Disposition: form-data; name=\"file\"; filename=\"tmp-0.txt\"\r\n"
-                                        "Content-Type: image/gif\r\n"
-                                        "\r\n"
-                                        "Vert.x Rocks!\r\n"
-                                        "--" boundary "--\r\n"))]
+                  body (str "--" boundary "\r\n"
+                            "Content-Disposition: form-data; name=\"file\"; filename=\"tmp-0.txt\"\r\n"
+                            "Content-Type: image/gif\r\n"
+                            "\r\n"
+                            "Vert.x Rocks!\r\n"
+                            "--" boundary "--\r\n")]
               (-> (http/client {:port port :host host})
-                  (http/request :POST "/form"
-                                (fn [resp]
-                                  (assert-stauts-code resp)
-                                  (http/on-body resp
-                                                (fn [body]
-                                                  (t/test-complete
-                                                   (t/assert= (int 0) (.length body)))))))
-
-                  (http/put-header :content-length (str (.length body)))
-                  (http/put-header :content-type (str "multipart/form-data; boundary="boundary))
-                  (http/write body) (http/end))))]
+                  (http/post "/form"
+                             (fn [resp]
+                               (assert-stauts-code resp)
+                               (http/on-body resp
+                                             (fn [body]
+                                               (t/test-complete
+                                                (t/assert= (int 0) (.length body)))))))
+                  
+                  (http/add-header :content-length (str (.length body)))
+                  (http/add-header :content-type (str "multipart/form-data; boundary="boundary))
+                  (http/end body))))]
 
     (let [server (http/server) port 8888 host "localhost"]
       (-> server
@@ -164,7 +165,7 @@
 
 (defn test-ssl-request []
   (letfn [(req-handler [req]
-            (t/assert= :GET (http/method req))
+            (t/assert= :GET (http/request-method req))
             (t/assert= "/get/ssl/" (http/uri req))
             (let [resp (http/server-response req)]
               (http/end resp "body-content")))
@@ -180,14 +181,13 @@
                               :key-store-password "wibble"
                               :trust-store-path (resource-path "keystores/client-truststore.jks")
                               :trust-store-password "wibble"})
-                (http/request :GET "/get/ssl/"
-                              (fn [resp]
-                                (assert-stauts-code resp)
-                                (http/on-body resp
-                                              (fn [buf]
-                                                (t/test-complete
-                                                 (t/assert= (buf/buffer "body-content") buf))
-                                                ))))
+                (http/get "/get/ssl/"
+                          (fn [resp]
+                            (assert-stauts-code resp)
+                            (http/on-body resp
+                                          (fn [buf]
+                                            (t/test-complete
+                                             (t/assert= (buf/buffer "body-content") buf))))))
                 (http/end)))]
 
     (let [server (http/server {:SSL true
@@ -261,35 +261,33 @@
             (t/assert= "/some/path" (http/path ws))
             (t/assert= "foo=bar&wibble=eek" (http/query ws))
             (stream/on-data ws (fn [data]
-                                 (http/write ws data))))
+                                 (stream/write ws data))))
 
           (server-listen-handler [orig-server port host err server]
             (t/assert-nil err)
             (t/assert= orig-server server)
             (-> (http/client {:port port :host host})
-                (http/connect-ws "/some/path?foo=bar&wibble=eek" :RFC6455
-                                 (fn [ws]
-                                   (let [sent-buf! (buf/buffer)
-                                         rcv-buf! (buf/buffer)
-                                         send-count 10
-                                         send-size 100]
-                                     (stream/on-data ws (fn [data]
-                                                          (buf/append! rcv-buf! data)
-                                                          (when (= (.length rcv-buf!) (* send-count send-size))
-                                                            (t/test-complete
-                                                             (t/assert= sent-buf! rcv-buf!))
-                                                            )))
-                                     (dotimes [_ send-count]
-                                       (let [data (t/random-buffer send-size)]
-                                         (buf/append! sent-buf! data)
-                                         (http/write-binary-frame ws data)))
-                                     )))))]
-
+                (ws/connect "/some/path?foo=bar&wibble=eek" :RFC6455
+                            (fn [ws]
+                              (let [sent-buf! (buf/buffer)
+                                    rcv-buf! (buf/buffer)
+                                    send-count 10
+                                    send-size 100]
+                                (stream/on-data ws (fn [data]
+                                                     (buf/append! rcv-buf! data)
+                                                     (when (= (.length rcv-buf!) (* send-count send-size))
+                                                       (t/test-complete
+                                                        (t/assert= sent-buf! rcv-buf!))
+                                                       )))
+                                (dotimes [_ send-count]
+                                  (let [data (t/random-buffer send-size)]
+                                    (buf/append! sent-buf! data)
+                                    (ws/write-binary-frame ws data))))))))]
     (let [server (http/server)
           port 8080
           host "localhost"]
       (-> server
-          (http/on-websocket ws-handler)
+          (ws/on-websocket ws-handler)
           (http/listen port host
                        (partial server-listen-handler server port host))))))
 

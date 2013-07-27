@@ -55,13 +55,16 @@
 
 (defn as-handler
   "Wraps the given single-arity f in a org.vertx.java.core.Handler.
-  Returns f unmodified if it is nil or already a Handler."
-  [f]
-  (if (or (nil? f) (handler? f))
-    f
-    (reify Handler
-      (handle [_# event#]
-        (f event#)))))
+  Returns f unmodified if it is nil or already a Handler. If provided,
+  result-fn will be applied to the event before passing it to f."
+  ([f]
+     (as-handler f identity))
+  ([f result-fn]
+      (if (or (nil? f) (handler? f))
+        f
+        (reify Handler
+          (handle [_# event#]
+            (f (result-fn event#)))))))
 
 (defmacro handler
   "Wraps the given bindings and body in a org.vertx.java.core.Handler.

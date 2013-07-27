@@ -122,18 +122,25 @@
   ([buf start end encoding]
      (.getString buf start end encoding)))
 
-;;TODO: doc parsing fns
-(defn fixed-parser [size handler] 
+(defn fixed-parser
+  "TODO: docs"
+  [size handler] 
   (RecordParser/newFixed size (core/as-handler handler)))
 
-(defn delimited-parser [delim handler]
+(defn delimited-parser
+  "TODO: docs"
+  [delim handler]
   (RecordParser/newDelimited (.getBytes delim)
                              (core/as-handler handler)))
 
-(defn parse-buffer [parser in]
+(defn parse-buffer
+  "TODO: docs"
+  [parser in]
   (.handle parser in))
 
-(defn parse-fixed [buff size handler]
+(defn parse-fixed
+  "TODO: docs"
+  [buff size handler]
   (-> (fixed-parser size handler) (parse-buffer buff)))
 
 (defn parse-delimited

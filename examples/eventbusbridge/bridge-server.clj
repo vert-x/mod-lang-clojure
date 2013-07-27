@@ -26,7 +26,7 @@
                  (http/on-request req-handler))]
   ;;Create a SockJS bridge which lets everything through (be careful!)
   (-> (sockjs/sockjs-server server)
-      (sockjs/set-hook
+      (sockjs/set-hooks
        :closed (fn [sock] (println "handleSocketClosed, sock = " sock))
 
        :send (fn [sock msg address] (println "handleSend, sock = " sock

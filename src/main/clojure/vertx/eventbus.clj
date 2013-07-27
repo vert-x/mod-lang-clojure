@@ -31,7 +31,9 @@
   []
   (or *event-bus* (.eventBus (core/get-vertx))))
 
-(def ^:dynamic *current-message* nil)
+(def ^:dynamic *current-message*
+  "TODO: docs"
+  nil)
 
 (defn ^:private message-handler [handler]
   (if (core/handler? handler)
@@ -42,6 +44,7 @@
          (handler (decode (.body m))))))))
 
 (defn send
+  "TODO: docs"
   ([addr content]
      (send addr content nil))
   ([addr content handler]
@@ -51,10 +54,12 @@
             (message-handler handler))))
 
 (defn publish
+  "TODO: docs"
   [addr content]
   (.publish (get-event-bus) addr (encode content)))
 
 (defn reply*
+  "TODO: docs"
   ([m]
      (.reply m))
   ([m content]
@@ -63,6 +68,7 @@
      (.reply m (encode content)) (core/as-handler handler)))
 
 (defn reply
+  "TODO: docs"
   ([content]
      (reply* *current-message* content))
   ([content handler]
@@ -90,6 +96,7 @@
        id)))
 
 (defn unregister-handler
+  "TODO: docs"
   ([id]
      (unregister-handler id nil))
   ([id result-handler]

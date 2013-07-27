@@ -13,13 +13,15 @@
 ;; limitations under the License.
 
 (ns vertx.http
-  (:import [org.vertx.java.core.http WebSocketVersion]
-           [org.vertx.java.core.impl CaseInsensitiveMultiMap])
-  (:require [vertx.core :as core]
+  "TODO: docs"
+  (:refer-clojure :exclude [get])
+  (:require [clojure.string :as string]
+            [vertx.buffer :as buf]
             [vertx.common :as common]
+            [vertx.core :as core]
             [vertx.net :as net]
-            [clojure.string :as string]
-            [vertx.utils :as u]))
+            [vertx.utils :as u])
+  (:import [org.vertx.java.core.impl CaseInsensitiveMultiMap]))
 
 (defn- parse-multi-map
   "Converts a vertx MultiMap into a clojure map, converting keys to keywords and Arrays into vectors."
@@ -33,7 +35,7 @@
                     (first vals)
                     (into [] vals))))})))
 
-(defn- encode-headers
+(defn ^:internal ^:no-doc encode-headers
   "Encode a clojure map of headers to a vertx MultiMap"
   [header]
   (let [multi-map (CaseInsensitiveMultiMap.)]
@@ -78,13 +80,6 @@
   [server handler]
   (.requestHandler server (core/as-handler handler)))
 
-(defn on-websocket
-  "Set the websocket handler for the server to wsHandler.
-   If a websocket connect handshake is successful a
-   new ServerWebSocket instance will be created and passed to the handler."
-  [server handler]
-  (.websocketHandler server (core/as-handler handler)))
-
 ;;public
 (defn close
   "Close the server. Any open HTTP connections will be closed."
@@ -100,8 +95,8 @@
   (let [str-vec (string/split (.name (.version req)) #"_")]
     (str (first str-vec) "/" (second str-vec) "." (last str-vec))))
 
-(defn method
-  "Return method of HTTP in keywoed e.g GET -> :GET"
+(defn request-method
+  "Return method of HTTP in keyword e.g GET -> :GET"
   [req] (keyword (.method req)))
 
 (defn uri [req] (.uri req))
@@ -157,88 +152,84 @@
    Don't use this if your request body is large - you could potentially run out of RAM."
   [http handler] (.bodyHandler http (core/as-handler handler)))
 
-(defn on-upload
-  "Set the upload handler. The handler will get notified once a
-   new file upload was received and so allow to
-   get notified by the upload in progress."
-  [req handler]
-  (.uploadHandler req (core/as-handler handler)))
-
-
-;;netSocket? do we need this method?
-
-(defn put-header
-  "name of header is keyword"
-  [http key value] (.putHeader http (name key) value))
-
-(defn put-trailer
-  [http key value] (.putTrailer http (name key) value))
-
-(defn write
-  ([http content]
-     (common/internal-write http content))
-  ([http content enc]
-     (common/internal-write http content enc)))
-
-(defn send-file
-  ([resp filename]
-     (.sendFile resp filename))
-  ([resp filename not-found]
-     (.sendFile resp filename not-found)))
-
-(defn end
-  ([http]
-     (.end http))
-  ([http content]
-     (.end http content))
-  ([http content enc]
-     (.end http content enc)))
-
-
-
-;;HttpServerFileUpload
-
 (defn upload-file-info
-  "Return information that have uploaded the file in map
-   :filename :name :content-type :encoding :size :charset
-  "
+  "Takes an HttpServerFileUpload object, and returns a map of properties about that object.
+
+   The properties are:
+   * :filename     - the name of the file
+   * :name         - the name of the upload attribute
+   * :content-type - the content-type specified in the upload
+   * :encoding     - the content transfer encoding
+   * :size         - the size of the file in bytes
+   * :charset      - the Charset as a String
+   * :stream       - the original file object, which is also a ReadStream
+   * :save-fn      - a single-arity fn that can be passed a path to save the file to disk"
   [file]
   {:filename (.filename file)
    :name (.name file)
    :content-type (.contentType file)
    :encoding (.contentTransferEncoding file)
    :charset (.name (.charset file))
-   :size (.size file)})
+   :size (.size file)
+   :stream file
+   :save-fn (fn [path] (.streamToFileSystem file path))})
 
-(defn save-upload
-  "Stream the content of this upload to the given filename"
-  [file path] (.streamToFileSystem file path))
+(defn on-upload
+  "Set the upload handler. The handler will get notified once a new
+   file upload was received and so allow to get notified by the upload
+   in progress. handler can either be a single-arity fn that will be
+   passed a map of properties of the uploaded file, or a Handler that
+   will be called with the raw HttpServerFileUpload object. See
+   upload-file-info for more information on the file properties."
+  [req handler]
+  (.uploadHandler req (core/as-handler handler upload-file-info)))
 
 
-;;ServerWebSocket
-(defn- ws-version
-  "convert websocket version to Enum, or vice versa
-   :RFC6455->RFC6455 :HYBI-00->HYBI_00 :HYBI-08->HYBI_08"
-  [version] (if (keyword? version)
-              (condp = version
-                :RFC6455 WebSocketVersion/RFC6455
-                :HYBI-00 WebSocketVersion/HYBI_00
-                :HYBI-08 WebSocketVersion/HYBI_08)
-              (condp = version
-                WebSocketVersion/RFC6455 :RFC6455
-                WebSocketVersion/HYBI_00 :HYBI-00
-                WebSocketVersion/HYBI_08 :HYBI-08)))
+(defn add-header
+  "Sets an HTTP header on a request or response object.
+   Key can be a string, keyword, or symbol. The latter two will be
+   converted to a string via name."
+  [req-or-resp key value]
+  (.putHeader req-or-resp (name key) value))
 
-(defn reject
-  "Reject the WebSocket
-   Calling this method from the websocketHandler gives you the opportunity to reject
-   the websocket, which will cause the websocket handshake to fail by returning
-   a 404 response code.
-   You might use this method, if for example you only want to accept websockets
-   with a particular path."
-  [ws]
-  (.reject ws))
+(defn add-headers
+  "Sets a HTTP headers on a request or response object.
+   Keys can be strings, keywords, or symbols. The latter two will be
+   converted to strings via name."
+  [req-or-resp headers]
+  (doseq [[k v] headers]
+    (add-header req-or-resp k v)))
 
+(defn add-trailer
+  "Sets an HTTP trailer on a request or response object.
+   Key can be a string, keyword, or symbol. The latter two will be
+   converted to a string via name."
+  [req-or-resp key value]
+  (.putTrailer req-or-resp (name key) value))
+
+(defn add-trailers
+  "Sets a HTTP trailers on a request or response object.
+   Keys can be strings, keywords, or symbols. The latter two will be
+   converted to strings via name."
+  [req-or-resp trailers]
+  (doseq [[k v] trailers]
+    (add-trailer req-or-resp k v)))
+
+(defn send-file
+  "TODO: docs"
+  ([resp filename]
+     (.sendFile resp filename))
+  ([resp filename not-found]
+     (.sendFile resp filename not-found)))
+
+(defn end
+  "TODO: docs"
+  ([http]
+     (.end http))
+  ([http content]
+     (.end http (buf/as-buffer content)))
+  ([http content enc]
+     (.end http content enc)))
 
 ;;HttpClient
 
@@ -254,24 +245,6 @@
   ([properties]
      (u/set-properties (.createHttpClient (core/get-vertx)) properties)))
 
-(defn connect-ws
-  ([http-client uri h]
-     (connect-ws http-client uri nil nil h))
-  ([http-client uri version h]
-     (connect-ws http-client uri version nil h))
-  ([http-client uri version header h]
-     (.connectWebsocket http-client uri (ws-version version)
-                        (encode-headers header) (core/as-handler h))))
-
-(defn write-binary-frame
-  "write data to websocket as a binary frame"
-  [ws data]
-  (.writeBinaryFrame ws data))
-
-(defn write-text-frame
-  "write data to websocket as a text frame"
-  [ws data]
-  (.writeTextFrame ws data))
 
 (defn request
   "The specific HTTP method (e.g. GET, POST, PUT etc),
@@ -283,13 +256,33 @@
             (core/as-handler resp-h)))
 
 (defn get-now
+  "TODO: docs"
   ([http-client uri resp-h]
      (get-now http-client uri nil resp-h))
-  ([http-client uri header resp-h]
+  ([http-client uri headers resp-h]
      (.getNow http-client uri
-              (encode-headers header)
+              (encode-headers headers)
               (core/as-handler resp-h))))
 
+(defmacro ^:private def-request-fn [name]
+  (let [doc (format "Makes a %s request to uri.
+   handler is a single-arity fn that will be called with the HTTP
+   response object. Returns the request object."
+                    (string/upper-case name))
+        method (symbol (str "." name))]
+    `(defn ~name ~doc
+       [~'client ~'uri ~'handler]
+       (~method ~'client ~'uri (core/as-handler ~'handler)))))
+
+(def-request-fn get)
+(def-request-fn put)
+(def-request-fn post)
+(def-request-fn delete)
+(def-request-fn head)
+(def-request-fn options)
+(def-request-fn connect)
+(def-request-fn trace)
+(def-request-fn patch)
 
 ;;HttpClientRequest
 

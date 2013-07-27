@@ -18,14 +18,14 @@
 
 (let [router (rm/matcher)]
   (doto router
-    (rm/match :GET "/details/:user/:id"
+    (rm/get "/details/:user/:id"
            (fn [req]
              (let [params (http/params req)
                    resp (http/server-response req)]
                (http/end resp (str "User: " (:user params) "ID: " (:id params))))))
 
     ;;Catch all - serve the index page
-    (rm/match :ALL #".*"
+    (rm/all #".*"
            (fn [req]
              (http/send-file (http/server-response req) "route_match/index.html"))))
 

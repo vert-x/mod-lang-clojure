@@ -74,14 +74,6 @@
   [socket handler]
   (.closeHandler socket (core/as-void-handler handler)))
 
-(defn write
-  "Write data to the socket.
-   data can anything Bufferable (see vertx.buffer/buffer)."
-  ([socket data]
-     (common/internal-write socket data))
-  ([socket data-str enc]
-     (common/internal-write socket data-str enc)))
-
 (defn connect
   "Attempts to open a connection to a server.
    If host is not provided, it defaults to \"localhost\". If no client
@@ -99,3 +91,10 @@
      (.connect client port
                (or host "localhost")
                (core/as-async-result-handler handler))))
+
+(defn close
+  "Close the server. Any open connections will be closed."
+  ([server]
+     (close server nil))
+  ([server handler]
+     (common/internal-close server handler)))
