@@ -109,4 +109,3 @@
        (throw (IllegalArgumentException.
                (format "No handler with id %s found." id))))
      nil))
-

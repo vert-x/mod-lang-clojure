@@ -10,19 +10,16 @@
 ;; distributed under the License is distributed on an "AS IS" BASIS,
 ;; WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 ;; See the License for the specific language governing permissions and
-;; limitations under the License.
 
-(ns example.sender
-  (:require [vertx.core :as vertx]
-            [vertx.eventbus :as eb]))
+(ns example.sendfile.send-file
+  (:require [vertx.http :as http]))
 
-(def address "example.address")
-(def msg-count (atom 0))
-
-(vertx/periodic
- 1000
- (let [msg (str "some-message-" (swap! msg-count inc))]
-   (eb/send address msg
-            (fn [reply]
-              (println "received:" (eb/body reply))))
-   (println "sent message" msg)))
+(-> (http/server)
+    (http/on-request
+     (fn [req]
+       (let [root-path "sendfile/"
+             resp (http/server-response req)]
+         (if (= "/" (http/path req))
+           (http/send-file resp (str root-path "index.html"))
+           (http/send-file resp (str root-path (http/path req)))))))
+    (http/listen 8080 "localhost" (println "Starting Http server on localhost:8080")))

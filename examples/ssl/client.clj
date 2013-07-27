@@ -12,17 +12,23 @@
 ;; See the License for the specific language governing permissions and
 ;; limitations under the License.
 
-(ns example.sender
+(ns example.ssl.client
   (:require [vertx.core :as vertx]
-            [vertx.eventbus :as eb]))
+            [vertx.net :as net]
+            [vertx.stream :as stream]
+            [vertx.buffer :as buf]))
 
-(def address "example.address")
-(def msg-count (atom 0))
+(defn send-data [socket]
+  (stream/on-data socket #(println "echo client received:" %))
+  (doseq [i (range 10)]
+    (let [s (format "hello %s\n" i)]
+      (println "echo client sending:" s)
+      (net/write socket s))))
 
-(vertx/periodic
- 1000
- (let [msg (str "some-message-" (swap! msg-count inc))]
-   (eb/send address msg
-            (fn [reply]
-              (println "received:" (eb/body reply))))
-   (println "sent message" msg)))
+(println "Connecting to localhost:1234")
+(-> (net/client {:SSL true :trust-all true})
+    (net/connect 1234 "localhost"
+                 (fn [err socket]
+                   (if err
+                     (throw err)
+                     (send-data socket)))))
