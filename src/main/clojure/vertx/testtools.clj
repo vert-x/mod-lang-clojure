@@ -18,7 +18,7 @@
             [vertx.utils :as utils]
             [vertx.buffer :as buf]
             [clojure.java.io :as io])
-  (:import [org.vertx.testtools VertxAssert]))
+  (:import org.vertx.testtools.VertxAssert))
 
 (defn start-tests
   ([]
