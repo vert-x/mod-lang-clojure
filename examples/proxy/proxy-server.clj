@@ -18,33 +18,41 @@
             [vertx.buffer :as buf]))
 
 (defn client-respense-handler [server-req client-resp]
-  (println "Proxying response: " (http/status-code client-resp))
-  (let [server-resp (http/server-response server-req
-                                          {:status-code (http/status-code client-resp)
-                                           :chunked true})]
-    (.set (.headers server-req) (.headers client-resp))
-    (stream/on-data client-resp #((println "Proxying response body:" %)
-                      (http/write (http/server-response server-req) %)))
-    (stream/on-end client-resp #(http/end server-resp))))
+  (println "Proxying response:" (.statusCode client-resp))
+  (let [server-resp
+        (-> server-req
+            (http/server-response
+             {:status-code (.statusCode client-resp)
+              :chunked true})
+            (http/add-headers (http/headers client-resp)))]
+    (-> client-resp
+        (stream/on-data
+         (fn [buf!]
+           (println "Proxying response body:" buf!)
+           (stream/write server-resp buf!)))
+        (stream/on-end
+         #(http/end server-resp)))))
 
 (defn req-handler [client req]
-  (println "Proxying request: " (http/uri req))
-  (let [client-req (http/request client
-                                 (http/method req)
-                                 (http/uri req)
-                                 (partial client-respense-handler req))]
-    (.set (.headers client-req) (.headers req))
-    (http/request-prop client-req {:chunked true})
-    (stream/on-data req #((println "Proxying request body:" %)
-                          (http/write client-req %)))
+  (println "Proxying request:" (.uri req))
+  (let [client-req
+        (-> (http/request client
+                          (.method req)
+                          (.uri req)
+                          (partial client-respense-handler req))
+            (http/add-headers (http/headers req))
+            (.setChunked true))]
+    (-> req
+        (stream/on-data
+         (fn [buf!]
+           (println "Proxying request body:" buf!)
+           (stream/write client-req buf!)))
+        (stream/on-end
+         (fn []
+           (println "end of the request")
+           (http/end client-req))))))
 
-    (stream/on-end req #((println "end of the request")
-                         (http/end client-req)))))
-
-
-(let [client (http/client {:port 8282 :host "localhost"})
-      server (http/server)]
-
-  (doto server
-    (http/on-request (partial req-handler client))
-    (http/listen 8080 "localhost")))
+(-> (http/server)
+    (http/on-request
+     (partial req-handler (http/client {:port 8282 :host "localhost"})))
+    (http/listen 8080 "localhost"))

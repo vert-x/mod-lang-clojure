@@ -13,17 +13,15 @@
 ;; limitations under the License.
 
 (ns example.ssl.client
-  (:require [vertx.core :as vertx]
-            [vertx.net :as net]
-            [vertx.stream :as stream]
-            [vertx.buffer :as buf]))
+  (:require [vertx.net :as net]
+            [vertx.stream :as stream]))
 
 (defn send-data [socket]
   (stream/on-data socket #(println "echo client received:" %))
   (doseq [i (range 10)]
     (let [s (format "hello %s\n" i)]
       (println "echo client sending:" s)
-      (net/write socket s))))
+      (stream/write socket s))))
 
 (println "Connecting to localhost:1234")
 (-> (net/client {:SSL true :trust-all true})

@@ -16,5 +16,6 @@
   (:require [vertx.core :as vertx]
             [vertx.eventbus :as eb]))
 
-(vertx/periodic 1000 (eb/publish "news-feed" "some news")
+(vertx/periodic 1000
+                (eb/publish "news-feed" "some news")
                 (println "published message some news"))

@@ -16,14 +16,15 @@
   (:require [vertx.http :as http]))
 
 (defn req-handler [req]
-  (println "Got request: " (http/uri req))
-  (println "Headers are: ")
-  (doseq [[k v] (http/headers req)] (println k ":" v))
-  (let [resp (http/server-response req)]
-    (doto resp
-      (http/put-header "Content-Type" "text/html; charset=UTF-8")
-      (http/end "<html><body><h1>Hello from vert.x! in SSL</h1></body></html>"))))
+  (println "Got request:" (.uri req))
+  (println "Headers are:" (pr-str (http/headers req)))
+  (-> (http/server-response req)
+      (http/add-header "Content-Type" "text/html; charset=UTF-8")
+      (http/end "<html><body><h1>Hello from vert.x! in SSL</h1></body></html>")))
 
 (-> (http/server {:SSL true :key-store-path "server-keystore.jks" :key-store-password "wibble"})
     (http/on-request req-handler)
-    (http/listen 4443 "localhost" (println "Starting echo server on localhost:4443")))
+    (http/listen 4443 "localhost"))
+
+(println "Starting Https server on localhost:4443")
+

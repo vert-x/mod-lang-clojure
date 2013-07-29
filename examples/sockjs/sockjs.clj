@@ -19,14 +19,14 @@
             [vertx.http.sockjs :as sockjs]))
 
 (defn req-handler [req]
-  (when (= "/" (http/path req))
+  (when (= "/" (.path req))
     (http/send-file (http/server-response req) "sockjs/index.html")))
 
 (let [server (-> (http/server)
                  (http/on-request req-handler))]
   (-> (sockjs/sockjs-server server)
       (sockjs/install-app {:prefix "/testapp"}
-                          (fn [sock]
-                            (stream/on-data sock (fn [data]
-                                              (net/write sock data))))))
-  (http/listen server 8080 "localhost" (println "Starting Http server on localhost:8080")))
+                          #(stream/on-data % (partial stream/write %))))
+  (http/listen server 8080 "localhost"))
+
+(println "Starting Http server on localhost:8080")

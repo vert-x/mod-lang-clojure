@@ -17,28 +17,25 @@
             [vertx.stream :as stream]
             [vertx.utils :as u]
             [vertx.filesystem.sync :as fss]
-            [vertx.filesystem :as fs])
-  (:import [java.nio.file Files]
-           [java.nio.file Paths]))
+            [vertx.filesystem :as fs]))
 
 (let [filename "upload/upload.txt"
       client (http/client {:port 8080 :host "localhost"})
-      req (http/request client :PUT "/some-url"
-                        (fn [resp] (println "File uploaded " (http/status-code resp))))]
+      req (http/put client "/some-url"
+                    #(println "File uploaded" (.statusCode %)))]
 
   ;; For a chunked upload you don't need to specify size
-  ;; just do set req to chunked true
-  (http/put-header req "Content-Length" (str (:size (fss/properties filename))))
+  ;; just set req to chunked true
+  (http/add-header req "Content-Length" (:size (fss/properties filename)))
 
-  (fs/open filename (fn [err file]
-                      (let [pump (stream/pump file req)]
-                        (.start pump)
-                        (stream/on-end file
-                                       #(fs/close file
-                                                  (fn [err]
-                                                    (if (nil? err)
-                                                      (do
-                                                        (http/end req)
-                                                        (println "Sent request"))
-                                                      (.printStackTrace (.cause err)))))))))
-  )
+  (fs/open filename
+           (fn [err file]
+             (stream/pump file req)
+             (stream/on-end file
+                            (fn []
+                              (fs/close file
+                                        (fn [err]
+                                          (if err
+                                            (throw err)
+                                            (println "Sent request"))))
+                              (http/end req))))))

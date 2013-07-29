@@ -12,10 +12,9 @@
 ;; See the License for the specific language governing permissions and
 ;; limitations under the License.
 
-(ns example.eventbus-pubsub.receivers
+(ns example.eventbus-pubsub.receiver
   (:require [vertx.core :as vertx]
             [vertx.eventbus :as eb]))
 
 (eb/register-handler "news-feed"
-                     (fn [msg]
-                       (println "receive news " (eb/body msg))))
+                     #(println "received:" %))

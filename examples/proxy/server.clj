@@ -18,13 +18,13 @@
             [vertx.stream :as stream]))
 
 (defn req-handler [req]
-  (println "Got request: " (http/uri req))
-  (println "Headers are: ")
-  (doseq [[k v] (http/headers req)] (println k ":" v))
+  (println "Got request:" (.uri req))
+  (println "Headers are:" (pr-str (http/headers req)))
   (stream/on-data req #(println "Got data" %))
   (stream/on-end req #(let [resp (http/server-response req {:chunked true})]
-                    (dotimes [n 10] (http/write resp (str "server-data-chunk-" n)))
-                    (http/end resp))))
+                        (dotimes [n 10]
+                          (stream/write resp (str "server-data-chunk-" n)))
+                        (http/end resp))))
 
 (-> (http/server)
     (http/on-request req-handler)

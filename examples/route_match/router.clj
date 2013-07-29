@@ -16,19 +16,19 @@
   (:require [vertx.http :as http]
             [vertx.http.route :as rm]))
 
-(let [router (rm/matcher)]
-  (doto router
-    (rm/get "/details/:user/:id"
-           (fn [req]
-             (let [params (http/params req)
-                   resp (http/server-response req)]
-               (http/end resp (str "User: " (:user params) "ID: " (:id params))))))
+(-> (http/server)
+    (http/on-request
+     (-> (rm/get "/details/:user/:id"
+                 #(let [params (http/params %)]
+                    (http/end (http/server-response %)
+                              (str "User: " (:user params)
+                                   " ID: " (:id params)))))
+         
+         ;;Catch all - serve the index page
+         (rm/all #".*"
+                 #(http/send-file (http/server-response %)
+                                  "route_match/index.html"))))
+    (http/listen 8080 "localhost"))
 
-    ;;Catch all - serve the index page
-    (rm/all #".*"
-           (fn [req]
-             (http/send-file (http/server-response req) "route_match/index.html"))))
+(println "Starting Http server on localhost:8080")
 
-  (-> (http/server)
-      (http/on-request router)
-      (http/listen 8080 "localhost" (println "Starting Http server on localhost:8080"))))

@@ -16,8 +16,4 @@
   (:require [vertx.http :as http]))
 
 (-> (http/client {:port 8080 :host "localhost"})
-    (http/get-now "/"
-                  (fn [resp]
-                    (http/on-body resp
-                                  (fn [buf]
-                                    (println (.toString buf)))))))
+    (http/get-now "/" #(http/on-body % println)))

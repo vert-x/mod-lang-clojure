@@ -23,7 +23,7 @@
   (doseq [i (range 10)]
     (let [s (format "hello %s\n" i)]
       (println "echo client sending:" s)
-      (net/write socket s))))
+      (stream/write socket s))))
 
 (println "Connecting to localhost:1234")
 (net/connect
