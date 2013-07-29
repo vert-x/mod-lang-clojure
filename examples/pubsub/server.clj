@@ -22,27 +22,33 @@
 
 
 (defn connect-handler [sock]
-  (let [parser
-        (buf/parse-delimited
-         "/n" (fn [line]
-                (let [line-vec (string/split line #",")]
-                  (condp = (first line-vec)
-                      "subscribe" #(let [topic-name (second line-vec)]
-                                     (println (str "subscribing to " topic-name))
-                                     (shared/add! (shared/get-set topic-name) (.writeHandlerID sock)))
+  (stream/on-data
+   sock
+   (fn [buf!]
+     (buf/parse-delimited
+      buf! "\n"
+      (fn [line]
+        (let [[cmd topic msg] (-> line str string/trim (string/split #","))
+              topic-set! (and topic (shared/get-set topic))
+              sock-id (.writeHandlerID sock)]
+          (condp = cmd
+            "subscribe" (do
+                          (println "subscribing to" topic)
+                          (shared/add! topic-set! sock-id))
 
-                      "unsubscribe" #(let [topic-name (second line-vec)]
-                                       (println (str "unsubscribing from " topic-name))
-                                       (shared/remove! (shared/get-set topic-name) (.writeHandlerID sock)))
+            "unsubscribe" (do
+                            (println "unsubscribing from" topic)
+                            (shared/remove! topic-set! sock-id))
 
-                      "publish" #(let [topic-name (second line-vec)
-                                       content (last line-vec)]
-                                   (println (str "publishing to " topic-name "with " content))
-                                   (doseq [target (shared/get-set topic-name)]
-                                     (bus/send target content)))
-                      (str "unexpected value " (first line-vec))))))]
-    (stream/on-data sock parser)))
+            "publish" (do
+                        (println "publishing to" topic "with" msg)
+                        (doseq [target topic-set!]
+                          (bus/send target (buf/buffer (str msg "\n")))))
+            
+            (stream/write sock (format "unknown command: %s\n" cmd)))))))))
 
 (-> (net/server)
     (net/on-connect connect-handler)
     (net/listen 1234))
+
+(println "Starting TCP pub-sub server on localhost:1234")
