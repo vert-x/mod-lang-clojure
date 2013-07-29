@@ -1052,6 +1052,9 @@ itself. This enables you to write data to a NetSocket which is
 potentially in a completely different verticle or even in a different
 Vert.x instance by sending the buffer to the address of that handler.
 
+**Note that you must explicitly write a buffer to
+  `vertx.eventbus/send` when sending to a socket.**
+
 The address of the handler is provided by the `.writeHandlerID` Java
 method.
 
@@ -1063,7 +1066,7 @@ different verticle you could do:
     (.writeHandlerID sock)
     
     ;; in another verticle, get the ID and send a buffer
-    (eb/send write-handler-id buffer)
+    (eb/send write-handler-id (buf/buffer "some data"))
 
 
 ### Read and Write Streams
