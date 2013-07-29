@@ -27,16 +27,16 @@
             (http/end (http/server-response req) "Not Found"))
 
           (client-resp-no-match [resp]
-            (t/assert= (int 200) (http/status-code resp))
+            (t/assert= (int 200) (.statusCode resp))
             (http/on-body resp (fn [buf] (t/test-complete
                                            (t/assert= (.toString buf) "Not Found")))))
 
           (client-resp-handler-regx [client resp]
-            (t/assert= (int 200) (http/status-code resp))
+            (t/assert= (int 200) (.statusCode resp))
             (http/end (http/request client :PUT "no-such-uri" (partial client-resp-no-match))))
 
           (client-resp-handler [client resp]
-            (t/assert= (int 200) (http/status-code resp))
+            (t/assert= (int 200) (.statusCode resp))
             (http/end (http/request client :GET "/bar/v0.2" (partial client-resp-handler-regx client))))
 
           (server-listen-handler [orig-server port host matcher err server]

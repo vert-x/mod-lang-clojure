@@ -97,12 +97,6 @@
   "Return method of HTTP in keyword e.g GET -> :GET"
   [req] (keyword (.method req)))
 
-(defn uri [req] (.uri req))
-
-(defn path [http] (.path http))
-
-(defn query [http] (.query http))
-
 (defn params
   "Returns a map of all the parameters in the request of uri, suit to GET"
   [req] (parse-multi-map (.params req)))
@@ -130,10 +124,6 @@
 (defn certs
   "Return an array of the peer certificates. nil if connection is not SSL."
   [req] (.peerCertificateChain req))
-
-(defn absolute-uri
-  "Get the absolute URI corresponding to the the HTTP request"
-  [req] (.absoluteURI req))
 
 (defn server-response
   "Represents a server-side HTTP response.
@@ -299,16 +289,3 @@
   [client-req handler]
   (.continueHandler client-req (core/as-handler handler)))
 
-(defn send-head
-  " Forces the head of the request to be written before end is called on the request or
-    any data is written to it. This is normally used to implement HTTP 100-continue handling."
-  [client-req] (.sendHead client-req))
-
-;;HttpClientResponse
-
-(defn cookies
-  "return The Set-Cookie headers (including trailers)"
-  [client-resp] (.cookies client-resp))
-
-(defn status-code [resp] (.statusCode resp))
-(defn status-msg [resp] (.statusMessage resp))

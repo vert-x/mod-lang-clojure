@@ -25,22 +25,22 @@
   (.getAbsolutePath (io/file (io/resource name))))
 
 (defn assert-stauts-code [resp]
-  (t/assert= (int 200) (http/status-code resp)))
+  (t/assert= (int 200) (.statusCode resp)))
 
 (defn test-base-request []
   (letfn [(req-handler [req]
             (let [header (http/headers req)
                   addr (http/remote-address req)]
               (t/assert= :GET (http/request-method req))
-              (t/assert= "/get/now?k=v" (http/uri req))
-              (t/assert= "/get/now" (http/path req))
-              (t/assert= "k=v" (http/query req))
+              (t/assert= "/get/now?k=v" (.uri req))
+              (t/assert= "/get/now" (.path req))
+              (t/assert= "k=v" (.query req))
               (t/assert= {:k "v"} (http/params req))
               (t/assert= "dummy" (:dummy header))
               (t/assert= ["v1" "v2"] (:dummy-v header))
               (t/assert  (.startsWith (:host addr) "localhost"))
               (t/assert  (> (:port addr) -1))
-              (t/assert-not-nil (-> req http/absolute-uri)))
+              (t/assert-not-nil (.absoluteURI req)))
 
             (let [resp (http/server-response req {:status-code 200
                                                   :status-message "status-msg"
@@ -54,7 +54,7 @@
                                                  :dummy-v ["v1" "v2"]}
                           (fn [resp]
                             (assert-stauts-code resp)
-                            (t/assert= "status-msg" (http/status-msg resp))
+                            (t/assert= "status-msg" (.statusMessage resp))
                             (t/assert= "add-header" (:add-header (http/headers resp)))
                             (http/on-body
                              resp (fn [buf]
@@ -77,7 +77,7 @@
 
 (defn test-form-request []
   (letfn [(req-handler [req]
-            (t/assert (.startsWith (http/uri req) "/form"))
+            (t/assert (.startsWith (.uri req) "/form"))
             (let [resp (http/server-response req {:chunked true})]
               (stream/on-end req (fn []
                                    (let [forms (http/form-attributes req)]
@@ -115,7 +115,7 @@
 
 (defn test-upload-request []
   (letfn [(req-handler [req]
-            (t/assert (.startsWith (http/uri req) "/form"))
+            (t/assert (.startsWith (.uri req) "/form"))
             (let [resp (http/server-response req {:chunked true})]
               (http/on-upload req
                               (fn [file-info]
@@ -166,7 +166,7 @@
 (defn test-ssl-request []
   (letfn [(req-handler [req]
             (t/assert= :GET (http/request-method req))
-            (t/assert= "/get/ssl/" (http/uri req))
+            (t/assert= "/get/ssl/" (.uri req))
             (let [resp (http/server-response req)]
               (http/end resp "body-content")))
 
@@ -258,8 +258,8 @@
 
 (defn test-websocket-request []
   (letfn [(ws-handler [ws]
-            (t/assert= "/some/path" (http/path ws))
-            (t/assert= "foo=bar&wibble=eek" (http/query ws))
+            (t/assert= "/some/path" (.path ws))
+            (t/assert= "foo=bar&wibble=eek" (.query ws))
             (stream/on-data ws (fn [data]
                                  (stream/write ws data))))
 
