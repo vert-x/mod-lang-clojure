@@ -59,4 +59,4 @@
 (defn write-text-frame
   "Write data String to websocket as a text frame."
   [ws data]
-  (.writeTextFrame ws data))
+  (.writeTextFrame ws (str data)))

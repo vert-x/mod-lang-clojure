@@ -178,7 +178,7 @@
    Key can be a string, keyword, or symbol. The latter two will be
    converted to a string via name."
   [req-or-resp key value]
-  (.putHeader req-or-resp (name key) value))
+  (.putHeader req-or-resp (name key) (str value)))
 
 (defn add-headers
   "Sets a HTTP headers on a request or response object.
@@ -186,14 +186,15 @@
    converted to strings via name."
   [req-or-resp headers]
   (doseq [[k v] headers]
-    (add-header req-or-resp k v)))
+    (add-header req-or-resp k v))
+  req-or-resp)
 
 (defn add-trailer
   "Sets an HTTP trailer on a request or response object.
    Key can be a string, keyword, or symbol. The latter two will be
    converted to a string via name."
   [req-or-resp key value]
-  (.putTrailer req-or-resp (name key) value))
+  (.putTrailer req-or-resp (name key) (str value)))
 
 (defn add-trailers
   "Sets a HTTP trailers on a request or response object.
@@ -201,7 +202,8 @@
    converted to strings via name."
   [req-or-resp trailers]
   (doseq [[k v] trailers]
-    (add-trailer req-or-resp k v)))
+    (add-trailer req-or-resp k v))
+  req-or-resp)
 
 (defn send-file
   "TODO: docs"
@@ -273,13 +275,6 @@
 (def-request-fn patch)
 
 ;;HttpClientRequest
-
-;;TODO: properties documents
-(defn request-prop
-  "Setting properties for http client request."
-  [client-request prop]
-  (u/set-properties client-request prop))
-
 
 (defn on-continue
   " If you send an HTTP request with the header set to the value 100-continue
