@@ -20,7 +20,20 @@
   (:import [org.vertx.java.core.http RouteMatcher]))
 
 (defn matcher
-  "TODO: docs"
+  "This class allows you to do route requests based on the HTTP verb and the request URI, in a manner similar
+  to http://www.sinatrarb.com/ http://expressjs.com
+  RouteMatcher also lets you extract parameters from the request URI either a simple pattern or using
+  regular expressions for more complex matches. Any parameters extracted will be added to the requests parameters
+  which will be available to you in your request handler.
+  It's particularly useful when writing REST-ful web applications.
+  To use a simple pattern to extract parameters simply prefix the parameter name in the pattern with a ':' (colon).
+  Different handlers can be specified for each of the HTTP verbs, GET, POST, PUT, DELETE etc.
+  For more complex matches regular expressions can be used in the pattern. When regular expressions are used, the extracted
+  parameters do not have a name, so they are put into the HTTP request with names of param0, param1, param2 etc.
+  Multiple matches can be specified for each HTTP verb. In the case there are more than one matching patterns for
+  a particular request, the first matching one will be used.
+  Instances of this class are not thread-safe
+  @author Tim Fox"
   [] (RouteMatcher.))
 
 (defmacro ^:private def-match-fn [name]
