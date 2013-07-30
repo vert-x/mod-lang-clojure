@@ -13,7 +13,11 @@
 ;; limitations under the License.
 
 (ns vertx.http
-  "TODO: docs"
+  "Provides a broad set of functions for manipulating http. Wraps the
+   methods from org.vertx.java.core.http.HttpClient/HttpServer
+   org.vertx.java.core.http.HttpClientReuqest HttpClientResponse
+   org.vertx.java.core.http.HttpServerReuqest HttpServerResponse
+   and HttpServerFileUpload"
   (:refer-clojure :exclude [get])
   (:require [clojure.string :as string]
             [vertx.buffer :as buf]
@@ -44,7 +48,6 @@
     multi-map))
 
 
-;;TODO: document properties
 (defn server
   "Creates a HTTP or HTTPS server (HttpServer) instance from vertx.core/*vertx*."
   ([]
@@ -206,14 +209,19 @@
   req-or-resp)
 
 (defn send-file
-  "TODO: docs"
+  "Tell the kernel to stream a file as specified by {@code filename} directly
+   from disk to the outgoing connection, bypassing userspace altogether
+   (where supported by the underlying operating system.
+   This is a very efficient way to serve files."
   ([resp filename]
      (.sendFile resp filename))
   ([resp filename not-found]
      (.sendFile resp filename not-found)))
 
 (defn end
-  "TODO: docs"
+  "Ends the response. If no data has been written to the response body,
+   the actual response won't get written until this method gets called.
+   Once the response has ended, it cannot be used any more."
   ([http]
      (.end http))
   ([http content]
@@ -225,7 +233,6 @@
 
 ;;exception handler could use it with stream/on-exception
 
-;;TODO: document properties
 (defn client
   "Creates a HTTP or HTTPS client (HttpClient) instance.
    If vertx is not provided, it defaults to the default
@@ -246,7 +253,11 @@
             (core/as-handler resp-h)))
 
 (defn get-now
-  "TODO: docs"
+  "This is a quick version of the #get(String, org.vertx.java.core.Handler)
+   method where you do not want to do anything with the request before sending.
+   Normally with any of the HTTP methods you create the request then when you are ready to send it you call
+   ```end``` on it. With this method the request is immediately sent.
+   When an HTTP response is received from the server the responseHandler is called passing in the response."
   ([http-client uri resp-h]
      (get-now http-client uri nil resp-h))
   ([http-client uri headers resp-h]
@@ -283,4 +294,3 @@
     You can then continue to write data to the request body and later end it. "
   [client-req handler]
   (.continueHandler client-req (core/as-handler handler)))
-
