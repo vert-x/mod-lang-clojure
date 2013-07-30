@@ -18,7 +18,7 @@
             [vertx.http.sockjs :as sockjs]))
 
 (defn req-handler [req]
-  (condp = (http/uri req)
+  (condp = (.uri req)
       "/" (http/send-file (http/server-response req) "eventbusbridge/index.html")
       "/vertxbus.js" (http/send-file (http/server-response req) "eventbusbridge/vertxbus.js")))
 
@@ -45,7 +45,7 @@
        :unregister (fn [sock address]
                      (println "handleUnregister,sock = "sock", address = "address) true))
 
-      (sockjs/bridge {:prefix "/eventbus"} [] []))
+      (sockjs/bridge {:prefix "/eventbus"} [{}] [{}]))
 
   (http/listen server 8080 "localhost"
                (println "Starting Http server on localhost:8080")))

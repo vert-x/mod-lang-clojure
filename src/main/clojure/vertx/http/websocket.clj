@@ -13,7 +13,8 @@
 ;; limitations under the License.
 
 (ns vertx.http.websocket
-  "TODO: docs"
+  "Porvides a set of functions for manipulating http websocket.
+   all functions is basedon http-server and http-client"
   (:require [vertx.buffer :as buf]
             [vertx.core :as core]
             [vertx.http :as http])
@@ -41,7 +42,10 @@
                 WebSocketVersion/HYBI_08 :HYBI-08)))
 
 (defn connect
-  "TODO: docs"
+  "Attempt to connect an HTML5 websocket to the specified URI
+   This version of the method allows you to specify the websockets version using the  ws-version
+   You can also specify a set of headers to append to the upgrade request
+   The connect is done asynchronously and wsConnect is called back with the websocket"
   ([http-client uri h]
      (connect http-client uri nil nil h))
   ([http-client uri version h]
