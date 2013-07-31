@@ -2633,9 +2633,7 @@ This enables vert.x to be used for modern, so-called *real-time* (this is the *m
 
 To create a SockJS server you simply create a HTTP server as normal and pass it in to the constructor of the SockJS server.
 
-    httpServer = Vertx::HttpServer.new
-
-    sockJSServer = Vertx::SockJSServer.new(httpServer)
+    (-> (http/server) (sockjs/sockjs-server))
 
 Each SockJS server can host multiple *applications*.
 
@@ -2643,19 +2641,11 @@ Each application is defined by some configuration, and provides a handler which 
 
 For example, to create a SockJS echo application:
 
-    httpServer = Vertx::HttpServer.new
-
-    sockJSServer = Vertx::SockJSServer.new(httpServer)
-
-    config = { 'prefix' => '/echo' }
-
-    sockJSServer.install_app(config) do |sock|
-
-        Vertx::Pump.new(sock, sock).start
-
-    end
-
-    httpServer.listen(8080)
+    (let [server (http/server)]
+       (-> (sockjs/sockjs-server server)
+       (sockjs/install-app {:prefix "/echo"}
+                          #(stream/on-data % (partial stream/write %))))
+       (http/listen server 8080 "localhost"))
 
 The configuration can take the following fields:
 
@@ -2670,20 +2660,11 @@ The configuration can take the following fields:
 
 The object passed into the SockJS handler implements `ReadStream` and `WriteStream` much like `NetSocket` or `WebSocket`. You can therefore use the standard API for reading and writing to the SockJS socket or using it in pumps. See the chapter on Streams and Pumps for more information.
 
-    httpServer = Vertx::HttpServer.new
-
-    sockJSServer = Vertx::SockJSServer.new(httpServer)
-
-    config = { 'prefix' => '/echo' }
-
-    sockJSServer.install_app(config) do |sock|
-
-        sock.data_handler do |buffer|
-            sock.write(buffer)
-        end
-    end
-
-    httpServer.listen(8080)
+    (let [server (http/server)]
+       (-> (sockjs/sockjs-server server)
+       (sockjs/install-app {:prefix "/echo"}
+                          #(stream/on-data % (partial stream/write %))))
+       (http/listen server 8080 "localhost"))
 
 ## SockJS client
 
@@ -2727,13 +2708,10 @@ You will also need to secure the bridge (see below).
 
 The following example creates and starts a SockJS bridge which will bridge any events sent to the path `eventbus` on to the server side event bus.
 
-    server = Vertx::HttpServer.new
-    
-    sockJSServer = Vertx::SockJSServer.new(server)
-
-    sockJSServer.bridge({'prefix' => '/eventbus'}, [], [])
-
-    server.listen(8080)
+    (let [http-server (http/server)
+          sockjs-server (sockjs/sockjs-server http-server)]
+          (sockjs/bridge sockjs-server {:prefix "/eventbus"} [{}] [{}]) 
+          (http/listen http-server 8080 "localhost"))
 
 ## Using the Event Bus from client side JavaScript
 
@@ -2809,50 +2787,31 @@ When a message arrives at the bridge, it will look through the available permitt
 
 Here is an example:
 
-    server = Vertx::HttpServer.new
-    
-    sockJSServer = Vertx::SockJSServer.new(server)
-
-    sockJSServer.bridge({'prefix' => '/eventbus'},
-      [
-        # Let through any messages sent to 'demo.orderMgr'
-        {
-          'address' => 'demo.orderMgr'
-        },
-        # Allow calls to the address 'demo.persistor' as long as the messages
-        # have an action field with value 'find' and a collection field with value
-        # 'albums'
-        {
-          'address' => 'demo.persistor',
-          'match' => {
-            'action' => 'find',
-            'collection' => 'albums'
-          }
-        },
-        # Allow through any message with a field `wibble` with value `foo`.
-        {
-          'match' => {
-            'wibble' => 'foo'
-          }
-        }
-      ],
-      [
-        # Let through any messages coming from address 'ticker.mystock'
-        {
-          'address' => 'ticker.mystock'
-        },
-        # Let through any messages from addresses starting with "news." (e.g. news.europe, news.usa, etc)
-        {
-          'address_re' => 'news\\..+'
-        }
-      ])
-
-
-    server.listen(8080)
+    (let [http-server (http/server)
+          sockjs-server (sockjs/sockjs-server http-server)
+          auth-sent [
+                     ;;Let through any messages sent to 'demo.orderMgr'
+                     {:address "demo.orderMgr"}
+                     
+                     ;; Allow calls to the address 'demo.persistor' as long as the messages
+                     ;; have an action field with value 'find' and a collection field with value
+                     ;; 'albums'
+                     {:address "demo.persistor" :match {:action "find" :collection "albums"}}
+                     
+                     ;; Allow through any message with a field `wibble` with value `foo`.
+                     {:match {:wibble "foo"}}]
+          auth-come [
+                     ;; Let through any messages coming from address 'ticker.mystock'
+                     {:address "ticker.mystock"}
+                     
+                     ;;Let through any messages from addresses starting with "news." (e.g. news.europe, news.usa, etc)
+                     {:address_re "news\\..+"}]
+        (sockjs/bridge sockjs-server {:prefix "/eventbus"} auth-sent auth-come) 
+        (http/listen http-server 8080 "localhost"))
 
 To let all messages through you can specify two arrays with a single empty JSON object which will match all messages.
 
-     sockJSServer.bridge({'prefix' => '/eventbus'}, [{}], [{}])
+     (sockjs/bridge sockjs-server {:prefix "/eventbus"} [{}] [{}]) 
 
 **Be very careful!**
 
