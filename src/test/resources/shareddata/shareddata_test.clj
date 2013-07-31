@@ -47,17 +47,24 @@
   (let [set (shared/get-set "foo")]
     (shared/add! set "a")
     (shared/add! set "b" "c")
+    (shared/add! "foo" "d")
+    (shared/add! :foo "e")
     (t/test-complete
      (t/assert (contains? set "a"))
      (t/assert (contains? set "b"))
-     (t/assert (contains? set "c")))))
+     (t/assert (contains? set "c"))
+     (t/assert (contains? set "d"))
+     (t/assert (contains? set "e")))))
 
 (defn test-set-remove []
   (let [set (shared/get-set "foo")]
-    (shared/add! set "a" "b" "c")
-    (shared/remove! set "a")
+    (shared/add! set "a" "b" "c" "d" "e")
+    (shared/remove! "foo" "a")
+    (shared/remove! :foo "d" "e")
     (t/test-complete
      (t/assert (not (contains? set "a")))
+     (t/assert (not (contains? set "d")))
+     (t/assert (not (contains? set "e")))
      (t/assert (contains? set "b"))
      (t/assert (contains? set "c"))
      (shared/remove! set "b" "c")
@@ -66,8 +73,8 @@
 
 (defn test-map-put []
   (let [m (shared/get-map "foo")]
-    (shared/put! m "a" "b")
-    (shared/put! m "c" "d" "e" "f")
+    (shared/put! "foo" "a" "b")
+    (shared/put! :foo "c" "d" "e" "f")
     (t/test-complete
      (t/assert= "b" (get m "a"))
      (t/assert= "d" (get m "c"))
