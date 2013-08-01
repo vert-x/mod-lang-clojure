@@ -82,6 +82,21 @@
      (t/assert= "f" (get m "e"))
      (t/assert= "h" (get m "g")))))
 
+(defn test-map-remove []
+  (let [map (shared/get-map "map-remove")]
+    (shared/put! map "a" "a" "b" "b" "c" "c" "d" "d" "e" "e")
+    (shared/remove! "map-remove" "a")
+    (shared/remove! :map-remove "d" "e")
+    (t/test-complete
+     (t/assert (not (get map "a")))
+     (t/assert (not (get map "d")))
+     (t/assert (not (get map "e")))
+     (t/assert= "b" (get map "b"))
+     (t/assert= "c" (get map "c"))
+     (shared/remove! map "b" "c")
+     (t/assert (not (get map "b")))
+     (t/assert (not (get map "c"))))))
+
 (defn test-map-put-invalid-args []
   (try
     (shared/put! (shared/get-map "blah") :a)
@@ -89,11 +104,11 @@
       (t/test-complete))))
 
 (defn test-string-ambiguous []
-  (let [m (shared/get-map "same")
-        s (shared/get-set "same")]
-    (try
-      (shared/clear! "same")
-      (catch IllegalArgumentException _
-        (t/test-complete)))))
+  (shared/put! "same" "somekey" "somevalue")
+  (shared/add! "same" "somevalue")
+  (try
+    (shared/clear! "same")
+    (catch IllegalArgumentException _
+      (t/test-complete))))
 
 (t/start-tests)

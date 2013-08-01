@@ -49,31 +49,35 @@
   [name]
   (-> (get-shared-data) (.removeSet name)))
 
-(defn- resolve-collection [col]
-  (condp instance? col
-    java.util.Set col
-    org.vertx.java.core.shareddata.ConcurrentSharedMap col
-    ;;default return shared-map, if both empty.
-    java.lang.String (or (not-empty (get-map col)) (not-empty (get-set col))
-                         (throw (IllegalArgumentException. 
-                                 (str "the name of collection " col " is ambiguous."))))
-    clojure.lang.Keyword (resolve-collection (name col))
-    (throw (IllegalArgumentException. (str "unsupported type to this shraedData")))))
+(defn- resolve-collection [col get-fn]
+  (cond
+   (string? col) (get-fn col)
+   (keyword? col) (resolve-collection (name col) get-fn)
+   :default col))
+
+(defn- get-map-or-set [name]
+  (let [m (get-map name)
+        s (get-set name)]
+    (if (and (not-empty m) (not-empty s))
+      (throw (IllegalArgumentException. 
+              (str "The name of collection " name
+                   " is ambiguous - a map and set both exist with that name.")))
+      (if (not-empty m) m s))))
 
 (defn add!
   "Adds values to the SharedData set.
    This mutates the set in place, returning the set."
   [s & vals]
-  (let [s (resolve-collection s)]
+  (let [s (resolve-collection s get-set)]
     (.addAll s vals) s))
 
 (defn put!
   "Adds values to the SharedData map.
    This mutates the map in place, returning the map."
   [m & kvs]
-  (let [m (resolve-collection m)]
+  (let [m (resolve-collection m get-map)]
     (if (odd? (count kvs))
-      (throw (IllegalArgumentException. (str "No value for key " (last kvs)))))
+      (throw (IllegalArgumentException. (str "No value supplied for key: " (last kvs)))))
     (loop [[k v] (take 2 kvs)
            rest (nnext kvs)]
       (.put m k v)
@@ -85,7 +89,7 @@
   "Removes values from a SharedData set or map.
    This mutates the hash or set in place, returning the hash or set."
   [col & vals]
-  (let [col (resolve-collection col)]
+  (let [col (resolve-collection col get-map-or-set)]
     (doseq [v vals]
       (.remove col v)) col))
 
@@ -93,5 +97,5 @@
   "Clears all values from a SharedData set or map.
    This mutates the hash or set in place, returning the hash or set."
   [col]
-  (let [col (resolve-collection col)]
+  (let [col (resolve-collection col get-map-or-set)]
     (.clear col) col))
