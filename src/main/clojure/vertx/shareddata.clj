@@ -1,11 +1,11 @@
 ;; Copyright 2013 the original author or authors.
-;; 
+;;
 ;; Licensed under the Apache License, Version 2.0 (the "License");
 ;; you may not use this file except in compliance with the License.
 ;; You may obtain a copy of the License at
-;; 
+;;
 ;;      http://www.apache.org/licenses/LICENSE-2.0
-;; 
+;;
 ;; Unless required by applicable law or agreed to in writing, software
 ;; distributed under the License is distributed on an "AS IS" BASIS,
 ;; WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -49,38 +49,49 @@
   [name]
   (-> (get-shared-data) (.removeSet name)))
 
+(defn- resolve-collection [col]
+  (condp instance? col
+    java.util.Set col
+    org.vertx.java.core.shareddata.ConcurrentSharedMap col
+    ;;default return shared-map, if both empty.
+    java.lang.String (or (not-empty (get-map col)) (not-empty (get-set col))
+                         (throw (IllegalArgumentException. 
+                                 (str "the name of collection " col " is ambiguous."))))
+    clojure.lang.Keyword (resolve-collection (name col))
+    (throw (IllegalArgumentException. (str "unsupported type to this shraedData")))))
+
 (defn add!
   "Adds values to the SharedData set.
    This mutates the set in place, returning the set."
   [s & vals]
-  (.addAll s vals)
-  s)
+  (let [s (resolve-collection s)]
+    (.addAll s vals) s))
 
 (defn put!
   "Adds values to the SharedData map.
    This mutates the map in place, returning the map."
   [m & kvs]
-  (if (odd? (count kvs))
-    (throw (IllegalArgumentException. (str "No value for key " (last kvs)))))
-  (loop [[k v] (take 2 kvs)
-         rest (nnext kvs)]
-    (.put m k v)
-    (if (seq rest)
-      (recur (take 2 rest) (nnext rest))
-      m)))
+  (let [m (resolve-collection m)]
+    (if (odd? (count kvs))
+      (throw (IllegalArgumentException. (str "No value for key " (last kvs)))))
+    (loop [[k v] (take 2 kvs)
+           rest (nnext kvs)]
+      (.put m k v)
+      (if (seq rest)
+        (recur (take 2 rest) (nnext rest))
+        m))))
 
 (defn remove!
   "Removes values from a SharedData set or map.
    This mutates the hash or set in place, returning the hash or set."
   [col & vals]
-  (doseq [v vals]
-    (.remove col v))
-  col)
+  (let [col (resolve-collection col)]
+    (doseq [v vals]
+      (.remove col v)) col))
 
 (defn clear!
   "Clears all values from a SharedData set or map.
    This mutates the hash or set in place, returning the hash or set."
   [col]
-  (.clear col)
-  col)
-
+  (let [col (resolve-collection col)]
+    (.clear col) col))

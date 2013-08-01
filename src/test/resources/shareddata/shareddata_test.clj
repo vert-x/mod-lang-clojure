@@ -1,11 +1,11 @@
 ;; Copyright 2013 the original author or authors.
-;; 
+;;
 ;; Licensed under the Apache License, Version 2.0 (the "License");
 ;; you may not use this file except in compliance with the License.
 ;; You may obtain a copy of the License at
-;; 
+;;
 ;;      http://www.apache.org/licenses/LICENSE-2.0
-;; 
+;;
 ;; Unless required by applicable law or agreed to in writing, software
 ;; distributed under the License is distributed on an "AS IS" BASIS,
 ;; WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -26,7 +26,7 @@
 
      (.remove shared-map "key")
      (t/assert-nil (get (shared/get-map name) "key"))
-     
+
      (t/assert (shared/remove-map name)))))
 
 
@@ -40,24 +40,31 @@
 
      (.remove shared-set "value")
      (t/assert (not (contains? (shared/get-set name) "value")))
-     
+
      (t/assert (shared/remove-set name)))))
 
 (defn test-set-add []
   (let [set (shared/get-set "foo")]
     (shared/add! set "a")
     (shared/add! set "b" "c")
+    (shared/add! "foo" "d")
+    (shared/add! :foo "e")
     (t/test-complete
      (t/assert (contains? set "a"))
      (t/assert (contains? set "b"))
-     (t/assert (contains? set "c")))))
+     (t/assert (contains? set "c"))
+     (t/assert (contains? set "d"))
+     (t/assert (contains? set "e")))))
 
 (defn test-set-remove []
   (let [set (shared/get-set "foo")]
-    (shared/add! set "a" "b" "c")
-    (shared/remove! set "a")
+    (shared/add! set "a" "b" "c" "d" "e")
+    (shared/remove! "foo" "a")
+    (shared/remove! :foo "d" "e")
     (t/test-complete
      (t/assert (not (contains? set "a")))
+     (t/assert (not (contains? set "d")))
+     (t/assert (not (contains? set "e")))
      (t/assert (contains? set "b"))
      (t/assert (contains? set "c"))
      (shared/remove! set "b" "c")
@@ -67,11 +74,13 @@
 (defn test-map-put []
   (let [m (shared/get-map "foo")]
     (shared/put! m "a" "b")
-    (shared/put! m "c" "d" "e" "f")
+    (shared/put! "foo" "c" "d")
+    (shared/put! :foo "e" "f" "g" "h")
     (t/test-complete
      (t/assert= "b" (get m "a"))
      (t/assert= "d" (get m "c"))
-     (t/assert= "f" (get m "e")))))
+     (t/assert= "f" (get m "e"))
+     (t/assert= "h" (get m "g")))))
 
 (defn test-map-put-invalid-args []
   (try
@@ -79,5 +88,12 @@
     (catch IllegalArgumentException _
       (t/test-complete))))
 
-(t/start-tests)
+(defn test-string-ambiguous []
+  (let [m (shared/get-map "same")
+        s (shared/get-set "same")]
+    (try
+      (shared/clear! "same")
+      (catch IllegalArgumentException _
+        (t/test-complete)))))
 
+(t/start-tests)
