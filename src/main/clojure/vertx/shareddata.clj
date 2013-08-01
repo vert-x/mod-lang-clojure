@@ -66,14 +66,18 @@
 
 (defn add!
   "Adds values to the SharedData set.
-   This mutates the set in place, returning the set."
+   s can either be a set returned by get-set, or the name (as a string
+   or keyword) of a set to be looked up. This mutates the set in
+   place, returning the set."
   [s & vals]
   (let [s (resolve-collection s get-set)]
     (.addAll s vals) s))
 
 (defn put!
   "Adds values to the SharedData map.
-   This mutates the map in place, returning the map."
+   m can either be a map returned by get-map, or the name (as a string
+   or keyword) of a map to be looked up. This mutates the map in
+   place, returning the map."
   [m & kvs]
   (let [m (resolve-collection m get-map)]
     (if (odd? (count kvs))
@@ -87,7 +91,11 @@
 
 (defn remove!
   "Removes values from a SharedData set or map.
-   This mutates the hash or set in place, returning the hash or set."
+   col can either be a map/set returned by get-map/get-set, or the
+   name (as a string or keyword) of a map or set to be looked
+   up. Throws if col is a name, and a set and map both exist with that
+   name. This mutates the hash or set in place, returning the hash or
+   set."
   [col & vals]
   (let [col (resolve-collection col get-map-or-set)]
     (doseq [v vals]
@@ -95,7 +103,11 @@
 
 (defn clear!
   "Clears all values from a SharedData set or map.
-   This mutates the hash or set in place, returning the hash or set."
+   col can either be a map/set returned by get-map/get-set, or the
+   name (as a string or keyword) of a map or set to be looked
+   up. Throws if col is a name, and a set and map both exist with that
+   name. This mutates the hash or set in place, returning the hash or
+   set."
   [col]
   (let [col (resolve-collection col get-map-or-set)]
     (.clear col) col))

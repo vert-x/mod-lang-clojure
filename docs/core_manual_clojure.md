@@ -178,7 +178,7 @@ You should use `vertx.core/deploy-module` to deploy a module, for example:
 
 Would deploy an instance of the `io.vertx~mod-mailer~2.0.0-beta1`
 module with the specified configuration map. Please see the
-[modules manual]() for more information about modules.
+[modules manual](mods_manual.html) for more information about modules.
 
 ## Passing configuration to a verticle programmatically
 
@@ -567,8 +567,9 @@ To make each Vert.x instance on your network participate on the same
 event bus, start each Vert.x instance with the `-cluster` command line
 switch.
 
-See the chapter in the main manual on [*running Vert.x*]() for more
-information on this.
+See the chapter in the main manual on
+[*running Vert.x*](manual.html#running-vertx) for more information on
+this.
 
 Once you've done that, any Vert.x instances started in cluster mode
 will merge to form a distributed event bus.
@@ -576,7 +577,7 @@ will merge to form a distributed event bus.
 # Shared Data
 
 Sometimes it makes sense to allow different verticles instances to
-share data in a safe way. Vert.x allows simple *Hash* and *Set* data
+share data in a safe way. Vert.x allows simple *Map* and *Set* data
 structures to be shared between verticles. 
 
 There is a caveat: Vert.x ensures that objects are copied where
@@ -593,7 +594,7 @@ for concurrent coordination. If you have a mix of verticles from other
 languages in the same vert.x instance and need to share data, you will
 need to use the vert.x shared data mechanisms.
 
-## Shared Hashes
+## Shared Maps
 
 To use a shared map to share data between verticles first get a
 reference to the map, and then we just use map operations to put and
@@ -601,13 +602,13 @@ get the data:
 
     (require '[vertx.shareddata :as sd])
     
-    (-> (sd/get-hash "demo.myhash")
+    (-> (sd/get-map "demo.mymap")
         (sd/put! "some-key" "some-value"))
 
 And then, in a different verticle:
 
     (println "value of some-key is"
-      (-> (sd/get-hash "demo.myhash")
+      (-> (sd/get-map "demo.mymap")
           (get "some-key")))
 
 ## Shared Sets
@@ -619,7 +620,6 @@ reference to the set:
         (sd/add! "some-value"))
 
 And then, in a different verticle:
-
     
     (println "does the set contain some-value?"
       (-> (sd/get-set "demo.myset")
@@ -630,9 +630,14 @@ its maps and sets (`add!`, `put!`, `remove!`, and `clear!`). For
 retrieving values from the maps/sets, you can use the built-in clojure
 functions (`get`, `contains?`, `count`, `empty?`, etc.).
 
-Currently, no conversion is performed on keys or values placed in
-shared data. The onus is on you to make sure you are storing a type
-that will be readable in any other verticles that access it.
+As a convenience, `add!`, `put!`, `remove!`, and `clear!` can be given
+a string or keyword name for a set or map instead of the collection
+object and will look it up.
+
+Currently, no conversion is performed on keys
+or values placed in shared data. The onus is on you to make sure you
+are storing a type that will be readable in any other verticles that
+access it.
 
 # Buffers
 
@@ -842,7 +847,7 @@ To tell that server to listen for connections we do:
 The second parameter to `listen` is the port. A wildcard port of `0`
 can be specified which means a random available port will be chosen to
 actually listen at. Once the server has completed listening you can
-then call the `.port()` method of the server to find out the real port
+then call the `.port` method of the server to find out the real port
 it is using.
 
 The third parameter is the hostname or ip address. If it is omitted
@@ -1612,7 +1617,7 @@ Then `(.query request)` would return the string
 
 The request headers are available using the `.headers` method on the
 request object. The return value of the method is a `MultiMap`. A
-MultiMap differs from a normal Hash in that it allows multiple values
+MultiMap differs from a normal map in that it allows multiple values
 with the same key.
 
 You can also retrieve the headers as a Clojure map using the
@@ -2766,7 +2771,7 @@ To deal with this, a SockJS bridge will, by default refuse to let through any me
 
 In other words the bridge acts like a kind of firewall which has a default *deny-all* policy.
 
-Configuring the bridge to tell it what messages it should pass through is easy. You pass in two arrays of JSON objects (represented by Hashes) that represent *matches*, as the final argument in the call to `bridge`.
+Configuring the bridge to tell it what messages it should pass through is easy. You pass in two arrays of JSON objects (represented by maps) that represent *matches*, as the final argument in the call to `bridge`.
 
 The first array is the *inbound* list and represents the messages that you want to allow through from the client to the server. The second array is the *outbound* list and represents the messages that you want to allow through from the server to the client.
 
