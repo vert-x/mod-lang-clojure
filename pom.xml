@@ -35,6 +35,7 @@
     <!-- dependency versions -->
     <version.vertx>2.0.0-CR3</version.vertx>
     <version.vertx.testtools>2.0.0-final</version.vertx.testtools>
+    <version.shimdandy>1.0.1</version.shimdandy>
     <version.clojure>1.5.1</version.clojure>
     <version.json>0.2.2</version.json>
     <version.nrepl>0.2.3</version.nrepl>
@@ -62,6 +63,18 @@
       <artifactId>vertx-platform</artifactId>
       <version>${version.vertx}</version>
       <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.projectodd.shimdandy</groupId>
+      <artifactId>shimdandy-api</artifactId>
+      <version>${version.shimdandy}</version>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.projectodd.shimdandy</groupId>
+      <artifactId>shimdandy-impl</artifactId>
+      <version>${version.shimdandy}</version>
+      <scope>compile</scope>
     </dependency>
     <dependency>
       <groupId>org.clojure</groupId>
@@ -253,6 +266,20 @@
             <configuration>
               <outputDirectory>target/mods/${module.name}/lib</outputDirectory>
               <includeScope>runtime</includeScope>
+              <excludeGroupIds>org.clojure,clj-stacktrace,clojure-complete</excludeGroupIds>
+              <excludeArtifactIds>shimdandy-impl</excludeArtifactIds>
+            </configuration>
+          </execution>
+          <execution>
+            <id>copy-runtime-dependencies-to-target</id>
+            <phase>process-classes</phase>
+            <goals>
+              <goal>copy-dependencies</goal>
+            </goals>
+            <configuration>
+              <outputDirectory>target/mods/${module.name}/runtime</outputDirectory>
+              <includeScope>runtime</includeScope>
+              <excludeArtifactIds>shimdandy-api</excludeArtifactIds>
             </configuration>
           </execution>
         </executions>

@@ -16,22 +16,22 @@
 
 package io.vertx.lang.clojure;
 
-import clojure.lang.Atom;
-import clojure.lang.IFn;
-import clojure.lang.PersistentHashMap;
-import clojure.lang.PersistentVector;
-import clojure.lang.RT;
-import clojure.lang.Var;
+import org.projectodd.shimdandy.ClojureRuntimeShim;
 import org.vertx.java.core.Vertx;
-import org.vertx.java.core.VertxException;
 import org.vertx.java.core.logging.Logger;
 import org.vertx.java.core.logging.impl.LoggerFactory;
 import org.vertx.java.platform.Container;
 import org.vertx.java.platform.Verticle;
 import org.vertx.java.platform.VerticleFactory;
+import org.vertx.java.platform.impl.ModuleClassLoader;
 
-import java.io.IOException;
+import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 public class ClojureVerticleFactory implements VerticleFactory {
 
@@ -41,24 +41,24 @@ public class ClojureVerticleFactory implements VerticleFactory {
 
     @Override
     public void init(Vertx vertx, Container container, ClassLoader cl) {
-        this.cl = cl;
-        ClassLoader oldCl = Thread.currentThread().getContextClassLoader();
-        Thread.currentThread().setContextClassLoader(cl);
+        List<URL> runtimeUrls = new ArrayList<>();
         try {
-            RT.load("clojure/core");
-            clojure.lang.Compiler.LOADER.bindRoot(this.cl);
-            RT.var("vertx.core", "*vertx*").bindRoot(vertx);
-            RT.var("vertx.core", "*container*").bindRoot(container);
-        } catch (Exception e) {
-            log.error(e.getMessage(), e);
-        } finally {
-            Thread.currentThread().setContextClassLoader(oldCl);
+            for(File each : (new File(cl.getResource("runtime").toURI())).listFiles()) {
+                runtimeUrls.add(each.toURI().toURL());
+            }
         }
+        catch (URISyntaxException ignored) {}
+        catch (MalformedURLException ignored) {}
+
+
+        this.cl = new ModuleClassLoader(cl, runtimeUrls.toArray(new URL[0]), true);
+        this.runtime = ClojureRuntimeShim.newRuntime(this.cl);
+        this.runtime.invoke("vertx.core/-bind-container-roots", vertx, container);
     }
 
     @Override
     public Verticle createVerticle(String scriptName) throws Exception {
-        return new ClojureVerticle(scriptName);
+        return new ClojureVerticle(scriptName, this.runtime);
     }
 
     @Override
@@ -68,39 +68,33 @@ public class ClojureVerticleFactory implements VerticleFactory {
 
     @Override
     public void close() {
-        RT.var("clojure.core", "shutdown-agents").invoke();
+        this.runtime.invoke("clojure.core/shutdown-agents");
     }
 
     private class ClojureVerticle extends Verticle {
 
-        ClojureVerticle(String scriptName) {
+        ClojureVerticle(String scriptName, ClojureRuntimeShim runtime) {
             this.scriptName = scriptName;
+            this.runtime = runtime;
+            this.id = UUID.randomUUID();
         }
 
         public void start() {
-            Var stopVar = RT.var("vertx.core", "!vertx-stop-fn").setDynamic();
-            Var.pushThreadBindings(PersistentHashMap.create(stopVar, this.stopFn));
-            try {
-                RT.loadResourceScript(scriptName);
-            } catch (Exception e) {
-                throw new VertxException(e);
-            } finally {
-                Var.popThreadBindings();
-            }
+            this.runtime.invoke("vertx.core/-start-verticle", scriptName, this.id);
             log.info("Started clojure verticle: " + scriptName);
         }
 
         public void stop() {
             log.info("Stop verticle: " + scriptName);
-            for(Object f : (List)this.stopFn.deref()) {
-                ((IFn)f).invoke();
-            }
+            this.runtime.invoke("vertx.core/-stop-verticle", this.id);
         }
         private final String scriptName;
-        private final Atom stopFn = new Atom(PersistentVector.create());
+        private final UUID id;
+        private final ClojureRuntimeShim runtime;
     }
 
     private static final Logger log = LoggerFactory.getLogger(ClojureVerticleFactory.class);
     private ClassLoader cl;
+    private ClojureRuntimeShim runtime;
 
 }

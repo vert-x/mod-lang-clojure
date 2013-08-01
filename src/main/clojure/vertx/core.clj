@@ -30,6 +30,22 @@
                  You should only need to bind this for advanced usage."}
   *container* nil)
 
+(defn- -bind-container-roots [vertx container]
+  (.bindRoot #'*vertx* vertx)
+  (.bindRoot #'*container* container))
+
+(def ^:private ^:dynamic -current-verticle-id nil)
+(def ^:private -vertx-stop-fns (atom {}))
+
+(defn- -start-verticle [main id]
+  (binding [-current-verticle-id id]
+    (clojure.lang.RT/loadResourceScript main)))
+
+(defn- -stop-verticle [id]
+  (doseq [f (get @-vertx-stop-fns id)]
+    (f))
+  (swap! -vertx-stop-fns dissoc id))
+
 (defn get-vertx
   "Returns the currently active vertx instance (*vertx*), throwing if not set."
   [] 
@@ -202,14 +218,12 @@
      (.undeployVerticle (get-container) id
                         (as-async-result-handler handler false))))
 
-;; bound by ClojureVerticle
-(def ^:dynamic ^:internal ^:no-doc !vertx-stop-fn nil)
-
 (defn on-stop*
   "Registers a fn to be called when vertx undeploys the verticle.
    Can be called multiple times to register multiple fns."
   [f]
-  (swap! !vertx-stop-fn conj f))
+  (swap! -vertx-stop-fns
+         update-in [-current-verticle-id] conj f))
 
 (defmacro on-stop
   "Registers code to be called when vertx undeploys the verticle.
