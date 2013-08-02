@@ -1784,9 +1784,12 @@ attributes as a Clojure map, using the same conversion rules as
 
 This should only be called after *all* of the request has been read -
 this is because form attributes are encoded in the request *body* not
-in the request headers.
+in the request headers. You must also call
+`vertx.http/expect-multi-part` on the request *before* any of the body
+is read in order for the form attributes to be available.
 
     (stream/on-end request
+      (http/expect-multi-part request)
       ;; The request has been full read, so now we can look at the form attributes
       #(do-something-with-form-attributes (http/form-attributes request)))
       

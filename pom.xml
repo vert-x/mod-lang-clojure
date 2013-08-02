@@ -33,10 +33,10 @@
     <version.codox>0.6.3.1</version.codox>
 
     <!-- dependency versions -->
-    <version.vertx>2.0.0-CR3</version.vertx>
+    <version.vertx>2.0.0-final</version.vertx>
     <version.vertx.testtools>2.0.0-final</version.vertx.testtools>
     <version.shimdandy>1.0.1</version.shimdandy>
-    <version.clojure>1.5.1</version.clojure>
+    <version.clojure>1.6.0-clearthreadlocals</version.clojure>
     <version.json>0.2.2</version.json>
     <version.nrepl>0.2.3</version.nrepl>
     <version.clj-stacktrace>0.2.5</version.clj-stacktrace>
@@ -77,7 +77,7 @@
       <scope>compile</scope>
     </dependency>
     <dependency>
-      <groupId>org.clojure</groupId>
+      <groupId>org.clojars.tcrawley</groupId>
       <artifactId>clojure</artifactId>
       <version>${version.clojure}</version>
       <scope>compile</scope>
@@ -87,24 +87,56 @@
       <artifactId>data.json</artifactId>
       <version>${version.json}</version>
       <scope>compile</scope>
+      <!-- we have to exclude clojure to prevent v1.3.0 from getting brought in
+           while we depend on a fork of clojure above -->
+      <exclusions>
+        <exclusion>
+          <groupId>org.clojure</groupId>
+          <artifactId>clojure</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.clojure</groupId>
       <artifactId>tools.nrepl</artifactId>
       <version>${version.nrepl}</version>
       <scope>compile</scope>
+      <!-- we have to exclude clojure to prevent v1.3.0 from getting brought in
+           while we depend on a fork of clojure above -->
+      <exclusions>
+        <exclusion>
+          <groupId>org.clojure</groupId>
+          <artifactId>clojure</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>clj-stacktrace</groupId>
       <artifactId>clj-stacktrace</artifactId>
       <version>${version.clj-stacktrace}</version>
       <scope>compile</scope>
+      <!-- we have to exclude clojure to prevent v1.3.0 from getting brought in
+           while we depend on a fork of clojure above -->
+      <exclusions>
+        <exclusion>
+          <groupId>org.clojure</groupId>
+          <artifactId>clojure</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>clojure-complete</groupId>
       <artifactId>clojure-complete</artifactId>
       <version>${version.clojure-complete}</version>
       <scope>compile</scope>
+      <!-- we have to exclude clojure to prevent v1.3.0 from getting brought in
+           while we depend on a fork of clojure above -->
+      <exclusions>
+        <exclusion>
+          <groupId>org.clojure</groupId>
+          <artifactId>clojure</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
 
     <!-- test dependencies -->
@@ -126,6 +158,14 @@
       <artifactId>codox.core</artifactId>
       <version>${version.codox}</version>
       <scope>provided</scope>
+      <!-- we have to exclude clojure to prevent v1.3.0 from getting brought in
+           while we depend on a fork of clojure above -->
+      <exclusions>
+        <exclusion>
+          <groupId>org.clojure</groupId>
+          <artifactId>clojure</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
   </dependencies>
 
@@ -266,7 +306,7 @@
             <configuration>
               <outputDirectory>target/mods/${module.name}/lib</outputDirectory>
               <includeScope>runtime</includeScope>
-              <excludeGroupIds>org.clojure,clj-stacktrace,clojure-complete</excludeGroupIds>
+              <excludeGroupIds>org.clojars.tcrawley,org.clojure,clj-stacktrace,clojure-complete</excludeGroupIds>
               <excludeArtifactIds>shimdandy-impl</excludeArtifactIds>
             </configuration>
           </execution>

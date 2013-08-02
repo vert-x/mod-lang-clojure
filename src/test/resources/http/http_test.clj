@@ -78,6 +78,7 @@
 (defn test-form-request []
   (letfn [(req-handler [req]
             (t/assert (.startsWith (.uri req) "/form"))
+            (http/expect-multi-part req)
             (let [resp (http/server-response req {:chunked true})]
               (stream/on-end req (fn []
                                    (let [forms (http/form-attributes req)]
@@ -116,6 +117,7 @@
 (defn test-upload-request []
   (letfn [(req-handler [req]
             (t/assert (.startsWith (.uri req) "/form"))
+            (http/expect-multi-part req)
             (let [resp (http/server-response req {:chunked true})]
               (http/on-upload req
                               (fn [file-info]

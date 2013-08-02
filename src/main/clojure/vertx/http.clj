@@ -81,6 +81,13 @@
   [server handler]
   (.requestHandler server (core/as-handler handler)))
 
+(defn expect-multi-part
+  "Call this if you are expecting a multi-part form to be submitted in
+   the request. This must be called before the body of the request has
+   been received if you intend to call form-attributes."
+  [req]
+  (.expectMultiPart req true))
+
 ;;public
 (defn close
   "Close the server. Any open HTTP connections will be closed."
