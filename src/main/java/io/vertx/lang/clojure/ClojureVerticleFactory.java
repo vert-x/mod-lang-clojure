@@ -43,13 +43,11 @@ public class ClojureVerticleFactory implements VerticleFactory {
     public void init(Vertx vertx, Container container, ClassLoader cl) {
         List<URL> runtimeUrls = new ArrayList<>();
         try {
-            for(File each : (new File(cl.getResource("runtime").toURI())).listFiles()) {
+            for(File each : (new File(cl.getResource("___runtime___").toURI())).listFiles()) {
                 runtimeUrls.add(each.toURI().toURL());
             }
         }
-        catch (URISyntaxException ignored) {}
-        catch (MalformedURLException ignored) {}
-
+        catch (URISyntaxException | MalformedURLException ignored) {}
 
         this.cl = new ModuleClassLoader(cl, runtimeUrls.toArray(new URL[0]), true);
         this.runtime = ClojureRuntimeShim.newRuntime(this.cl);

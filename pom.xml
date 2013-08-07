@@ -317,7 +317,7 @@
               <goal>copy-dependencies</goal>
             </goals>
             <configuration>
-              <outputDirectory>target/mods/${module.name}/runtime</outputDirectory>
+              <outputDirectory>target/mods/${module.name}/___runtime___</outputDirectory>
               <includeScope>runtime</includeScope>
               <excludeArtifactIds>shimdandy-api</excludeArtifactIds>
             </configuration>
