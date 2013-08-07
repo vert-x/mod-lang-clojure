@@ -16,10 +16,16 @@
   "TOOD: docs"
   (:require [vertx.core :as core]))
 
+(def ^{:dynamic true
+       :internal true
+       :no-doc true
+       :doc "Used to provide a logger when we are outside of a vertx context. Should never be used by user code."}
+  *logger*)
+
 (defn get-logger
   "Returns the currently active Logger retrieved from vertx.core/*container*."
   []
-  (.logger (core/get-container)))
+  (or (.logger (core/get-container)) *logger*))
 
 (defn info?
   "Returns true if info logging is enabled."

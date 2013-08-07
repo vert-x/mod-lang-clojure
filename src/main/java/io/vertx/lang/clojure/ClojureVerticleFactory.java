@@ -83,7 +83,7 @@ public class ClojureVerticleFactory implements VerticleFactory {
         }
 
         public void stop() {
-            log.info("Stop verticle: " + scriptName);
+            log.info("Stopping clojure verticle: " + scriptName);
             this.runtime.invoke("vertx.core/-stop-verticle", this.id);
         }
         private final String scriptName;

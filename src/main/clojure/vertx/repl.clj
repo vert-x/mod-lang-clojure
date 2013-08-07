@@ -1,11 +1,11 @@
 ;; Copyright 2013 the original author or authors.
-;; 
+;;
 ;; Licensed under the Apache License, Version 2.0 (the "License");
 ;; you may not use this file except in compliance with the License.
 ;; You may obtain a copy of the License at
-;; 
+;;
 ;;      http://www.apache.org/licenses/LICENSE-2.0
-;; 
+;;
 ;; Unless required by applicable law or agreed to in writing, software
 ;; distributed under the License is distributed on an "AS IS" BASIS,
 ;; WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -28,45 +28,33 @@
 
 (defonce ^:private repls (atom {}))
 
-(defn ^:private -stop-repl
-  "Stops the nREPL server with the given id. Should only be used from the worker verticle."
-  [{:keys [id]}]
+(defn ^:private -stop-repl [id]
   (when-let [server (get @repls id)]
     (log/info "Stopping nREPL on %s:%s"
-              (repl-host server)
-              (repl-port server))
+              (repl-host @server)
+              (repl-port @server))
     (swap! repls dissoc id)
-    (.close server)))
+    (.close @server)))
 
-(defn ^:private -start-repl
-  "Starts an nREPL server. Should only be used from the worker verticle."
-  [{:keys [id port host]}]
+(defn ^:private -start-repl [port host]
   (log/info (format "Starting nREPL at %s:%s" host port))
   (let [server
         (nrepl/start-server
          :port port
          :bind host)]
-    (future (require 'clj-stacktrace.repl 'complete.core))
+    (require 'clj-stacktrace.repl 'complete.core)
     (log/info (format "nREPL bound to %s:%s"
                       (repl-host server)
                       (repl-port server)))
-    (swap! repls assoc id server)))
-
-
-(defn ^:internal ^:no-doc dispatch-handler [msg]
-  (let [f (->> (:cmd msg)
-               (format "vertx.repl/-%s-repl")
-               symbol
-               resolve)]
-    (f msg)))
-
-(defonce ^:private repl-worker-address (atom nil))
+    server))
 
 (defn stop-repl
   "Stops the nREPL server with the given id, asynchronously."
   [id]
-  (if @repl-worker-address
-    (eb/send @repl-worker-address {:cmd "stop" :id id})))
+  (let [logger (log/get-logger)]
+    (future
+      (binding [log/*logger* logger]
+        (-stop-repl id)))))
 
 (defn start-repl
   "Starts an nREPL server, asynchrously.
@@ -80,20 +68,9 @@
      (start-repl 0 "127.0.0.1"))
   ([port host]
      (let [id (str "repl-" (u/uuid))
-           start (bound-fn [& args]
-                   (if (first args)
-                     (log/error "repl_worker init failed:" (first args))
-                     (do
-                       (core/on-stop* (partial stop-repl id))
-                       (eb/send @repl-worker-address {:cmd "start"
-                                                      :id id
-                                                      :host host
-                                                      :port port}))))]
-       (if @repl-worker-address
-         (start)
-         (do
-           (reset! repl-worker-address (u/uuid))
-           (core/deploy-worker-verticle "repl_worker.clj"
-                                        {:address @repl-worker-address}
-                                        1 true start)))
+           logger (log/get-logger)]
+       (swap! repls assoc id
+              (future
+                (binding [log/*logger* logger]
+                  (-start-repl port host))))
        id)))
