@@ -18,18 +18,7 @@
             [vertx.utils :as u]
             [vertx.logging :as log]
             [vertx.eventbus :as eb]
-            [clojure.tools.nrepl.server :as nrepl]
-            [clojure.tools.nrepl.middleware :as mware]))
-
-(defn ^:private nrepl-init-handler
-  "Provides an init point for new nrepl connections."
-  [h]
-  (fn [{:keys [op transport] :as msg}]
-    (when (= op "clone")
-      (require 'clj-stacktrace.repl 'complete.core))
-    (h msg)))
-
-(mware/set-descriptor! #'nrepl-init-handler {})
+            [clojure.tools.nrepl.server :as nrepl]))
 
 (defn ^:private repl-port [server]
   (-> server deref :ss .getLocalPort))
@@ -49,16 +38,15 @@
     (swap! repls dissoc id)
     (.close server)))
 
-
 (defn ^:private -start-repl
   "Starts an nREPL server. Should only be used from the worker verticle."
   [{:keys [id port host]}]
   (log/info (format "Starting nREPL at %s:%s" host port))
   (let [server
         (nrepl/start-server
-         :handler (nrepl/default-handler #'nrepl-init-handler)
          :port port
          :bind host)]
+    (future (require 'clj-stacktrace.repl 'complete.core))
     (log/info (format "nREPL bound to %s:%s"
                       (repl-host server)
                       (repl-port server)))
