@@ -1824,7 +1824,7 @@ The default value for `:status-code` is `200`.
 
 To write data to an HTTP response, you invoke the `vertx.stream/write`
 function. This function can be invoked multiple times before the
-response is ended. `write` can either take anything Bufferable, or a
+response is ended. `write` can either take anything bufferable, or a
 String and encoding:
 
 Example:
@@ -1838,7 +1838,7 @@ Example:
 The write methods are asynchronous and always returns immediately
 after the write has been queued.
 
-If you are just writing a single string or Bufferable to the HTTP
+If you are just writing a single string or bufferable to the HTTP
 response you can write it and end the response in a single call to the
 `vertx.http/end` function.
 
@@ -1861,9 +1861,9 @@ With no arguments, the response is simply ended.
 
     (http/end response)
 
-The function can also be called with a string or Bufferable in the
+The function can also be called with a string or bufferable in the
 same way `vertx.stream/write` is called. In this case it's just the
-same as calling `write` with a string or Bufferable followed by
+same as calling `write` with a string or bufferable followed by
 calling `end` with no arguments. For example:
 
     
@@ -2114,7 +2114,7 @@ to the server response body.
 
 To write data to an HTTP request, you invoke the `vertx.stream/write`
 function. This function can be invoked multiple times before the
-request is ended. `write` can either take anything Bufferable, or a
+request is ended. `write` can either take anything bufferable, or a
 String and encoding:
 
 Example:
@@ -2128,7 +2128,7 @@ Example:
 The write methods are asynchronous and always returns immediately
 after the write has been queued.
 
-If you are just writing a single string or Bufferable to the HTTP
+If you are just writing a single string or bufferable to the HTTP
 request you can write it and end the request in a single call to the
 `vertx.http/end` function.
 
@@ -2151,9 +2151,9 @@ With no arguments, the request is simply ended.
 
     (http/end request)
 
-The function can also be called with a string or Bufferable in the
+The function can also be called with a string or bufferable in the
 same way `vertx.stream/write` is called. In this case it's just the
-same as calling `write` with a string or Bufferable followed by
+same as calling `write` with a string or bufferable followed by
 calling `end` with no arguments. For example:
 
     
@@ -3222,7 +3222,7 @@ Writes data to a new file on disk.
 
 `(write-file file data handler)` 
 
-Where `file` is the file name. `data` is anything Bufferable.
+Where `file` is the file name. `data` is anything bufferable.
 `handler` is called with the error, or `nil` if successful.
 
 ## create_file
@@ -3305,7 +3305,7 @@ To use an AsyncFile for random access writing you use the
 The parameters to the function are: 
 
 * `file-obj`: the `AsyncFile`.
-* `data`: the data to write. Can be anything Bufferable.
+* `data`: the data to write. Can be anything bufferable.
 * `position`: an integer position in the file where to write the
   buffer. If the position is greater or equal to the size of the file,
   the file will be enlarged to accomodate the offset.

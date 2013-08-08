@@ -216,7 +216,7 @@
 
 (defn write-file
   "Creates the file, and writes the specified data to the file represented by path, asynchronously.
-   data can anything Bufferable (see vertx.buffer/buffer).  handler
+   data can anything bufferable (see vertx.buffer).  handler
    can either be a single-arity fn that will be passed the
    exception (if any) from the result of the call, or a Handler that
    will be called with the AsyncResult object that wraps the
@@ -295,7 +295,7 @@
 
 (defn write
   "Write data to the file at position pos in the file, asynchronously.
-   data can anything Bufferable (see vertx.buffer/buffer).  If pos
+   data can anything bufferable (see vertx.buffer).  If pos
    lies outside of the current size of the file, the file will be
    enlarged to encompass it. handler can either be a single-arity fn
    that will be passed the exception (if any) from the result of the

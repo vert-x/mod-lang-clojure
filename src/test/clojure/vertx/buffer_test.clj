@@ -178,6 +178,67 @@
 (deftest test-set-string-other-encoding
   )
 
+(deftest test-as-buffer-buffer
+  (let [b1! (t/random-buffer 100)
+        b2! (b/as-buffer b1!)]
+    (is (identical? b2! b1!))))
+
+(deftest test-as-buffer-byte
+  (let [data (byte 1)
+        b! (b/as-buffer data)]
+    (is (= data (b/get-byte b! 0)))))
+
+(deftest test-as-buffer-int
+  (let [data (int 1)
+        b! (b/as-buffer data)]
+    (is (= data (b/get-int b! 0)))))
+
+(deftest test-as-buffer-long
+  (let [data (long 1)
+        b! (b/as-buffer data)]
+    (is (= data (b/get-long b! 0)))))
+
+(deftest test-as-buffer-double
+  (let [data (double 1.0)
+        b! (b/as-buffer data)]
+    (is (= data (b/get-double b! 0)))))
+
+(deftest test-as-buffer-float
+  (let [data (float 1.0)
+        b! (b/as-buffer data)]
+    (is (= data (b/get-float b! 0)))))
+
+(deftest test-as-buffer-short
+  (let [data (short 1)
+        b! (b/as-buffer data)]
+    (is (= data (b/get-short b! 0)))))
+
+(deftest test-as-buffer-bytes
+  (let [data (.getBytes "ham")
+        b! (b/as-buffer data)]
+    (is (t/a= data (b/get-bytes b!)))
+    (is (t/a= data (b/get-bytes b! 0 (alength data))))))
+
+(deftest test-as-buffer-big-decimal
+  (let [data 4.2M
+        b! (b/as-buffer data)]
+    (is (= (double data) (b/get-double b! 0)))))
+
+(deftest test-as-buffer-ratio
+  (let [data 22/7
+        b! (b/as-buffer data)]
+    (is (= (double data) (b/get-double b! 0)))))
+
+(deftest test-as-buffer-big-int
+  (let [data 42N
+        b! (b/as-buffer data)]
+    (is (= (long data) (b/get-long b! 0)))))
+
+(deftest test-as-buffer-string
+  (let [data "ham-biscuit"
+        b! (b/as-buffer data)]
+    (is (= data (b/get-string b! 0 (.length data))))))
+
 (deftest test-delimited-parsing
   (let [lines (atom [])]
     (b/parse-delimited

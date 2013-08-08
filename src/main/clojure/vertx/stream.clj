@@ -54,7 +54,7 @@
 
 (defn write
   "Write data to the stream.
-   data can anything Bufferable (see vertx.buffer/buffer)."
+   data can anything bufferable (see vertx.buffer)."
   ([stream data]
      (.write stream (buf/as-buffer data)))
   ([stream data-str enc]

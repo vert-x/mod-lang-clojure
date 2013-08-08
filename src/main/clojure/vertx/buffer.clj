@@ -13,7 +13,27 @@
 ;; limitations under the License.
 
 (ns vertx.buffer
-  "Functions for operating on Vert.x Buffers"
+  "Functions for operating on Vert.x Buffers.
+   A Buffer represents a sequence of zero or more bytes that can be
+   written to or read from, and which expands as necessary to
+   accommodate any bytes written to it.
+
+   append!, set! and as-buffer take several different types of data
+   that can be written to a buffer these types are referred to
+   collectively as \"bufferable\", and are:
+
+   * Buffer
+   * Byte
+   * byte[]
+   * Double
+   * BigDecimal (coerced to a Double)
+   * Ratio (coerced to a Double)
+   * Float
+   * Integer
+   * Long
+   * BigInt (coerced to a Long)
+   * Short
+   * String"
   (:require [vertx.core :as core])
   (:import [org.vertx.java.core.buffer Buffer]
            [org.vertx.java.core.parsetools RecordParser]
@@ -21,9 +41,16 @@
            java.math.BigDecimal
            java.nio.ByteBuffer))
 
-;; TODO: better docs
 (defn buffer
-  "Creates a new Buffer instance."
+  "Creates a new Buffer instance.
+
+   arg can be:
+   * a String, which will be written to the buffer as UTF-8
+   * a byte[], which will be written to the buffer
+   * an int, which specifies an initial size hint
+
+   You can also provide a String along with a second argument
+   specifying the encoding."
   ([]
      (Buffer.))
   ([arg]
@@ -31,17 +58,9 @@
   ([str enc]
      (Buffer. str enc)))
 
-(defn as-buffer
-  "Wraps data in a buffer unless it is already one."
-  [data]
-  (if (or (nil? data) (instance? Buffer data))
-    data
-    (buffer data)))
-
 (let [byte-arr (Class/forName "[B")]
-  ;; TODO: doc types and type coercion/loss of precision
   (defn append!
-    "Appends data to a buffer.
+    "Appends bufferable data to the end of a buffer.
      Returns the mutated buffer instance."
     ([buf data]
        (condp instance? data
@@ -63,7 +82,8 @@
        (.append data-string encoding)))
 
   (defn set!
-    "TODO: docs"
+    "Sets bufferable data in a buffer.
+     The data is set at the offset specified by loc."
     ([buf loc data]
        (condp instance? data
          Buffer     (.setBuffer buf loc data)
@@ -83,6 +103,14 @@
                  (str "Can't set data of class " (class data))))))
     ([buf loc data-string encoding]
        (.setString buf loc data-string encoding))))
+
+(defn as-buffer
+  "Wraps bufferable data in a buffer unless it is already one."
+  [data]
+  (if (or (nil? data) (instance? Buffer data))
+    data
+    (doto (buffer)
+      (append! data))))
 
 (defn get-buffer
   "Returns a copy of a sub-sequence of buf as a Buffer starting
@@ -123,27 +151,63 @@
      (.getString buf start end encoding)))
 
 (defn fixed-parser
-  "TODO: docs"
-  [size handler] 
+  "Creates a fixed-size RecordParser.
+   A fixed-size parser can be used to parse protocol data that may be
+   delivered across many buffers. For example, a fixed-size parser
+   with a size of 4 would take:
+
+   buffer1:1234567
+   buffer2:8
+   buffer3:90123456
+
+   and invoke the handler four times with:
+
+   buffer1:1234
+   buffer2:5678
+   buffer3:9012
+   buffer4:3456
+
+   handler can either be a single-arity fn or a Handler instance that
+   will be passed the Buffer for each parsed fragment. See
+   org.vertx.java.core.parsetools.RecordParser for more details."
+  [size handler]
   (RecordParser/newFixed size (core/as-handler handler)))
 
 (defn delimited-parser
-  "TODO: docs"
+  "Creates a delimited RecordParser.
+   A delimited parser can be used to parse protocol data that may be
+   delivered across many buffers. For example, a delimited parser
+   with a delimiter of \"\\n\" would take:
+
+   buffer1:Hello\nHow are y
+   buffer2:ou?\nI am
+   buffer3:fine.
+   buffer4:\n
+
+   and invoke the handler three times with:
+
+   buffer1:Hello
+   buffer2:How are you?
+   buffer3:I am fine.
+   
+   handler can either be a single-arity fn or a Handler instance that
+   will be passed the Buffer for each parsed fragment. See
+   org.vertx.java.core.parsetools.RecordParser for more details."
   [delim handler]
   (RecordParser/newDelimited (.getBytes delim)
                              (core/as-handler handler)))
 
 (defn parse-buffer
-  "TODO: docs"
-  [parser in]
-  (.handle parser in))
+  "Parses buf with parser."
+  [parser buf]
+  (.handle parser buf))
 
 (defn parse-fixed
-  "TODO: docs"
-  [buff size handler]
-  (-> (fixed-parser size handler) (parse-buffer buff)))
+  "Convience function that creates a fixed-size parser and uses it to parse buf."
+  [buf size handler]
+  (-> (fixed-parser size handler) (parse-buffer buf)))
 
 (defn parse-delimited
-  "Parse ```Buffer``` with specific limiter then invoke handler"
-  [buff delim handler]
-  (-> (delimited-parser delim handler) (.handle buff)))
+  "Convience function that creates a delimited parser and uses it to parse buf."
+  [buf delim handler]
+  (-> (delimited-parser delim handler) (.handle buf)))
