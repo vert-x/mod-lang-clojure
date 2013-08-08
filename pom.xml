@@ -41,6 +41,8 @@
     <version.nrepl>0.2.3</version.nrepl>
     <version.clj-stacktrace>0.2.5</version.clj-stacktrace>
     <version.clojure-complete>0.2.3</version.clojure-complete>
+    
+    <integ.timeout>10</integ.timeout>
   </properties>
 
   <repositories>
@@ -358,7 +360,7 @@
             </property>
             <property>
               <name>vertx.test.timeout</name>
-              <value>15</value>
+              <value>${integ.timeout}</value>
             </property>            
           </systemProperties>
           <environmentVariables>
