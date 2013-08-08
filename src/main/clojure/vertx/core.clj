@@ -58,12 +58,6 @@
   (or *container*
       (throw (VertxException. "No container instance available."))))
 
-;; TODO: do we need this? if so, rename to with-vertx?
-(defmacro start-vertx
-  [vertx & body]
-  `(binding [*vertx* ~vertx]
-     ~@body))
-
 (defn ^:internal ^:no-doc handler?
   "Returns true if h is an instance of org.vertx.java.core.Handler"
   [h]
