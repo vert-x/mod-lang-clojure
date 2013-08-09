@@ -13,31 +13,42 @@
 ;; limitations under the License.
 
 (ns vertx.http.route
-  "Functions for operating on Vertx.x RouteMatcher."
+  "Functions for operating on Vertx.x RouteMatcher.
+   RouteMatchers allows you to do route requests based on the HTTP
+   verb and the request URI, in a manner similar Sinatra or Express.
+
+   RouteMatchers also let you extract parameters from the request URI
+   either a via simple pattern or using regular expressions for more
+   complex matches. Any parameters extracted will be added to the
+   requests parameters which will be available to you in your request
+   handler."
   (:refer-clojure :exclude [get])
   (:require [clojure.string :as string]
             [vertx.core :as core])
   (:import [org.vertx.java.core.http RouteMatcher]))
 
 (defn matcher
-  "This class allows you to do route requests based on the HTTP verb and the request URI, in a manner similar
-  to http://www.sinatrarb.com/ http://expressjs.com
-  RouteMatcher also lets you extract parameters from the request URI either a simple pattern or using
-  regular expressions for more complex matches. Any parameters extracted will be added to the requests parameters
-  which will be available to you in your request handler.
-  It's particularly useful when writing REST-ful web applications.
-  To use a simple pattern to extract parameters simply prefix the parameter name in the pattern with a ':' (colon).
-  Different handlers can be specified for each of the HTTP verbs, GET, POST, PUT, DELETE etc.
-  For more complex matches regular expressions can be used in the pattern. When regular expressions are used, the extracted
-  parameters do not have a name, so they are put into the HTTP request with names of param0, param1, param2 etc.
-  Multiple matches can be specified for each HTTP verb. In the case there are more than one matching patterns for
-  a particular request, the first matching one will be used.
-  Instances of this class are not thread-safe
-  @author Tim Fox"
+  "Create a RouteMatcher instance."
   [] (RouteMatcher.))
 
 (defmacro ^:private def-match-fn [name]
-  (let [doc (format "Specify a handler that will be called for a matching HTTP %s"
+  (let [doc (format "Specify a handler that will be called for a matching HTTP %s.
+
+   If no matcher is provided, a new one will be created. pattern can
+   either be a simple pattern or regular expression. handler can
+   either be a single-arity fn or a Handler instance that will be
+   called with the HttpServerRequest object.
+
+   To use a simple pattern to extract parameters simply prefix the
+   parameter name in the pattern with a ':' (colon) For more complex
+   matches regular expressions can be used in the pattern. When
+   regular expressions are used, the extracted parameters do not
+   have a name, so they are put into the HTTP request with names of
+   param0, param1, param2 etc. Multiple matches can be specified
+   for each HTTP %s. In the case there are more than one matching
+   patterns for a particular request, the first matching one will be
+   used.  Returns the matcher."
+                    (string/upper-case name)
                     (string/upper-case name))
         method (symbol (str "." name))
         re-method (symbol (str "." name "WithRegEx"))]
@@ -62,7 +73,9 @@
 
 (defn no-match
   "Specify a handler that will be called when no other handlers match.
-   If this handler is not specified default behaviour is to return a 404"
+   handler can either be a single-arity fn or a Handler instance that
+   will be called with the HttpServerRequest object If this handler is
+   not specified. Default behaviour is to return a 404."
   ([handler]
      (no-match (matcher handler)))
   ([matcher handler]
