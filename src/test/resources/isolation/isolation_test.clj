@@ -31,12 +31,13 @@
                           (vertx/deploy-verticle "v2.clj"))))
 
 (defn test-samely-named-verticles-are-not-isolated []
-  (let [msg-count (atom 0)]
+  (let [received-messages (atom #{})]
     (eb/on-message "isolation"
                          (fn [m]
-                           (t/assert= (swap! msg-count inc) m)
-                           (if (= 2 @msg-count)
-                             (t/test-complete)))))
+                           (swap! received-messages conj m)
+                           (if (= 2 (count @received-messages))
+                             (t/test-complete
+                              (t/assert= #{1 2} @received-messages))))))
   
   (vertx/deploy-verticle "v1.clj" {} 2))
 
