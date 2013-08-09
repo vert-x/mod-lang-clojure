@@ -49,7 +49,7 @@ public class ClojureVerticleFactory implements VerticleFactory {
         }
         catch (URISyntaxException | MalformedURLException ignored) {}
 
-        this.cl = new ModuleClassLoader(cl, runtimeUrls.toArray(new URL[0]), true);
+        this.cl = new ModuleClassLoader(cl, runtimeUrls.toArray(new URL[0]), false);
         this.runtime = ClojureRuntimeShim.newRuntime(this.cl);
         this.runtime.invoke("vertx.core/-bind-container-roots", vertx, container);
     }
