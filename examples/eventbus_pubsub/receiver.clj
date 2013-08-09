@@ -16,5 +16,5 @@
   (:require [vertx.core :as vertx]
             [vertx.eventbus :as eb]))
 
-(eb/register-handler "news-feed"
+(eb/on-message "news-feed"
                      #(println "received:" %))

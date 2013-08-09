@@ -409,11 +409,11 @@ Let's jump into the API
 ### Registering and Unregistering Handlers
 
 To set a message handler on the address `test.address`, you call the
-`vertx.eventbus/register-handler` function:
+`vertx.eventbus/on-message` function:
 
     (require '[vertx.eventbus :as eb])
 
-    (eb/register-handler "test.address"
+    (eb/on-message "test.address"
       (fn [message]
         (println "Got message body" (eb/body message))))
 
@@ -422,18 +422,18 @@ sent to that address. The object passed into the handler is an
 instance of class `Message`. The body of the message is available via
 the `vertx.eventbus/body` function.
 
-The return value of `register-handler` is a unique handler id which
+The return value of `on-message` is a unique handler id which
 can used later to unregister the handler.
 
 When you register a handler on an address and you're in a cluster it
 can take some time for the knowledge of that new handler to be
 propagated across the entire cluster. If you want to be notified when
 that has completed you can optionally specify a function to the
-`register-handler` function as the third argument. This function will then
+`on-message` function as the third argument. This function will then
 be called once the information has reached all nodes of the
 cluster. E.g. :
 
-    (eb/register-handler "test.address" my-handler 
+    (eb/on-message "test.address" my-handler 
       (fn [err]
         (println "Yippee! The handler info has been propagated across the cluster")))
     
@@ -489,7 +489,7 @@ clear:
 
 The receiver:
 
-    (eb/register-handler "test.address"
+    (eb/on-message "test.address"
       (fn [message]
         (println "I received a message" (eb/body message))
 

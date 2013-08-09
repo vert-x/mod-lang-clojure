@@ -18,7 +18,7 @@
             [vertx.eventbus :as eb]))
 
 (defn test-deploy []
-  (eb/register-handler
+  (eb/on-message
    "test.data"
    (fn [m]
      (t/test-complete
@@ -43,7 +43,7 @@
       (t/assert-nil id)))))
 
 (defn test-undeploy []
-  (eb/register-handler
+  (eb/on-message
    "test.data"
    (fn [m]
      (when (= "stopped" m)

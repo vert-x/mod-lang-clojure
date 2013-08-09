@@ -22,7 +22,7 @@
         addr "eb.test"
         id (atom nil)]
     (reset! id
-            (eb/register-handler
+            (eb/on-message
              addr
              (fn [m]
                (t/test-complete
@@ -37,7 +37,7 @@
         reply {:biscuit "gravy"}
         id (atom nil)]
     (reset! id
-            (eb/register-handler
+            (eb/on-message
              addr
              (fn [m]
                (t/test-complete
@@ -56,7 +56,7 @@
         id (atom nil)
         rcvd (atom false)]
     (reset! id
-            (eb/register-handler
+            (eb/on-message
              addr
              (fn [m]
                (if @rcvd
@@ -78,7 +78,7 @@
     (dotimes [_ total]
       (let [id (atom nil)]
         (reset! id
-                (eb/register-handler
+                (eb/on-message
                  addr
                  (fn [m]
                    (t/assert= msg m)
@@ -93,7 +93,7 @@
   (let [addr "eb.test"
         id (atom nil)]
     (reset! id
-            (eb/register-handler
+            (eb/on-message
              addr
              (fn [m]
                (t/test-complete
@@ -118,7 +118,7 @@
         (fn [msg]
           (let [id (atom nil)]
             (reset! id
-                    (eb/register-handler
+                    (eb/on-message
                      addr
                      (fn [m]
                        (eb/unregister-handler @id)

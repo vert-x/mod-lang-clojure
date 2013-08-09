@@ -17,7 +17,7 @@
 
 (def address "example.address")
 
-(eb/register-handler
+(eb/on-message
  address
  (fn [msg]
    (println "Received message" msg)

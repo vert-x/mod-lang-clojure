@@ -20,7 +20,7 @@
 
 (defn test-differently-named-verticles-are-isolated []
   (let [msg-count (atom 0)]
-    (eb/register-handler "isolation"
+    (eb/on-message "isolation"
                          (fn [m]
                            (t/assert= 1 m)
                            (if (= 2 (swap! msg-count inc))
@@ -32,7 +32,7 @@
 
 (defn test-samely-named-verticles-are-not-isolated []
   (let [msg-count (atom 0)]
-    (eb/register-handler "isolation"
+    (eb/on-message "isolation"
                          (fn [m]
                            (t/assert= (swap! msg-count inc) m)
                            (if (= 2 @msg-count)
