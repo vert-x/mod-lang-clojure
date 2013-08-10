@@ -2,19 +2,21 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>io.vertx</groupId>
-  <artifactId>lang-clojure</artifactId>
+  <artifactId>lang-clojure-parent</artifactId>
   <version>1.0.0-SNAPSHOT</version>
-  <name>Clojure Vert.x module</name>
+  <packaging>pom</packaging>
+  <name>Clojure Vert.x support parent</name>
   <parent>
     <groupId>org.sonatype.oss</groupId>
     <artifactId>oss-parent</artifactId>
     <version>7</version>
   </parent>
+  <modules>
+    <module>api</module>
+    <module>lang-module</module>
+  </modules>
 
   <properties>
-    <!-- vert.x module name -->
-    <module.name>${project.groupId}~${project.artifactId}~${project.version}</module.name>
-
     <!-- encodings -->
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
@@ -41,8 +43,6 @@
     <version.nrepl>0.2.3</version.nrepl>
     <version.clj-stacktrace>0.2.5</version.clj-stacktrace>
     <version.clojure-complete>0.2.3</version.clojure-complete>
-    
-    <integ.timeout>10</integ.timeout>
   </properties>
 
   <repositories>
@@ -53,126 +53,107 @@
     </repository>
   </repositories>
 
-  <dependencies>
-    <dependency>
-      <groupId>io.vertx</groupId>
-      <artifactId>vertx-core</artifactId>
-      <version>${version.vertx}</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>io.vertx</groupId>
-      <artifactId>vertx-platform</artifactId>
-      <version>${version.vertx}</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.projectodd.shimdandy</groupId>
-      <artifactId>shimdandy-api</artifactId>
-      <version>${version.shimdandy}</version>
-      <scope>compile</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.projectodd.shimdandy</groupId>
-      <artifactId>shimdandy-impl</artifactId>
-      <version>${version.shimdandy}</version>
-      <scope>compile</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.clojars.tcrawley</groupId>
-      <artifactId>clojure</artifactId>
-      <version>${version.clojure}</version>
-      <scope>compile</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.clojure</groupId>
-      <artifactId>data.json</artifactId>
-      <version>${version.json}</version>
-      <scope>compile</scope>
-      <!-- we have to exclude clojure to prevent v1.3.0 from getting brought in
-           while we depend on a fork of clojure above -->
-      <exclusions>
-        <exclusion>
-          <groupId>org.clojure</groupId>
-          <artifactId>clojure</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>org.clojure</groupId>
-      <artifactId>tools.nrepl</artifactId>
-      <version>${version.nrepl}</version>
-      <scope>compile</scope>
-      <!-- we have to exclude clojure to prevent v1.3.0 from getting brought in
-           while we depend on a fork of clojure above -->
-      <exclusions>
-        <exclusion>
-          <groupId>org.clojure</groupId>
-          <artifactId>clojure</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>clj-stacktrace</groupId>
-      <artifactId>clj-stacktrace</artifactId>
-      <version>${version.clj-stacktrace}</version>
-      <scope>compile</scope>
-      <!-- we have to exclude clojure to prevent v1.3.0 from getting brought in
-           while we depend on a fork of clojure above -->
-      <exclusions>
-        <exclusion>
-          <groupId>org.clojure</groupId>
-          <artifactId>clojure</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>clojure-complete</groupId>
-      <artifactId>clojure-complete</artifactId>
-      <version>${version.clojure-complete}</version>
-      <scope>compile</scope>
-      <!-- we have to exclude clojure to prevent v1.3.0 from getting brought in
-           while we depend on a fork of clojure above -->
-      <exclusions>
-        <exclusion>
-          <groupId>org.clojure</groupId>
-          <artifactId>clojure</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>io.vertx</groupId>
+        <artifactId>vertx-core</artifactId>
+        <version>${version.vertx}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.vertx</groupId>
+        <artifactId>vertx-platform</artifactId>
+        <version>${version.vertx}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.projectodd.shimdandy</groupId>
+        <artifactId>shimdandy-api</artifactId>
+        <version>${version.shimdandy}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.projectodd.shimdandy</groupId>
+        <artifactId>shimdandy-impl</artifactId>
+        <version>${version.shimdandy}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.clojars.tcrawley</groupId>
+        <artifactId>clojure</artifactId>
+        <version>${version.clojure}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.clojure</groupId>
+        <artifactId>data.json</artifactId>
+        <version>${version.json}</version>
+        <!-- we have to exclude clojure to prevent v1.3.0 from getting brought in
+             while we depend on a fork of clojure above -->
+        <exclusions>
+          <exclusion>
+            <groupId>org.clojure</groupId>
+            <artifactId>clojure</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+      <dependency>
+        <groupId>org.clojure</groupId>
+        <artifactId>tools.nrepl</artifactId>
+        <version>${version.nrepl}</version>
+        <!-- we have to exclude clojure to prevent v1.3.0 from getting brought in
+             while we depend on a fork of clojure above -->
+        <exclusions>
+          <exclusion>
+            <groupId>org.clojure</groupId>
+            <artifactId>clojure</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+      <dependency>
+        <groupId>clj-stacktrace</groupId>
+        <artifactId>clj-stacktrace</artifactId>
+        <version>${version.clj-stacktrace}</version>
+        <!-- we have to exclude clojure to prevent v1.3.0 from getting brought in
+             while we depend on a fork of clojure above -->
+        <exclusions>
+          <exclusion>
+            <groupId>org.clojure</groupId>
+            <artifactId>clojure</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+      <dependency>
+        <groupId>clojure-complete</groupId>
+        <artifactId>clojure-complete</artifactId>
+        <version>${version.clojure-complete}</version>
+        <!-- we have to exclude clojure to prevent v1.3.0 from getting brought in
+             while we depend on a fork of clojure above -->
+        <exclusions>
+          <exclusion>
+            <groupId>org.clojure</groupId>
+            <artifactId>clojure</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
 
-    <!-- test dependencies -->
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>4.8.2</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>io.vertx</groupId>
-      <artifactId>testtools</artifactId>
-      <version>${version.vertx.testtools}</version>
-      <scope>test</scope>
-    </dependency>
+      <!-- test dependencies -->
+      <dependency>
+        <groupId>junit</groupId>
+        <artifactId>junit</artifactId>
+        <version>4.8.2</version>
+      </dependency>
+      <dependency>
+        <groupId>io.vertx</groupId>
+        <artifactId>testtools</artifactId>
+        <version>${version.vertx.testtools}</version>
+      </dependency>
 
-    <dependency>
-      <groupId>org.clojars.tcrawley</groupId>
-      <artifactId>codox.core</artifactId>
-      <version>${version.codox}</version>
-      <scope>provided</scope>
-      <!-- we have to exclude clojure to prevent v1.3.0 from getting brought in
-           while we depend on a fork of clojure above -->
-      <exclusions>
-        <exclusion>
-          <groupId>org.clojure</groupId>
-          <artifactId>clojure</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-  </dependencies>
+      <dependency>
+        <groupId>org.clojars.tcrawley</groupId>
+        <artifactId>codox.core</artifactId>
+        <version>${version.codox}</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
 
   <build>
-
     <resources>
       <resource>
         <directory>src/main/resources</directory>
@@ -191,34 +172,6 @@
       </extension>
     </extensions>
     <plugins>
-    
-      <plugin>
-        <groupId>com.theoryinpractise</groupId>
-        <artifactId>clojure-maven-plugin</artifactId>
-        <version>${clojure.maven.plugin.version}</version>
-        <extensions>true</extensions>
-        <executions>
-          <execution>
-            <id>test</id>
-            <phase>test</phase>
-            <goals>
-              <goal>test</goal>
-            </goals>
-          </execution>
-           <execution>
-            <id>generate-codox</id>
-            <goals>
-              <goal>run</goal>
-            </goals>
-            <phase>package</phase>
-            <configuration>
-              <runWithTests>true</runWithTests>
-              <includePluginDependencies>true</includePluginDependencies>
-              <script>${basedir}/target/generate_codox.clj</script>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
 
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -245,87 +198,7 @@
           <encoding>${project.build.sourceEncoding}</encoding>
         </configuration>
       </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-resources-plugin</artifactId>
-        <version>${maven.resources.plugin.version}</version>
-        <configuration>
-          <encoding>${project.build.sourceEncoding}</encoding>
-        </configuration>
-        <executions>
-          <execution>
-            <id>copy-resources</id>
-            <phase>process-classes</phase>
-            <goals>
-              <goal>copy-resources</goal>
-            </goals>
-            <configuration>
-              <overwrite>true</overwrite>
-              <outputDirectory>${basedir}/target/mods/${module.name}</outputDirectory>
-              <resources>
-                <resource>
-                  <directory>target/classes</directory>
-                  <filtering>false</filtering>
-                </resource>
-              </resources>
-            </configuration>
-          </execution>
 
-          <execution>
-            <id>codox-script</id>
-            <goals>
-              <goal>copy-resources</goal>
-            </goals>
-            <phase>process-resources</phase>
-
-            <configuration>
-              <resources>
-                <resource>
-                  <filtering>true</filtering>
-                  <directory>src/build</directory>
-                  <includes>
-                    <include>generate_codox.clj</include>
-                  </includes>
-                </resource>
-              </resources>
-              <outputDirectory>target</outputDirectory>
-            </configuration>
-          </execution>
-
-        </executions>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-dependency-plugin</artifactId>
-        <version>${maven.dependency.plugin.version}</version>
-        <executions>
-          <execution>
-            <id>copy-mod-dependencies-to-target</id>
-            <phase>process-classes</phase>
-            <goals>
-              <goal>copy-dependencies</goal>
-            </goals>
-            <configuration>
-              <outputDirectory>target/mods/${module.name}/lib</outputDirectory>
-              <includeScope>runtime</includeScope>
-              <excludeGroupIds>org.clojars.tcrawley,org.clojure,clj-stacktrace,clojure-complete</excludeGroupIds>
-              <excludeArtifactIds>shimdandy-impl</excludeArtifactIds>
-            </configuration>
-          </execution>
-          <execution>
-            <id>copy-runtime-dependencies-to-target</id>
-            <phase>process-classes</phase>
-            <goals>
-              <goal>copy-dependencies</goal>
-            </goals>
-            <configuration>
-              <outputDirectory>target/mods/${module.name}/___runtime___</outputDirectory>
-              <includeScope>runtime</includeScope>
-              <excludeArtifactIds>shimdandy-api</excludeArtifactIds>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
       <plugin>
         <groupId>com.googlecode.maven-java-formatter-plugin</groupId>
         <artifactId>maven-java-formatter-plugin</artifactId>
@@ -335,88 +208,7 @@
           <lineEnding>LF</lineEnding>
         </configuration>
       </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-surefire-plugin</artifactId>
-        <version>${maven.surefire.plugin.version}</version>
-        <configuration>
-          <disableXmlReport>true</disableXmlReport>
-          <argLine>-Xss2048k</argLine>
-          <verbose>true</verbose>
-          <includes>
-            <include>**/unit/*Test*.java</include>
-          </includes>
-        </configuration>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-failsafe-plugin</artifactId>
-        <version>${maven.failsafe.plugin.version}</version>
-        <configuration>
-          <systemProperties>
-            <property>
-              <name>vertx.mods</name>
-              <value>target/mods</value>
-            </property>
-            <property>
-              <name>vertx.test.timeout</name>
-              <value>${integ.timeout}</value>
-            </property>            
-          </systemProperties>
-          <environmentVariables>
-            <cheese>Gouda</cheese>
-          </environmentVariables>
-          <includes>
-            <include>**/integration/**</include>
-          </includes>
-        </configuration>
-        <executions>
-          <execution>
-            <goals>
-              <goal>integration-test</goal>
-              <goal>verify</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-assembly-plugin</artifactId>
-        <version>${maven.assembly.plugin.version}</version>
-        <configuration>
-          <appendAssemblyId>false</appendAssemblyId>
-          <descriptors>
-            <descriptor>src/main/assembly/mod.xml</descriptor>
-          </descriptors>
-          <attach>true</attach>
-        </configuration>
-        <executions>
-          <execution>
-            <id>assemble</id>
-            <phase>package</phase>
-            <goals>
-              <goal>single</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <artifactId>maven-clean-plugin</artifactId>
-        <version>${maven.clean.plugin.version}</version>
-        <configuration>
-          <filesets>
-            <fileset>
-              <directory>${basedir}/build/mods</directory>
-            </fileset>
-            <fileset>
-              <directory>${basedir}/target/mods</directory>
-            </fileset>
-            <fileset>
-              <directory>${basedir}/target/docs</directory>
-            </fileset>
-          </filesets>
-        </configuration>
-      </plugin>
+
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-enforcer-plugin</artifactId>

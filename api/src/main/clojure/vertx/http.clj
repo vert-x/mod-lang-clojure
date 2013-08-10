@@ -17,7 +17,7 @@
    methods from org.vertx.java.core.http.HttpClient/HttpServer
    org.vertx.java.core.http.HttpClientReuqest HttpClientResponse
    org.vertx.java.core.http.HttpServerReuqest HttpServerResponse
-   and HttpServerFileUpload"
+   and HttpServerFileUpload."
   (:refer-clojure :exclude [get])
   (:require [clojure.string :as string]
             [vertx.buffer :as buf]
@@ -28,7 +28,8 @@
   (:import [org.vertx.java.core.impl CaseInsensitiveMultiMap]))
 
 (defn- parse-multi-map
-  "Converts a vertx MultiMap into a clojure map, converting keys to keywords and Arrays into vectors."
+  "Converts a vertx MultiMap into a clojure map, converting keys to
+  keywords and Arrays into vectors."
   [multi-map]
   (into {} (for [name (.names multi-map)]
              {(keyword (string/replace name #"\s" "-"))
@@ -47,9 +48,11 @@
       (.set multi-map (name k) v))
     multi-map))
 
-
 (defn server
-  "Creates a HTTP or HTTPS server (HttpServer) instance from vertx.core/*vertx*."
+  "Creates a HTTP or HTTPS server (HttpServer) instance from vertx.core/*vertx*.
+   properties is a map of properties to set on the newly created
+   server instance.  See the docuementation for
+   org.vertx.java.core.http.HttpServer for a full list of properties."
   ([]
      (server nil))
   ([properties]
