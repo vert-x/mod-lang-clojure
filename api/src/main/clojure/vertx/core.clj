@@ -14,24 +14,30 @@
 
 (ns vertx.core
   "Vert.x core functionality."
+  ;; TODO: refer only what we actually need
   (:require [vertx.utils :refer :all])
-  (:import [org.vertx.java.core Handler VertxException VoidHandler]
+  (:import [org.vertx.java.core Handler VertxException VertxFactory VoidHandler]
            [org.vertx.java.core.json JsonObject]))
 
 (defonce ^{:dynamic true
            :doc "The currently active default vertx instance.
-                 The root binding will be set on verticle deploymeny by Vert.x.
-                 You should only need to bind this for advanced usage."}
+                 When inside a Vert.x container, the root binding will
+                 be set on verticle deployment. When embeded, you will
+                 need to either bind this when needed, or alter its
+                 root binding by calling set-vertx!."}
   *vertx* nil)
 
 (defonce ^{:dynamic true
            :doc "The currently active default vertx container instance.
-                 The root binding will be set on verticle deploymeny by Vert.x.
+                 The root binding will be set on verticle deployment by Vert.x.
                  You should only need to bind this for advanced usage."}
   *container* nil)
 
+(defn set-vertx! [vertx]
+  (.bindRoot #'*vertx* vertx))
+
 (defn- -bind-container-roots [vertx container]
-  (.bindRoot #'*vertx* vertx)
+  (set-vertx! vertx)
   (.bindRoot #'*container* container))
 
 (def ^:private ^:dynamic -current-verticle-id nil)
@@ -45,6 +51,14 @@
   (doseq [f (get @-vertx-stop-fns id)]
     (f))
   (swap! -vertx-stop-fns dissoc id))
+
+(defn vertx
+  ([]
+     (VertxFactory/newVertx))
+  ([host]
+     (VertxFactory/newVertx host))
+  ([host port]
+     (VertxFactory/newVertx port host)))
 
 (defn get-vertx
   "Returns the currently active vertx instance (*vertx*), throwing if not set."
