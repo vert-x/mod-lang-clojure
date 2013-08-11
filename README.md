@@ -18,7 +18,7 @@ Update `langs.properties` in your VERTX_HOME/conf with:
 See the current user manual at
 [docs/core_manual_clojure.md](docs/core_manual_clojure.md).  The
 latest API docs are available from
-[CI](https://projectodd.ci.cloudbees.com/job/vertx.mod-lang-clojure/lastSuccessfulBuild/artifact/target/html-docs/index.html).
+[CI](https://projectodd.ci.cloudbees.com/job/vertx.mod-lang-clojure/lastSuccessfulBuild/artifact/api/target/html-docs/index.html).
 
 ## Examples
 
