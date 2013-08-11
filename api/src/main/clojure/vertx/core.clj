@@ -24,7 +24,7 @@
                  When inside a Vert.x container, the root binding will
                  be set on verticle deployment. When embeded, you will
                  need to either bind this when needed, or alter its
-                 root binding by calling set-vertx!."}
+                 root binding by calling vertx.embed/set-vertx!."}
   *vertx* nil)
 
 (defonce ^{:dynamic true
@@ -33,11 +33,8 @@
                  You should only need to bind this for advanced usage."}
   *container* nil)
 
-(defn set-vertx! [vertx]
-  (.bindRoot #'*vertx* vertx))
-
 (defn- -bind-container-roots [vertx container]
-  (set-vertx! vertx)
+  (.bindRoot #'*vertx* vertx)
   (.bindRoot #'*container* container))
 
 (def ^:private ^:dynamic -current-verticle-id nil)
@@ -51,14 +48,6 @@
   (doseq [f (get @-vertx-stop-fns id)]
     (f))
   (swap! -vertx-stop-fns dissoc id))
-
-(defn vertx
-  ([]
-     (VertxFactory/newVertx))
-  ([host]
-     (VertxFactory/newVertx host))
-  ([host port]
-     (VertxFactory/newVertx port host)))
 
 (defn get-vertx
   "Returns the currently active vertx instance (*vertx*), throwing if not set."

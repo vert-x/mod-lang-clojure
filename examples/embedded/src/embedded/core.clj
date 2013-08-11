@@ -1,5 +1,5 @@
 (ns embedded.core
-  (:require [vertx.core :as vertx]
+  (:require [vertx.embed :as vertx]
             [vertx.eventbus :as eb])
   (:import java.util.concurrent.CountDownLatch))
 
