@@ -300,3 +300,11 @@ You can start a few receivers
     vertx run eventbus_pubsub/sender.clj -cluster
 
 
+## Embedded Vert.x 
+
+Demonstrates using an embedded Vertx instance from Clojure. 
+
+Run with:
+
+    cd embedded
+    lein run
