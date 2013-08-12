@@ -16,6 +16,32 @@
     <module>lang-module</module>
   </modules>
 
+  <licenses>
+    <license>
+      <name>Apache License - v 2.0</name>
+      <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+
+  <developers>
+    <developer>
+      <id>tcrawey</id>
+      <name>Toby Crawley</name>
+      <email>toby@tcrawley.org</email>
+    </developer>
+    <developer>
+      <id>stream</id>
+      <email>stream1984@gmail.com</email>
+    </developer>
+  </developers>
+
+  <scm>
+    <connection>scm:git:git@github.com:vert-x/mod-lang-clojure.git</connection>
+    <developerConnection>scm:git:git@github.com:vert-x/mod-lang-clojure.git</developerConnection>
+    <url>https://github.com/vert-x/mod-lang-clojure/</url>
+  </scm>
+
   <properties>
     <!-- encodings -->
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
