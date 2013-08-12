@@ -1961,7 +1961,7 @@ directory:
                         :default "error.html"))))))
         (http/listen 8080))
                     
-There's also a version of `send-file` which takes the name of a file
+There's also a variant of `send-file` which takes the name of a file
 to serve if the specified file cannot be found:
 
     (http/send-file response (str "web/" file) "handler_404.html")

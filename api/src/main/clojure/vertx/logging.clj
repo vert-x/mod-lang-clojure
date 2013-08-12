@@ -13,7 +13,7 @@
 ;; limitations under the License.
 
 (ns vertx.logging
-  "TOOD: docs"
+  "Functions for logging to the Vert.x logging subsystem."
   (:require [vertx.core :as core]))
 
 (def ^{:dynamic true
@@ -43,42 +43,42 @@
   (.isTraceEnabled (get-logger)))
 
 (defn fatal*
-  "TODO: docs"
+  "Prints a fatal log entry."
   ([obj]
      (.fatal (get-logger) obj))
   ([obj throwable]
      (.fatal (get-logger) obj throwable)))
 
 (defn error*
-  "TODO: docs"
+  "Prints an error log entry."
   ([obj]
      (.error (get-logger) obj))
   ([obj throwable]
      (.error (get-logger) obj throwable)))
 
 (defn warn*
-  "TODO: docs"
+  "Prints a warn log entry."
   ([obj]
      (.warn (get-logger) obj))
   ([obj throwable]
      (.warn (get-logger) obj throwable)))
 
 (defn info*
-  "TODO: docs"
+  "Prints an info log entry if info is enabled."
   ([obj]
      (.info (get-logger) obj))
   ([obj throwable]
      (.info (get-logger) obj throwable)))
 
 (defn debug*
-  "TODO: docs"
+  "Prints an debug log entry if debug is enabled."
   ([obj]
      (.debug (get-logger) obj))
   ([obj throwable]
      (.debug (get-logger) obj throwable)))
 
 (defn trace*
-  "TODO: docs"
+  "Prints an trace log entry if trace is enabled."
   ([obj]
      (.trace (get-logger) obj))
   ([obj throwable]

@@ -13,29 +13,50 @@
 ;; limitations under the License.
 
 (ns vertx.net
-  "TODO: docs"
+  "Provides a broad set of functions for creating TCP servers and
+   clients."
   (:require [vertx.core :as core]
             [vertx.common :as common]
             [vertx.utils :as u]))
 
-;;TODO: document properties
+(defn ^:internal normalize-ssl-props [props]
+  (let [replacements {:ssl :SSL}]
+    (into {}
+          (map (fn [[k v]]
+                 (if-let [r (replacements k)]
+                   [r v]
+                   [k v]))
+               props))))
+
 (defn server
-  "Creates a TCP or SSL server (NetServer) instance using vertx.core/*vertx*."
+  "Creates a TCP or SSL server (NetServer) instance using vertx.core/*vertx*.
+   properties is a map of properties to set on the newly created
+   server instance. They are translated into .setXXX calls by
+   camel-casing the keyword key. Example: {:key-store-path
+   \"/some/path\"} will trigger a call to .setKeyStorePath on the
+   server object. See the docuementation for
+   org.vertx.java.core.net.NetServer for a full list of properties."
   ([]
      (server nil))
   ([properties]
-     (u/set-properties (.createNetServer (core/get-vertx)) properties)))
+     (u/set-properties (.createNetServer (core/get-vertx))
+                       (normalize-ssl-props properties))))
 
-;;TODO: document properties
 (defn client
   "Creates a TCP or SSL client (NetClient) instance using vertx.core/*vertx*.
-
+   properties is a map of properties to set on the newly created
+   client instance. They are translated into .setXXX calls by
+   camel-casing the keyword key. Example: {:key-store-path
+   \"/some/path\"} will trigger a call to .setKeyStorePath on the
+   client object. See the docuementation for
+   org.vertx.java.core.net.NetClient for a full list of properties.
    Multiple connections to different servers can be made using the
    same client instance."
   ([]
      (client nil))
   ([properties]
-     (u/set-properties (.createNetClient (core/get-vertx)) properties)))
+     (u/set-properties (.createNetClient (core/get-vertx))
+                       (normalize-ssl-props properties))))
 
 (defn listen
   "Tells the server to start listening for connections on port.
@@ -46,7 +67,7 @@
    the exception and server. Returns the server instance.
 
    Be aware this is an async operation and the server may not bound on
-   return of the method."
+   return of the function."
   ([server port]
      (listen server port nil))
   ([server port host]
@@ -98,3 +119,11 @@
      (close server nil))
   ([server handler]
      (common/internal-close server handler)))
+
+(defn send-file
+  "Stream a file directly from disk to the outgoing connection.
+   This bypasses userspace altogether where supported by the
+   underlying operating system. This is a very efficient way to serve
+   files. Returns the socket."
+  [sock filename]
+  (.sendFile sock filename))

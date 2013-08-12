@@ -179,10 +179,10 @@
    delivered across many buffers. For example, a delimited parser
    with a delimiter of \"\\n\" would take:
 
-   buffer1:Hello\nHow are y
-   buffer2:ou?\nI am
+   buffer1:Hello\\nHow are y
+   buffer2:ou?\\nI am
    buffer3:fine.
-   buffer4:\n
+   buffer4:\\n
 
    and invoke the handler three times with:
 

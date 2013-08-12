@@ -17,10 +17,15 @@
   (:require [vertx.core :as core])
   (:import [org.vertx.java.core VertxFactory]))
 
-(defn set-vertx! [vertx]
+(defn set-vertx!
+  "Binds the root value of vertx.core/*vertx*."
+  [vertx]
   (.bindRoot #'core/*vertx* vertx))
 
 (defn vertx
+  "Creates a Vertx instance.
+   If host provided, the instance will be clusted, listening for
+   connections on host:port. port defaults to 25500."
   ([]
      (VertxFactory/newVertx))
   ([host]

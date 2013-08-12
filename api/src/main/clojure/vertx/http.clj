@@ -13,11 +13,8 @@
 ;; limitations under the License.
 
 (ns vertx.http
-  "Provides a broad set of functions for manipulating http. Wraps the
-   methods from org.vertx.java.core.http.HttpClient/HttpServer
-   org.vertx.java.core.http.HttpClientReuqest HttpClientResponse
-   org.vertx.java.core.http.HttpServerReuqest HttpServerResponse
-   and HttpServerFileUpload."
+  "Provides a broad set of functions for creating HTTP servers and
+   clients, and handling requests."
   (:refer-clojure :exclude [get])
   (:require [clojure.string :as string]
             [vertx.buffer :as buf]
@@ -51,12 +48,16 @@
 (defn server
   "Creates a HTTP or HTTPS server (HttpServer) instance from vertx.core/*vertx*.
    properties is a map of properties to set on the newly created
-   server instance.  See the docuementation for
+   server instance. They are translated into .setXXX calls by
+   camel-casing the keyword key. Example: {:key-store-path
+   \"/some/path\"} will trigger a call to .setKeyStorePath on the
+   server object. See the docuementation for
    org.vertx.java.core.http.HttpServer for a full list of properties."
   ([]
      (server nil))
   ([properties]
-     (u/set-properties (.createHttpServer (core/get-vertx)) properties)))
+     (u/set-properties (.createHttpServer (core/get-vertx))
+                       (net/normalize-ssl-props properties))))
 
 (defn listen
   "Tells the http-server to start listening for connections on port.
@@ -67,7 +68,7 @@
    the exception and server. Returns the server instance.
 
    Be aware this is an async operation and the server may not bound on
-   return of the method."
+   return of the function."
   ([server port]
      (listen server nil nil))
   ([server port host]
@@ -78,9 +79,12 @@
               (core/as-async-result-handler handler))))
 
 (defn on-request
-  "Set the request handler for the server to requestHandler.
-   As HTTP requests are received by the server, instances of HttpServerRequest
-   will be created and passed to this handler."
+  "Attaches a request handler to the server.
+   As HTTP requests are received by the server, instances of
+   HttpServerRequest will be created and passed to this
+   handler. handler can either be a single-arity fn or a Handler
+   instance that will be passed the request object. Returns the server
+   instance."
   [server handler]
   (.requestHandler server (core/as-handler handler)))
 
@@ -101,57 +105,74 @@
 
 ;; HttpServerRequest
 (defn version
-  "Convert HTTP Enum to String e.g:HTTP_1_1 -> HTTP/1.1"
+  "Reads the HTTP version from the request object as a String of the form \"HTTP/1.1\"."
   [req]
   (let [str-vec (string/split (.name (.version req)) #"_")]
     (str (first str-vec) "/" (second str-vec) "." (last str-vec))))
 
 (defn request-method
-  "Return method of HTTP in keyword e.g GET -> :GET"
+  "Reads the HTTP request method from the request object as a keyword of the form :GET."
   [req] (keyword (.method req)))
 
 (defn params
-  "Returns a map of all the parameters in the request of uri, suit to GET"
-  [req] (parse-multi-map (.params req)))
+  "Returns a map of parameters for the request.
+   Keys will be keywords, and keys that have multiple values in the
+   params will have those values stored as a vector."
+  [req]
+  (parse-multi-map (.params req)))
 
 (defn form-attributes
-  "Returns a map of all the paramemters in the request of body, suit to form-POST"
-  [req] (parse-multi-map (.formAttributes req)))
+  "Returns a map of form-attributes for the request.
+   Keys will be keywords, and keys that have multiple values in the
+   attributes will have those values stored as a vector.  You will
+   need to call expect-multi-part on the request *before* reading the
+   body in order to use form-attributes."
+  [req]
+  (parse-multi-map (.formAttributes req)))
 
 (defn headers
-  "Returns a map of header from request or response,
-   the value is Vector if key have value more than one"
-  [http] (parse-multi-map (.headers http)))
+  "Returns a map of headers for the server request or client response.
+   Keys will be keywords, and keys that have multiple values in the
+   headers will have those values stored as a vector."
+  [req-or-resp]
+  (parse-multi-map (.headers req-or-resp)))
 
 (defn trailers
-  "Returns HTTP trailers in map from request or response
-   the value is Vector if key have value more than one"
-  [http] (parse-multi-map (.trailers http)))
+  "Returns a map of trailers for the server request or client response.
+   Keys will be keywords, and keys that have multiple values in the
+   trailers will have those values stored as a vector."
+  [req-or-resp]
+  (parse-multi-map (.trailers req-or-resp)))
 
 (defn remote-address
-  "Return a map which contains {:host 127.0.0.1 :port 5566}"
+  "Returns the remote address from the request as {:host \"127.0.0.1\" :port 5566}."
   [req]
   (let [addr (.remoteAddress req)]
     {:host (.getHostName addr) :port (.getPort addr)}))
 
-(defn certs
-  "Return an array of the peer certificates. nil if connection is not SSL."
-  [req] (.peerCertificateChain req))
-
 (defn server-response
-  "Represents a server-side HTTP response.
-   properties include
-   :status-code :status-message :chunked"
+  "Creates a response object for the given request object.
+   Properties is a map of options for the server instance. They are
+   translated into .setXXX calls by camel-casing the keyword
+   key. Example: {:status-code 418} will trigger a call to
+   .setStatusCode on the response object. See the docuementation for
+   org.vertx.java.core.http.HttpServerResponse for a full list of
+   properties."
   ([req] (server-response req nil))
   ([req properties]
      (u/set-properties (.response req) properties)))
 
 (defn on-body
-  "Convenience method for receiving the entire request body in one piece.
-   This saves the user having to manually
-   set a data and end handler and append the chunks of the body until the whole body received.
-   Don't use this if your request body is large - you could potentially run out of RAM."
-  [http handler] (.bodyHandler http (core/as-handler handler)))
+  "Attach a handler to receive the entire body in one piece.
+   http can either be a server request or client response.  handler
+   can either be a single-arity fn or a Handler instance that will be
+   passed the body as a buffer. This saves the user having to manually
+   set a data and end handler and append the chunks of the body until
+   the whole body received.  Don't use this if your request body is
+   large - you could potentially run out of RAM. Returns the given
+   server request or client response."
+  [http handler]
+  (.bodyHandler http (core/as-handler handler)))
 
 (defn upload-file-info
   "Takes an HttpServerFileUpload object, and returns a map of properties about that object.
@@ -176,109 +197,129 @@
    :save-fn (fn [path] (.streamToFileSystem file path))})
 
 (defn on-upload
-  "Set the upload handler. The handler will get notified once a new
-   file upload was received and so allow to get notified by the upload
-   in progress. handler can either be a single-arity fn that will be
-   passed a map of properties of the uploaded file, or a Handler that
-   will be called with the raw HttpServerFileUpload object. See
-   upload-file-info for more information on the file properties."
+  "Set the upload handler on a server request.
+   The handler will get notified once a new file upload was received
+   and so allow to get notified by the upload in progress. handler can
+   either be a single-arity fn that will be passed a map of properties
+   of the uploaded file, or a Handler that will be called with the raw
+   HttpServerFileUpload object. See upload-file-info for more
+   information on the file properties. Returns the request."
   [req handler]
   (.uploadHandler req (core/as-handler handler upload-file-info)))
 
-
 (defn add-header
-  "Sets an HTTP header on a request or response object.
+  "Sets an HTTP header on a client request or server response.
    Key can be a string, keyword, or symbol. The latter two will be
-   converted to a string via name."
+   converted to a string via name. Returns the request or response."
   [req-or-resp key value]
   (.putHeader req-or-resp (name key) (str value)))
 
 (defn add-headers
-  "Sets a HTTP headers on a request or response object.
+  "Sets a HTTP headers on a client request or server response.
    Keys can be strings, keywords, or symbols. The latter two will be
-   converted to strings via name."
+   converted to strings via name. Returns the request or response."
   [req-or-resp headers]
   (doseq [[k v] headers]
     (add-header req-or-resp k v))
   req-or-resp)
 
 (defn add-trailer
-  "Sets an HTTP trailer on a request or response object.
+  "Sets an HTTP trailer on a client request or server response.
    Key can be a string, keyword, or symbol. The latter two will be
-   converted to a string via name."
+   converted to a string via name. Returns the request or response."
   [req-or-resp key value]
   (.putTrailer req-or-resp (name key) (str value)))
 
 (defn add-trailers
-  "Sets a HTTP trailers on a request or response object.
+  "Sets a HTTP trailers on a client request or server response.
    Keys can be strings, keywords, or symbols. The latter two will be
-   converted to strings via name."
+   converted to strings via name. Returns the request or response."
   [req-or-resp trailers]
   (doseq [[k v] trailers]
     (add-trailer req-or-resp k v))
   req-or-resp)
 
 (defn send-file
-  "Tell the kernel to stream a file as specified by {@code filename} directly
-   from disk to the outgoing connection, bypassing userspace altogether
-   (where supported by the underlying operating system.
-   This is a very efficient way to serve files."
+  "Stream a file directly from disk to the outgoing connection.
+   not-found should be the path to a resource to serve if filename is
+   not found. If not-found is not specified, a standard 404 response
+   is generated. This bypasses userspace altogether where supported by
+   the underlying operating system. This is a very efficient way to
+   serve files. Returns the response object."
   ([resp filename]
      (.sendFile resp filename))
   ([resp filename not-found]
      (.sendFile resp filename not-found)))
 
 (defn end
-  "Ends the response. If no data has been written to the response body,
-   the actual response won't get written until this method gets called.
-   Once the response has ended, it cannot be used any more."
-  ([http]
-     (.end http))
-  ([http content]
-     (.end http (buf/as-buffer content)))
-  ([http content enc]
-     (.end http content enc)))
+  "Ends the server request or client response.
+   Writes the given content to the request or response before ending,
+   using the same rules as vertx.stream/write. If no data has been
+   written to the response body, the actual response won't get written
+   until this method gets called. Once the response has ended, it
+   cannot be used any more."
+  ([req-or-resp]
+     (.end req-or-resp))
+  ([req-or-resp content]
+     (.end req-or-resp (buf/as-buffer content)))
+  ([req-or-resp content enc]
+     (.end req-or-resp content enc)))
 
 ;;HttpClient
 
-;;exception handler could use it with stream/on-exception
-
 (defn client
-  "Creates a HTTP or HTTPS client (HttpClient) instance.
-   If vertx is not provided, it defaults to the default
-   vertx (vertx.core/*vertx*)."
+  "Creates a HTTP or HTTPS client (HttpClient) instance from vertx.core/*vertx*.
+   properties is a map of properties to set on the newly created
+   client instance. They are translated into .setXXX calls by
+   camel-casing the keyword key. Example: {:key-store-path
+   \"/some/path\"} will trigger a call to .setKeyStorePath on the
+   client object. See the docuementation for
+   org.vertx.java.core.http.HttpClient for a full list of properties."
   ([]
      (client nil))
   ([properties]
-     (u/set-properties (.createHttpClient (core/get-vertx)) properties)))
+     (u/set-properties (.createHttpClient (core/get-vertx))
+                       (net/normalize-ssl-props properties))))
 
 
 (defn request
-  "The specific HTTP method (e.g. GET, POST, PUT etc),
-   in clojure we use key word instead of string (e.g. :GET :POST)
-   the methods including
-   :OPTIONS :GET :HEAD :POST :PUT :DELETE :TRACE :CONNECT :PATCH"
-  [http-client method uri resp-h]
-  (.request http-client (string/upper-case (name method)) uri
-            (core/as-handler resp-h)))
+  "Creates an HttpClientRequest object for the given HTTP method.
+   method should be one of: :OPTIONS, :GET, :HEAD, :POST, :PUT,
+   :DELETE, :TRACE, :CONNECT, or :PATCH. uri is the relative portion
+   of the url to be requested. If a full url is provided, the host and
+   port will be ignored, using the host and port set on the client
+   object instead. handler can either be a single-arity fn or a
+   Handler instance that will be passed the HttpClientResponse.  The
+   request won't be issued until ended with a call to the end
+   function."  [client method uri handler]
+  (.request client (string/upper-case (name method)) uri
+            (core/as-handler handler)))
 
 (defn get-now
-  "This is a quick version of the #get(String, org.vertx.java.core.Handler)
-   method where you do not want to do anything with the request before sending.
-   Normally with any of the HTTP methods you create the request then when you are ready to send it you call
-   ```end``` on it. With this method the request is immediately sent.
-   When an HTTP response is received from the server the responseHandler is called passing in the response."
-  ([http-client uri resp-h]
-     (get-now http-client uri nil resp-h))
-  ([http-client uri headers resp-h]
-     (.getNow http-client uri
+  "Creates a GET HttpClientRequest object.
+   uri is the relative portion of the url to be requested. If a full
+   url is provided, the host and port will be ignored, using the host
+   and port set on the client object instead. handler can either be a
+   single-arity fn or a Handler instance that will be passed the
+   HttpClientResponse. This is a quick version of the get function,
+   used when you don't need to write a body to the request. This
+   request is immediately issued, and the end function need not be
+   called."
+  ([client uri handler]
+     (get-now client uri nil handler))
+  ([client uri headers handler]
+     (.getNow client uri
               (encode-headers headers)
-              (core/as-handler resp-h))))
+              (core/as-handler handler))))
 
 (defmacro ^:private def-request-fn [name]
-  (let [doc (format "Makes a %s request to uri.
-   handler is a single-arity fn that will be called with the HTTP
-   response object. Returns the request object."
+  (let [doc (format "Creates a %s HttpClientRequest object.
+    uri is the relative portion of the url to be requested. If a full url is
+    provided, the host and port will be ignored, using the host and
+    port set on the client object instead. handler can either be a
+    single-arity fn or a Handler instance that will be passed the
+    HttpClientResponse. The request won't be issued until ended with
+    a call to the end function."
                     (string/upper-case name))
         method (symbol (str "." name))]
     `(defn ~name ~doc
@@ -298,9 +339,13 @@
 ;;HttpClientRequest
 
 (defn on-continue
-  " If you send an HTTP request with the header set to the value 100-continue
-    and the server responds with an interim HTTP response with a status code of 100
-    and a continue handler has been set using this method, then the handler will be called.
-    You can then continue to write data to the request body and later end it. "
-  [client-req handler]
-  (.continueHandler client-req (core/as-handler handler)))
+  "Registers a continue handler on a HttpClientRequest.
+   handler can either be a zero-arity fn or a Handler instance that
+   will be called when the server is ready to continue.  If you send
+   an HTTP request with the Expect header set to the value
+   100-continue and the server responds with an interim HTTP response
+   with a status code of 100, then the handler will be called.  You
+   can then continue to write data to the request body and later end
+   it."
+  [req handler]
+  (.continueHandler req (core/as-void-handler handler)))

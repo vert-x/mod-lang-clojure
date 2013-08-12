@@ -13,43 +13,49 @@
 ;; limitations under the License.
 
 (ns vertx.http.sockjs
-  "This is an implementation of the server side part of https://github.com/sockjs
-  <p>SockJS enables browsers to communicate with the server using a simple WebSocket-like api for sending
-  and receiving messages. Under the bonnet SockJS chooses to use one of several protocols depending on browser
-  capabilities and what appears to be working across the network.<p>
+  "This is an implementation of the server side part of https://github.com/sockjs.
+
+  SockJS enables browsers to communicate with the server using a
+  simple WebSocket-like api for sending and receiving messages. Under
+  the bonnet SockJS chooses to use one of several protocols depending
+  on browser capabilities and what appears to be working across the
+  network.
+
   Available protocols include:
-  <ul>
-    <li>WebSockets</li>
-    <li>xhr-polling</li>
-    <li>xhr-streaming</li>
-    <li>json-polling</li>
-    <li>event-source</li>
-    <li>html-file</li>
-  </ul><p>
-  This means, it should <i>just work</i> irrespective of what browser is being used, and whether there are nasty
-  things like proxies and load balancers between the client and the server.<p>
 
-  For more detailed information on SockJS, see their website.<p>
+  * WebSockets
+  * xhr-polling
+  * xhr-streaming
+  * json-polling
+  * event-source
+  * html-file
 
-  On the server side, you interact using instances of {@link SockJSSocket} - this allows you to send data to the
-  client or receive data via the {@link SockJSSocket#dataHandler}.<p>
+  This means it should just work irrespective of what browser
+  is being used, and whether there are nasty things like proxies and
+  load balancers between the client and the server.
 
-  You can register multiple applications with the same SockJSServer, each using different path prefixes, each
-  application will have its own handler, and configuration.<p>
+  For more detailed information on SockJS, see their website.
 
-  Instances of this class are not thread-safe.<p>"
+  On the server side, you interact using instances of SockJSSocket -
+  this allows you to send data to the client or receive data via
+  vertx.stream/on-data.
+
+  You can register multiple applications with the same SockJSServer,
+  each using different path prefixes, each application will have its
+  own handler, and configuration."
   (:require [clojure.string :as string]
             [vertx.utils :as u]
             [vertx.core :as core])
   (:import [org.vertx.java.core.sockjs EventBusBridgeHook]))
 
 (defn sockjs-server
-  "Create a SockJS server that wraps an HTTP server"
+  "Create a SockJS server that wraps an HTTP server."
   [http-server]
   (-> (core/get-vertx) (.createSockJSServer http-server)))
 
 (defn install-app
-  "Install an application with A handler that will be called when new SockJS sockets are created"
+  "Install an application with a handler that will be called when new SockJS sockets are created
+   TODO: better doc"
   [server config handler]
   (.installApp server (u/encode config) (core/as-handler handler)))
 
@@ -62,7 +68,8 @@
    inboundPermitted A list of JSON objects which define permitted matches for inbound (client->server) traffic
    outboundPermitted A list of JSON objects which define permitted matches for outbound (server->client) traffic
    authTimeout Default time an authorisation will be cached for in the bridge (defaults to 5 minutes)
-   authAddress Address of auth manager. Defaults to 'vertx.basicauthmanager.authorise'"
+   authAddress Address of auth manager. Defaults to 'vertx.basicauthmanager.authorise'
+   TODO: better doc"
   ([server app-config inbound-permitted outbound-permitted]
      (bridge server app-config inbound-permitted outbound-permitted
              default-auth-timeout default-auth-address))
@@ -105,6 +112,7 @@
    :publish       Client is publishing
    :pre-register  Called before client registers a handler
    :post-register Called after client registers a handler
-   :unregister    Client is unregistering a handler"
+   :unregister    Client is unregistering a handler
+   TODO: better doc"
   [server & {:as name-handlers}]
   (.setHook server (eb-bridge-hook name-handlers)))

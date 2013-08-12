@@ -13,8 +13,7 @@
 ;; limitations under the License.
 
 (ns vertx.http.websocket
-  "Porvides a set of functions for manipulating http websocket.
-   all functions is basedon http-server and http-client"
+  "Provides a set of functions for using http websockets."
   (:require [vertx.buffer :as buf]
             [vertx.core :as core]
             [vertx.http :as http])
@@ -22,9 +21,10 @@
 
 
 (defn on-websocket
-  "Set the websocket handler for the server to wsHandler.
-   If a websocket connect handshake is successful a
-   new ServerWebSocket instance will be created and passed to the handler."
+  "Sets the websocket handler for the HTTP server.
+   handler can either be a single-arity fn or a Handler instance that
+   will be passed the ServerWebSocket when a successful connection is
+   made."
   [server handler]
   (.websocketHandler server (core/as-handler handler)))
 
@@ -42,25 +42,29 @@
                 WebSocketVersion/HYBI_08 :HYBI-08)))
 
 (defn connect
-  "Attempt to connect an HTML5 websocket to the specified URI
-   This version of the method allows you to specify the websockets version using the  ws-version
-   You can also specify a set of headers to append to the upgrade request
-   The connect is done asynchronously and wsConnect is called back with the websocket"
-  ([http-client uri h]
-     (connect http-client uri nil nil h))
-  ([http-client uri version h]
-     (connect http-client uri version nil h))
-  ([http-client uri version header h]
-     (.connectWebsocket http-client uri (ws-version version)
+  "Connect the HTTP client to a websocket at the specified URI.
+   version allows you to force the protocol version to one
+   of: :RFC6455, :HYBI-00, or :HYBI-08.  handler can either be a
+   single-arity fn or a Handler instance that will be passed the
+   WebSocket when a successful connection is made. Returns the
+   client."
+  ([client uri handler]
+     (connect client uri nil nil handler))
+  ([client uri version handler]
+     (connect client uri version nil handler))
+  ([client uri version header handler]
+     (.connectWebsocket client uri (ws-version version)
                         (http/encode-headers header)
-                        (core/as-handler h))))
+                        (core/as-handler handler))))
 
 (defn write-binary-frame
-  "Write data Buffer to websocket as a binary frame."
+  "Write data Buffer to websocket as a binary frame.
+   Returns the websocket."
   [ws data]
   (.writeBinaryFrame ws (buf/as-buffer data)))
 
 (defn write-text-frame
-  "Write data String to websocket as a text frame."
+  "Write data String to websocket as a text frame.
+   Returns the websocket."
   [ws data]
   (.writeTextFrame ws (str data)))
