@@ -8,7 +8,7 @@
   <parent>
     <groupId>io.vertx</groupId>
     <artifactId>lang-clojure-parent</artifactId>
-    <version>0.1.0</version>
+    <version>0.2.0-SHAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
