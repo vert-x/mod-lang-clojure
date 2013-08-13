@@ -38,3 +38,8 @@ For HEAD:
 ## Examples
 
 See [examples/README.md](examples/README.md).
+
+## License
+
+mod-lang-clojure is licensed under the Apache License, v2.0. See
+[LICENSE.txt](LICENSE.txt) for details.
