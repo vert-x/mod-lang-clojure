@@ -25,10 +25,15 @@ and update your `langs.properties` with:
 
 ## Documentation
 
-See the current user manual at
-[docs/core_manual_clojure.md](docs/core_manual_clojure.md).  The
-latest API docs are available from
-[CI](https://projectodd.ci.cloudbees.com/job/vertx.mod-lang-clojure/lastSuccessfulBuild/artifact/api/target/html-docs/index.html).
+For 0.1.0:
+
+* [User Manual](/vert-x/mod-lang-clojure/blob/0.1.0/docs/core_manual_clojure.md)
+* [API docs](http://tcrawley.org/mod-lang-clojure/0.1.0/html-docs/)
+
+For HEAD:
+
+* [User Manual](docs/core_manual_clojure.md)
+* [API docs](https://projectodd.ci.cloudbees.com/job/vertx.mod-lang-clojure/lastSuccessfulBuild/artifact/api/target/html-docs/index.html)
 
 ## Examples
 
