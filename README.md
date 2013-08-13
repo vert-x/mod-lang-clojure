@@ -27,7 +27,7 @@ and update your `langs.properties` with:
 
 For 0.1.0:
 
-* [User Manual](/vert-x/mod-lang-clojure/blob/0.1.0/docs/core_manual_clojure.md)
+* [User Manual](https://github.com/vert-x/mod-lang-clojure/blob/0.1.0/docs/core_manual_clojure.md)
 * [API docs](http://tcrawley.org/mod-lang-clojure/0.1.0/html-docs/)
 
 For HEAD:
