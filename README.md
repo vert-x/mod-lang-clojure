@@ -4,6 +4,8 @@ A fledgling Vert.x language implementation for Clojure
 
 ## Usage
 
+First, you'll need to [install Vert.x](http://vertx.io/install.html).
+
 The latest stable release is *0.1.0*. Until this module becomes part
 of Vert.x proper, you will need to make Vert.x aware of it my editing
 `VERTX_HOME/conf/langs.properties` and adding:
