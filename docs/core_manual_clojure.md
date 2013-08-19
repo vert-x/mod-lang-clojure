@@ -41,7 +41,7 @@ Copy the following into a text editor and save it as `server.clj`
     (let [server (net/server)]
       (-> server
           (net/on-connect #(stream/pump % %))
-          (net/listen "localhost" 1234))
+          (net/listen 1234 "localhost"))
           
       (core/on-stop
         (.close server)))
