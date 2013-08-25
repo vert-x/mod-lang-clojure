@@ -188,11 +188,11 @@
    called with the AsyncResult object that wraps the exception and
    id."
   ([main]
-     (deploy-worker-verticle main nil nil nil nil))
+     (deploy-worker-verticle main {} 1 false nil))
   ([main config]
-     (deploy-worker-verticle main config nil nil nil))
+     (deploy-worker-verticle main config 1 false nil))
   ([main config instances]
-     (deploy-worker-verticle main config instances nil nil))
+     (deploy-worker-verticle main config instances false nil))
   ([main config instances multi-threaded?]
      (deploy-worker-verticle main config instances multi-threaded? nil))
   ([main config instances multi-threaded? handler]
