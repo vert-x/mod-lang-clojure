@@ -75,9 +75,10 @@
   ([f result-fn]
       (if (or (nil? f) (handler? f))
         f
-        (reify Handler
-          (handle [_# event#]
-            (f (result-fn event#)))))))
+        (let [boundf (bound-fn [x] (f (result-fn x)))]
+          (reify Handler
+            (handle [_# event#]
+              (boundf event#)))))))
 
 (defmacro handler
   "Wraps the given bindings and body in a org.vertx.java.core.Handler.
