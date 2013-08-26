@@ -1,4 +1,11 @@
 {
+  "description": "Clojure language implementation module for Vert.x",
+  "licenses": ["The Apache Software License Version 2.0"],
+  "author": "Toby Crawley",
+  "developers": ["Stream Liu"],
+  "keywords": ["clojure", "language", "repl"],
+  "homepage": "https://github.com/vert-x/mod-lang-clojure",
+
   "system": true,
   "resident": true
 }
