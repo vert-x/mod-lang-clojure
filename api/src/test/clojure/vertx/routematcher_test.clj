@@ -16,32 +16,35 @@
   (:require [vertx.testtools :as t]
             [vertx.http :as http]
             [vertx.core :as core]
-            [vertx.http.route :as rm]))
+            [vertx.http.route :as rm]
+            [clojure.test :refer [deftest is use-fixtures]]))
 
-(defn test-matcher []
+(use-fixtures :each t/as-embedded)
+
+(deftest test-matcher
   (letfn [(req-handler [params req]
-            (t/assert= params (http/params req))
+            (is (= params (http/params req)))
             (http/end (http/server-response req {:status-code 200})))
 
           (no-match-handler [req]
             (http/end (http/server-response req) "Not Found"))
 
           (client-resp-no-match [resp]
-            (t/assert= (int 200) (.statusCode resp))
+            (is (= 200 (.statusCode resp)))
             (http/on-body resp (fn [buf] (t/test-complete
-                                           (t/assert= (.toString buf) "Not Found")))))
+                                         (is (= (.toString buf) "Not Found"))))))
 
           (client-resp-handler-regx [client resp]
-            (t/assert= (int 200) (.statusCode resp))
+            (is (= 200 (.statusCode resp)))
             (http/end (http/request client :PUT "no-such-uri" (partial client-resp-no-match))))
 
           (client-resp-handler [client resp]
-            (t/assert= (int 200) (.statusCode resp))
+            (is (= 200 (.statusCode resp)))
             (http/end (http/request client :GET "/bar/v0.2" (partial client-resp-handler-regx client))))
 
           (server-listen-handler [orig-server port host matcher err server]
-            (t/assert-nil err)
-            (t/assert= orig-server server)
+            (is (nil? err))
+            (is (= orig-server server))
             (let [client (http/client {:port port :host host})
                   params1 {:name "foo" :version "v0.1"}
                   pattern1 "/mod/:name/:version/"
@@ -63,6 +66,3 @@
           (http/on-request matcher)
           (http/listen port host
                        (partial server-listen-handler server port host matcher))))))
-
-
-(t/start-tests)

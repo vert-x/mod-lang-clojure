@@ -18,29 +18,28 @@
             [vertx.buffer :as buf]
             [vertx.stream :as stream]
             [vertx.testtools :as t]
-            [clojure.java.io :as io]))
+            [clojure.java.io :as io]
+            [clojure.test :refer [deftest is use-fixtures]]))
 
+(use-fixtures :each t/as-embedded)
 
-(defn resource-path [name]
-  (.getAbsolutePath (io/file (io/resource name))))
+(defn assert-status-code [resp]
+  (is (= (int 200) (.statusCode resp))))
 
-(defn assert-stauts-code [resp]
-  (t/assert= (int 200) (.statusCode resp)))
-
-(defn test-base-request []
+(deftest base-request
   (letfn [(req-handler [req]
             (let [header (http/headers req)
                   addr (http/remote-address req)]
-              (t/assert= :GET (http/request-method req))
-              (t/assert= "/get/now?k=v" (.uri req))
-              (t/assert= "/get/now" (.path req))
-              (t/assert= "k=v" (.query req))
-              (t/assert= {:k "v"} (http/params req))
-              (t/assert= "dummy" (:dummy header))
-              (t/assert= ["v1" "v2"] (:dummy-v header))
-              (t/assert  (.startsWith (:host addr) "localhost"))
-              (t/assert  (> (:port addr) -1))
-              (t/assert-not-nil (.absoluteURI req)))
+              (is (= :GET (http/request-method req)))
+              (is (= "/get/now?k=v" (.uri req)))
+              (is (= "/get/now" (.path req)))
+              (is (= "k=v" (.query req)))
+              (is (= {:k "v"} (http/params req)))
+              (is (= "dummy" (:dummy header)))
+              (is (= ["v1" "v2"] (:dummy-v header)))
+              (is (.startsWith (:host addr) "localhost"))
+              (is (> (:port addr) -1))
+              (is (.absoluteURI req)))
 
             (let [resp (http/server-response req {:status-code 200
                                                   :status-message "status-msg"
@@ -53,90 +52,85 @@
             (http/get-now client "/get/now?k=v" {:dummy "dummy"
                                                  :dummy-v ["v1" "v2"]}
                           (fn [resp]
-                            (assert-stauts-code resp)
-                            (t/assert= "status-msg" (.statusMessage resp))
-                            (t/assert= "add-header" (:add-header (http/headers resp)))
+                            (assert-status-code resp)
+                            (is (= "status-msg" (.statusMessage resp)))
+                            (is (= "add-header" (:add-header (http/headers resp))))
                             (http/on-body
                              resp (fn [buf]
                                     (t/test-complete
-                                     (t/assert= (buf/buffer "body-content") buf)))))))
+                                     (is (= (buf/buffer "body-content") buf))))))))
 
           (server-listen-handler [orig-server port host err server]
-            (t/assert-nil err)
-            (t/assert= orig-server server)
-            (client-request (http/client {:port port :host host}))
-            )]
+            (is (not err))
+            (is (= orig-server server))
+            (client-request (http/client {:port port :host host})))]
 
     (let [server (http/server) port 8888 host "localhost"]
       (-> server
           (http/on-request req-handler)
-          (http/listen port host (partial server-listen-handler server port host))
-          ))))
+          (http/listen port host (partial server-listen-handler server port host))))))
 
 
-
-(defn test-form-request []
+(deftest form-request
   (letfn [(req-handler [req]
-            (t/assert (.startsWith (.uri req) "/form"))
+            (is (.startsWith (.uri req) "/form"))
             (http/expect-multi-part req)
             (let [resp (http/server-response req {:chunked true})]
               (stream/on-end req (fn []
                                    (let [forms (http/form-attributes req)]
                                      (prn forms)
-                                     (t/assert= "junit-testUserAlias" (:origin forms))
-                                     (t/assert= "admin@foo.bar" (:login forms))
-                                     (t/assert= "admin" (:pass-word forms))
+                                     (is (= "junit-testUserAlias" (:origin forms)))
+                                     (is (= "admin@foo.bar" (:login forms)))
+                                     (is (= "admin" (:pass-word forms)))
                                      (http/end resp))))))
 
           (server-listen-handler [orig-server port host err server]
-            (t/assert-nil err)
-            (t/assert= orig-server server)
+            (is (not err))
+            (is (= orig-server server))
             (let [body "origin=junit-testUserAlias&login=admin%40foo.bar&pass+word=admin"]
               (-> (http/client {:port port :host host})
                   (http/post "/form"
                              (fn [resp]
-                               (assert-stauts-code resp)
+                               (assert-status-code resp)
                                (http/on-body resp
                                              (fn [body]
-                                                  (t/test-complete
-                                                   (t/assert= (int 0) (.length body)))))))
-                  
+                                               (t/test-complete
+                                                (is (= (int 0) (.length body))))))))
+
                   (http/add-header :content-length (str (.length body)))
                   (http/add-header :content-type (str "application/x-www-form-urlencoded"))
-                  (http/end body))))
-          ]
+                  (http/end body))))]
 
     (let [server (http/server) port 8888 host "localhost"]
       (-> server
           (http/on-request req-handler)
-          (http/listen port host (partial server-listen-handler server port host))
-          ))))
+          (http/listen port host (partial server-listen-handler server port host))))))
 
 
 
-(defn test-upload-request []
+(deftest upload-request
   (letfn [(req-handler [req]
-            (t/assert (.startsWith (.uri req) "/form"))
+            (is (.startsWith (.uri req) "/form"))
             (http/expect-multi-part req)
             (let [resp (http/server-response req {:chunked true})]
               (http/on-upload req
                               (fn [file-info]
-                                (t/assert= "file" (:name file-info))
-                                (t/assert= "tmp-0.txt" (:filename file-info))
-                                (t/assert= "image/gif" (:content-type file-info))
+                                (is (= "file" (:name file-info)))
+                                (is (= "tmp-0.txt" (:filename file-info)))
+                                (is (= "image/gif" (:content-type file-info)))
                                 (stream/on-data
                                  (:stream file-info)
                                  (fn [data]
-                                   (t/assert= (buf/buffer "Vert.x Rocks!") data)))))
-              
+                                   (is (= (buf/buffer "Vert.x Rocks!") data))))))
+
               (stream/on-end req (fn []
                                    (let [forms (http/form-attributes req)]
-                                     (t/assert= (int 0) (count forms))
+                                     (is (= (int 0) (count forms)))
                                      (http/end resp))))))
 
           (server-listen-handler [orig-server port host err server]
-            (t/assert-nil err)
-            (t/assert= orig-server server)
+            (is (not err))
+            (is (= orig-server server))
             (let [boundary "dLV9Wyq26L_-JQxk6ferf-RT153LhOO"
                   body (str "--" boundary "\r\n"
                             "Content-Disposition: form-data; name=\"file\"; filename=\"tmp-0.txt\"\r\n"
@@ -147,12 +141,12 @@
               (-> (http/client {:port port :host host})
                   (http/post "/form"
                              (fn [resp]
-                               (assert-stauts-code resp)
+                               (assert-status-code resp)
                                (http/on-body resp
                                              (fn [body]
                                                (t/test-complete
-                                                (t/assert= (int 0) (.length body)))))))
-                  
+                                                (is (= (int 0) (.length body))))))))
+
                   (http/add-header :content-length (str (.length body)))
                   (http/add-header :content-type (str "multipart/form-data; boundary="boundary))
                   (http/end body))))]
@@ -160,42 +154,40 @@
     (let [server (http/server) port 8888 host "localhost"]
       (-> server
           (http/on-request req-handler)
-          (http/listen port host (partial server-listen-handler server port host))
-          ))))
+          (http/listen port host (partial server-listen-handler server port host))))))
 
 
-
-(defn test-ssl-request []
+(deftest ssl-request
   (letfn [(req-handler [req]
-            (t/assert= :GET (http/request-method req))
-            (t/assert= "/get/ssl/" (.uri req))
+            (is (= :GET (http/request-method req)))
+            (is (= "/get/ssl/" (.uri req)))
             (let [resp (http/server-response req)]
               (http/end resp "body-content")))
 
           (server-listen-handler [orig-server port host err server]
-            (t/assert-nil err)
-            (t/assert= orig-server server)
+            (is (not err))
+            (is (= orig-server server))
             (-> (http/client {:host "localhost"
                               :port 4043
                               :SSL true
                               :trust-all true
-                              :key-store-path (resource-path "keystores/client-keystore.jks")
+                              :key-store-path (t/resource-path "keystores/client-keystore.jks")
                               :key-store-password "wibble"
-                              :trust-store-path (resource-path "keystores/client-truststore.jks")
+                              :trust-store-path (t/resource-path "keystores/client-truststore.jks")
                               :trust-store-password "wibble"})
                 (http/get "/get/ssl/"
                           (fn [resp]
-                            (assert-stauts-code resp)
+                            (assert-status-code resp)
                             (http/on-body resp
                                           (fn [buf]
                                             (t/test-complete
-                                             (t/assert= (buf/buffer "body-content") buf))))))
+                                             (is (= (buf/buffer "body-content") buf)))))))
                 (http/end)))]
 
     (let [server (http/server {:SSL true
-                               :key-store-path (resource-path "keystores/server-keystore.jks")
+                               :key-store-path (t/resource-path "keystores/server-keystore.jks")
                                :key-store-password "wibble"
-                               :trust-store-path (resource-path "keystores/server-truststore.jks")
+                               :trust-store-path (t/resource-path "keystores/server-truststore.jks")
                                :trust-store-password "wibble"
                                :client-auth-required true})
           port 4043
@@ -207,7 +199,7 @@
 
 
 
-(defn test-http-client-request []
+(deftest http-client-request
   (letfn [(send-request [client method h]
             (-> client (http/request method "/some-uri" h) (http/end)))
 
@@ -217,37 +209,37 @@
 
           (connect-request [client]
             (send-request client :CONNECT (fn [resp]
-                                            (t/test-complete (assert-stauts-code resp)))))
+                                            (t/test-complete (assert-status-code resp)))))
 
           (patch-request [client]
-            (send-request client :PATCH (fn [resp] (assert-stauts-code resp)
+            (send-request client :PATCH (fn [resp] (assert-status-code resp)
                                           (connect-request client))))
 
           (trace-request [client]
-            (send-request client :TRACE (fn [resp] (assert-stauts-code resp)
+            (send-request client :TRACE (fn [resp] (assert-status-code resp)
                                           (patch-request client))))
 
           (head-request [client]
-            (send-request client :HEAD (fn [resp] (assert-stauts-code resp)
+            (send-request client :HEAD (fn [resp] (assert-status-code resp)
                                          (trace-request client))))
 
           (delete-request [client]
-            (send-request client :DELETE (fn [resp] (assert-stauts-code resp)
+            (send-request client :DELETE (fn [resp] (assert-status-code resp)
                                            (head-request client))))
 
           (put-request [client]
-            (send-request client :PUT (fn [resp] (assert-stauts-code resp)
+            (send-request client :PUT (fn [resp] (assert-status-code resp)
                                         (delete-request client))))
 
           (post-request [client]
-            (send-request client :POST (fn [resp] (assert-stauts-code resp)
+            (send-request client :POST (fn [resp] (assert-status-code resp)
                                          (put-request client))))
 
           (server-listen-handler [orig-server port host err server]
-            (t/assert-nil err)
-            (t/assert= orig-server server)
+            (is (not err))
+            (is (= orig-server server))
             (let [client (http/client {:port port :host host})]
-              (send-request client :OPTIONS (fn [resp] (assert-stauts-code resp)
+              (send-request client :OPTIONS (fn [resp] (assert-status-code resp)
                                               (post-request client)))))]
 
     (let [server (http/server)
@@ -258,16 +250,16 @@
           (http/listen port host
                        (partial server-listen-handler server port host))))))
 
-(defn test-websocket-request []
+(deftest websocket-request
   (letfn [(ws-handler [ws]
-            (t/assert= "/some/path" (.path ws))
-            (t/assert= "foo=bar&wibble=eek" (.query ws))
+            (is (= "/some/path" (.path ws)))
+            (is (= "foo=bar&wibble=eek" (.query ws)))
             (stream/on-data ws (fn [data]
                                  (stream/write ws data))))
 
           (server-listen-handler [orig-server port host err server]
-            (t/assert-nil err)
-            (t/assert= orig-server server)
+            (is (not err))
+            (is (= orig-server server))
             (-> (http/client {:port port :host host})
                 (ws/connect "/some/path?foo=bar&wibble=eek" :RFC6455
                             (fn [ws]
@@ -279,8 +271,7 @@
                                                      (buf/append! rcv-buf! data)
                                                      (when (= (.length rcv-buf!) (* send-count send-size))
                                                        (t/test-complete
-                                                        (t/assert= sent-buf! rcv-buf!))
-                                                       )))
+                                                        (is (= sent-buf! rcv-buf!))))))
                                 (dotimes [_ send-count]
                                   (let [data (t/random-buffer send-size)]
                                     (buf/append! sent-buf! data)
@@ -292,5 +283,3 @@
           (ws/on-websocket ws-handler)
           (http/listen port host
                        (partial server-listen-handler server port host))))))
-
-(t/start-tests)

@@ -69,6 +69,8 @@
     <version.nrepl>0.2.3</version.nrepl>
     <version.clj-stacktrace>0.2.5</version.clj-stacktrace>
     <version.clojure-complete>0.2.3</version.clojure-complete>
+
+    <test.timeout>10</test.timeout>
   </properties>
 
   <repositories>
