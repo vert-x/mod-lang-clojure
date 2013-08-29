@@ -99,12 +99,11 @@
             (eb/on-message
              addr
              (fn [m]
-               (t/test-complete
-                (is (= "message" m))
-                (eb/reply "reply"
-                          (fn [m]
-                            (is (= "reply-of-reply" m))
-                            (eb/reply m "reply-of-reply-of-reply")))))))
+               (is (= "message" m))
+               (eb/reply "reply"
+                         (fn [m]
+                           (is (= "reply-of-reply" m))
+                           (eb/reply "reply-of-reply-of-reply"))))))
 
     (eb/send addr "message"
              (fn [m]
