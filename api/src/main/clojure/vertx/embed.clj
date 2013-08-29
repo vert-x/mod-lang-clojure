@@ -33,5 +33,11 @@
   ([host port]
      (VertxFactory/newVertx port host)))
 
+(defmacro with-vertx
+  "Executes body with vertx.core/*vertx* bound to vertx."
+  [vertx & body]
+  `(binding [core/*vertx* ~vertx]
+     ~@body))
+
 ;; TODO: platform manager support, docs
 
