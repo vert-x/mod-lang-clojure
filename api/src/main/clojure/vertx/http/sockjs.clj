@@ -90,18 +90,21 @@
       ((:closed n-h) sock#))
 
     (handleSendOrPub [_# sock# is-send# msg# address#]
-      (if is-send#
-        ((:send n-h) sock# msg# address#)
-        ((:publish n-h) sock# msg# address#)))
-
+      (boolean
+       (if is-send#
+         ((:send n-h) sock# msg# address#)
+         ((:publish n-h) sock# msg# address#))))
+    
     (handlePreRegister [_# sock# address#]
-      ((:pre-register n-h) sock# address#))
+      (boolean
+       ((:pre-register n-h) sock# address#)))
 
     (handlePostRegister [_# sock# address#]
-      ((:post-register n-h) sock# address#))
+         ((:post-register n-h) sock# address#))
 
     (handleUnregister [_# sock# address#]
-      ((:unregister n-h) sock# address#))))
+      (boolean
+       ((:unregister n-h) sock# address#)))))
 
 (defn set-hooks
   "Set a ```EventBusBridgeHook``` to the server.
