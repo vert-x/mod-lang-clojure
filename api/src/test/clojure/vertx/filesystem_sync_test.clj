@@ -27,10 +27,16 @@
 (def ^:dynamic *tmp-dir* nil)
 
 (defn with-tmp-dir [f]
-  (let [tmp-dir (str "target/mod-lang-clojure-tests-" (u/uuid) "/")]
+  (let [tmp-dir (str "target/mod-lang-clojure-tests-" (u/uuid) "/")
+        tmp-dir-file (io/file tmp-dir)]
     (fs/mkdir tmp-dir)
+    (println "TC: using tmp-dir:" (.getCanonicalPath tmp-dir-file))
+    (println "TC: tmp-dir exists?" (.exists tmp-dir-file))
     (t/on-complete
-     (partial fs/delete tmp-dir true))
+     (fn []
+       (println "TC: deleting tmp-dir:" (.getCanonicalPath tmp-dir-file))
+       (println "TC: tmp-dir exists?" (.exists tmp-dir-file))
+       (fs/delete tmp-dir true)))
     (binding [*tmp-dir* tmp-dir]
       (f))))
 
