@@ -14,11 +14,9 @@ of Vert.x proper, you will need to make Vert.x aware of it my editing
     .clj=clojure
 
 
-If you would rather run the latest from source, checkout this repo, then:
-
-    mvn install
-
-and update your `langs.properties` with:
+Every commit triggers a [CI](https://vertx.ci.cloudbees.com/job/vert.x-mod-lang-clojure/)
+build, and we publish a SNAPSHOT when that success. So if you would
+rather run the latest commit, update your `langs.properties` with:
 
     clojure=io.vertx~lang-clojure~0.2.0-SNAPSHOT:io.vertx.lang.clojure.ClojureVerticleFactory
     .clj=clojure
@@ -35,7 +33,7 @@ For 0.1.2:
 For HEAD:
 
 * [User Manual](docs/core_manual_clojure.md)
-* [API docs](https://projectodd.ci.cloudbees.com/job/vertx.mod-lang-clojure/lastSuccessfulBuild/artifact/api/target/html-docs/index.html)
+* [API docs](https://vertx.ci.cloudbees.com/job/vert.x-mod-lang-clojure/lastSuccessfulBuild/artifact/api/target/html-docs/index.html)
 
 ## Examples
 
