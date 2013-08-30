@@ -41,3 +41,48 @@
 
 ;; TODO: platform manager support, docs
 
+(defn platform
+  ([]
+     (.createPlatformManager PlatformLocator/factory))
+  ([port host]
+     (.createPlatformManager PlatformLocator/factory port host)))
+
+;;TODO: should we use Vertx instance which come from PM?
+;; if it is, should we make PM as a dynamic?
+(defn get-vertx
+  [platform]
+  (.vertx platform))
+
+(defn container 
+  "Wrap a Container with PM"
+  [platform]  
+  (let [cp (make-array java.net.URL 1)
+        tmp (aset cp 0 (io/as-url (java.io.File. ".")))]
+    (proxy [Container] []
+      (deployWorkerVerticle [main conf instances thread? h]
+        (.deployWorkerVerticle platform thread? main conf cp instances nil h))
+
+      (deployModule [main conf instances h]
+        (.deployModule platform main conf instances h))
+
+      (deployVerticle [main conf instances h]
+        (.deployVerticle platform main conf cp instances nil h))
+
+      (undeployVerticle [id h]
+        (.undeployVerticle platform id h))
+
+      (undeployModule [id h]
+        (.undeployModule platform id h))
+
+      (config []
+        (.config platform))
+
+      (logger []
+        (.logger platform))
+
+      (exit []
+        (.exit platform))
+
+      (env []
+        (System/getenv)))))
+
