@@ -66,12 +66,12 @@
        :doc "The currently active EventBus instance.
              If not bound, the EventBus from vertx.core/*vertx* will be used.
              You should only need to bind this for advanced usage."}
-  *event-bus* nil)
+  *eventbus* nil)
 
-(defn get-event-bus
+(defn get-eventbus
   "Returns the currently active EventBus instance."
   []
-  (or *event-bus* (.eventBus (core/get-vertx))))
+  (or *eventbus* (.eventBus (core/get-vertx))))
 
 (def ^:dynamic *current-message*
   "Bound to the current Message instance when a handler fn is called."
@@ -99,7 +99,7 @@
   ([addr content]
      (send addr content nil))
   ([addr content reply-handler]
-     (.send (get-event-bus)
+     (.send (get-eventbus)
             addr
             (encode content)
             (message-handler reply-handler))))
@@ -109,7 +109,7 @@
    A publish will be received by all handlers registered on the
   address."
   [addr content]
-  (.publish (get-event-bus) addr (encode content)))
+  (.publish (get-eventbus) addr (encode content)))
 
 (defn reply*
   "Replies to the given message.
@@ -162,9 +162,9 @@
      (let [h (message-handler handler)
            id (uuid)]
        (if local-only?
-         (.registerLocalHandler (get-event-bus) addr h
+         (.registerLocalHandler (get-eventbus) addr h
                                 (core/as-async-result-handler result-handler false))
-         (.registerHandler (get-event-bus) addr h
+         (.registerHandler (get-eventbus) addr h
                            (core/as-async-result-handler result-handler false)))
        (swap! registered-handlers assoc id [addr h])
        id)))
@@ -177,7 +177,7 @@
      (if-let [[addr h] (@registered-handlers id)]
        (do
          (.unregisterHandler
-          (get-event-bus) addr h
+          (get-eventbus) addr h
           (core/as-async-result-handler result-handler false))
          (swap! registered-handlers dissoc id))
        (throw (IllegalArgumentException.
