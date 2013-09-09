@@ -14,6 +14,7 @@
 
 (ns vertx.filesystem-async-test
   (:require [vertx.filesystem :as fs]
+            [vertx.filesystem.sync :as sfs]
             [vertx.buffer :as buf]
             [vertx.testtools :as t]
             [vertx.utils :as u]
@@ -25,16 +26,14 @@
 (def ^:dynamic *tmp-dir* nil)
 
 (defn with-tmp-dir [f]
-  (let [tmp-dir (str "target/mod-lang-clojure-tests-" (u/uuid) "/")]
-    (fs/mkdir
-     tmp-dir
-     (fn [err]
-       (is (nil? err))
-       (t/on-complete
-        ;;TODO: don't much clear. t/assert-nil how to work in the fs/delete
-        (partial fs/delete tmp-dir true t/assert-nil))
-       (binding [*tmp-dir* tmp-dir]
-         (f))))))
+  (let [tmp-dir (str "target/mod-lang-clojure-tests-" (u/uuid) "/")
+        tmp-dir-file (io/file tmp-dir)]
+    (sfs/mkdir tmp-dir)
+    (t/on-complete
+     #(if (sfs/exists? tmp-dir)
+        (sfs/delete tmp-dir true)))
+    (binding [*tmp-dir* tmp-dir]
+      (f))))
 
 (use-fixtures :each t/as-embedded with-tmp-dir)
 

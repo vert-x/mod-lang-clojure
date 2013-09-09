@@ -14,7 +14,6 @@
 
 (ns vertx.filesystem-sync-test
   (:require [vertx.filesystem.sync :as fs]
-            [vertx.filesystem.sync :as afs]
             [vertx.buffer :as buf]
             [vertx.testtools :as t]
             [vertx.utils :as u]
