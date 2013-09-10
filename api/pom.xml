@@ -82,6 +82,18 @@
               <script>${basedir}/target/generate_codox.clj</script>
             </configuration>
           </execution>
+          <execution>
+            <id>download-js-artifacts</id>
+            <goals>
+              <goal>run</goal>
+            </goals>
+            <phase>compile</phase>
+            <configuration>
+              <runWithTests>true</runWithTests>
+              <includePluginDependencies>true</includePluginDependencies>
+              <script>${basedir}/target/download_js_artifacts.clj</script>
+            </configuration>
+          </execution>
         </executions>
       </plugin>
 
@@ -108,6 +120,7 @@
                   <directory>src/build</directory>
                   <includes>
                     <include>generate_codox.clj</include>
+                    <include>download_js_artifacts.clj</include>
                   </includes>
                 </resource>
               </resources>

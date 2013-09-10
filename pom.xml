@@ -63,6 +63,7 @@
     <!-- dependency versions -->
     <version.vertx>2.0.1-final</version.vertx>
     <version.vertx.testtools>2.0.0-final</version.vertx.testtools>
+    <version.sockjs>0.3.4</version.sockjs>
     <version.shimdandy>1.0.1</version.shimdandy>
     <version.clojure>1.6.0-clearthreadlocals</version.clojure>
     <version.json>0.2.2</version.json>
