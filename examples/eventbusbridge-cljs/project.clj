@@ -7,6 +7,8 @@
                  [org.clojure/clojurescript "0.0-1877"]
                  [io.vertx/clojure-api "0.2.0-SNAPSHOT"]
                  [enfocus "2.0.0-beta1"]]
+  :repositories [["sonatype snapshots" ;; for clojure-api snapshots
+                  "https://oss.sonatype.org/content/repositories/snapshots"]]
   :plugins [[lein-cljsbuild "0.3.2"]]
   :cljsbuild {:builds [{:source-paths ["src"]
                         :compiler {:output-to "target/client.js"
