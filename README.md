@@ -7,7 +7,7 @@ A fledgling Vert.x language implementation for Clojure
 First, you'll need to [install Vert.x](http://vertx.io/install.html).
 
 The latest stable release is *0.1.2*. Until this module becomes part
-of Vert.x proper, you will need to make Vert.x aware of it my editing
+of Vert.x proper, you will need to make Vert.x aware of it by editing
 `VERTX_HOME/conf/langs.properties` and adding:
 
     clojure=io.vertx~lang-clojure~0.1.2:io.vertx.lang.clojure.ClojureVerticleFactory
@@ -15,7 +15,7 @@ of Vert.x proper, you will need to make Vert.x aware of it my editing
 
 
 Every commit triggers a [CI](https://vertx.ci.cloudbees.com/job/vert.x-mod-lang-clojure/)
-build, and we publish a SNAPSHOT when that success. So if you would
+build, and we publish a SNAPSHOT when that succeeds. So if you would
 rather run the latest commit, update your `langs.properties` with:
 
     clojure=io.vertx~lang-clojure~0.2.0-SNAPSHOT:io.vertx.lang.clojure.ClojureVerticleFactory
