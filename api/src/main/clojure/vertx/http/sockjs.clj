@@ -82,29 +82,31 @@
      (.bridge server (u/encode app-config) (u/encode inbound-permitted)
               (u/encode outbound-permitted) auth-timeout auth-address)))
 
+
 (defn- eb-bridge-hook
   "Make a implememtion of EventBusBridgeHook, take a kv pair as handlers."
   [n-h]
-  (reify EventBusBridgeHook
-    (handleSocketClosed [_# sock#]
-      ((:closed n-h) sock#))
+  (letfn [(call-if [f & args]
+            (if f
+              (boolean (apply f args))
+              true))] 
+    (reify EventBusBridgeHook
+      (handleSocketClosed [_ sock]
+        (call-if (:closed n-h) sock))
 
-    (handleSendOrPub [_# sock# is-send# msg# address#]
-      (boolean
-       (if is-send#
-         ((:send n-h) sock# msg# address#)
-         ((:publish n-h) sock# msg# address#))))
-    
-    (handlePreRegister [_# sock# address#]
-      (boolean
-       ((:pre-register n-h) sock# address#)))
+      (handleSendOrPub [_ sock is-send msg address]
+        (call-if
+         (if is-send (:send n-h) (:publish n-h))
+         sock msg address))
+      
+      (handlePreRegister [_ sock address]
+        (call-if (:pre-register n-h) sock address))
 
-    (handlePostRegister [_# sock# address#]
-         ((:post-register n-h) sock# address#))
+      (handlePostRegister [_ sock address]
+        (call-if (:post-register n-h) sock address))
 
-    (handleUnregister [_# sock# address#]
-      (boolean
-       ((:unregister n-h) sock# address#)))))
+      (handleUnregister [_ sock address]
+        (call-if (:unregister n-h) sock address)))))
 
 (defn set-hooks
   "Set a ```EventBusBridgeHook``` to the server.
