@@ -3,12 +3,12 @@
 ## v0.2.0 - pending
 
 * add `with-vertx` convenience macro to embed ns
-* Add ClojureScript wrapper around vertxbus.js [#50]
+* Add ClojureScript wrapper around vertxbus.js [#50](/vert.x/mod-lang-clojure/issues/50)
 * Coerce appropriate sockjs hooks to booleans [#48]
 * BREAKING CHANGE: Rename event-bus -> eventbus [#49]
 * Don't require all sockjs hooks to be set [#52]
 
-## [v0.1.2](/tree/0.1.2) - 2013-03-26
+## [v0.1.2](/vert.x/mod-lang-clojure/tree/0.1.2) - 2013-03-26
  
 * Add additional metadata required by the Vert.x module registry
 
