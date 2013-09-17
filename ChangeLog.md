@@ -14,7 +14,7 @@
 
 ## [v0.1.1](/../../tree/0.1.1) - 2013-08-26
 
-* Convey bindings for handler functions [#43]
+* Convey bindings for handler functions [#43](/../../issues/43)
 * Change the lang-module artifact name (lang-clojure.zip ->
   lang-clojure-mod.zip) to follow Vert.x module registry guidelines
 
