@@ -23,8 +23,10 @@ You're done!
 6. Close the repo, then release it (you may need to refresh the list 
    for the release button to become active).
 7. Update the ChangeLog.
-8. Wait for several hours until sonatype syncs to central.
-9. Announce it: twitter, clojure@, vertx@
+8. Switch to release tag, build docs, and upload to tcrawley.org (for now)
+9. Update README with link to ^
+10. Wait for several hours until sonatype syncs to central.
+11. Announce it: twitter, clojure@, vertx@
 
 For reference:
 
