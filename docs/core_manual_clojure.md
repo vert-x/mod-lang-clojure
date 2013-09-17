@@ -2792,7 +2792,7 @@ event bus.
         {:prefix "/eventbus"} [{}] [{}]) 
       (http/listen http-server 8080 "localhost"))
 
-## Using the Event Bus from client side JavaScript
+## Using the Event Bus from client-side JavaScript
 
 Once you've set up a bridge, you can use the event bus from the client
 side as follows:
@@ -2843,6 +2843,36 @@ side one. Please consult the JavaScript core manual chapter on the
 EventBus for a description of that API.
 
 **There is one more thing to do before getting this working, please read the following section....**
+
+## Using the Event Bus from client-side ClojureScript
+
+If you are writing your client-side JavaScript as ClojureScript, you
+can use the ClojureScript EventBus wrapper that ships with the Clojure
+language module. Here is the example from above, but in ClojureScript
+using the wrapper:
+
+    (ns demo.client
+      (:require [vertx.client.eventbus :as eb]))
+      
+    (def eb (atom nil))
+    
+    (defn register-handler [] 
+      (eb/on-message @eb "some-address"
+        #(.log js/console (str "received a message: " %))))
+        
+    (reset! eb (eb/eventbus "http://localhost:8080/eventbus"))
+    (eb/on-open @eb register-handler)
+    (eb/on-open @eb #(eb/send @eb "some-address" {:name "tim" :age 587}))
+
+`eventbus.cljs` is included in the `io.vertx/clojure-api` jar, and
+includes a `deps.cljs` that brings in `vertxbus.js` and `sockjs.js` as
+foreign libs, so there's no need to include them in your html.
+
+The API is similar to the server-side EventBus API, but has some
+differences. Refer to
+[the source](https://github.com/vert-x/mod-lang-clojure/blob/master/api/src/main/clojure/vertx/client/eventbus.cljs)
+to see the full client-side API.
+
 
 ## Securing the Bridge
 
