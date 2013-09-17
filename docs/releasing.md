@@ -24,8 +24,9 @@ You're done!
    for the release button to become active).
 7. Update the ChangeLog.
 8. Switch to release tag, build docs, and upload to tcrawley.org (for now)
-9. Update README with link to ^
-10. Wait for several hours until sonatype syncs to central.
+9. Update README with link to ^ and update the version number
+10. Wait for several hours until sonatype syncs to central. You can
+    check <http://search.maven.org> to know when this has completed.
 11. Announce it: twitter, clojure@, vertx@
 
 For reference:
