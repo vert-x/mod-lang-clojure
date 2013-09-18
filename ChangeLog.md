@@ -1,6 +1,6 @@
 # ChangeLog
 
-## v0.2.0(/../../tree/0.2.0) - 2013-09-17
+## [v0.2.0](/../../tree/0.2.0) - 2013-09-17
 
 * add `with-vertx` convenience macro to embed ns
 * Add ClojureScript wrapper around vertxbus.js [#50](/../../issues/50)
