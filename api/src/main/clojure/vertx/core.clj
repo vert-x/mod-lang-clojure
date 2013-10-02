@@ -162,11 +162,12 @@
 
 (defn deploy-verticle
   "Deploys the verticle with the given main file path to *container*.
-   If instances is not provided, it defaults to 1. handler can either
-   be a two-arity fn that will be passed the exception (if any) and
-   verticle id from the result of the deploy call, or a
-   org.vertx.java.core.Handler that will be called with the
-   AsyncResult object that wraps the exception and id."
+   main must be on the effective classpath. If instances is not
+   provided, it defaults to 1. handler can either be a two-arity fn
+   that will be passed the exception (if any) and verticle id from the
+   result of the deploy call, or a org.vertx.java.core.Handler that
+   will be called with the AsyncResult object that wraps the exception
+   and id."
   ([main]
      (deploy-verticle main nil nil nil))
   ([main config]
@@ -182,9 +183,10 @@
 
 (defn deploy-worker-verticle
   "Deploys the worker verticle with the given main file path to *container*.
-   If instances or multi-threaded? not provided, they default to 1 and
-   false, respectively. handler can either be a two-arity fn that will
-   be passed the exception (if any) and verticle id from the result of
+   main must be on the effective classpath. If instances or
+   multi-threaded? not provided, they default to 1 and false,
+   respectively. handler can either be a two-arity fn that will be
+   passed the exception (if any) and verticle id from the result of
    the deploy call, or a org.vertx.java.core.Handler that will be
    called with the AsyncResult object that wraps the exception and
    id."
