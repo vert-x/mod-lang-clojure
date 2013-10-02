@@ -47,7 +47,6 @@
   [eb]
   (= js/vertx.EventBus.CLOSED (ready-state eb)))
 
-
 (defn- extend-callback [old-f new-f]
   (fn []
     (and old-f (old-f))
@@ -55,16 +54,18 @@
 
 (defn on-open
   "Registers a fn to be called when the eventbus is opened.
-   If the eventbus is currently open, the fn is called immediately.
-   If the eventbus is closing or is closed, and error is thrown.
-   Can be called multiple times to register multiple fns."
-  [eb f]
+   The function should take one argument, and will be passed the
+   eventbus. If the eventbus is currently open, the fn is called
+   immediately. If the eventbus is closing or is closed, and error is
+   thrown. Can be called multiple times to register multiple fns."
+   [eb f]
   (if (or (closing? eb)
           (closed? eb))
     (throw (js/Error. "EventBus is closing or has closed.")))
-  (if (open? eb)
-    (f)
-    (set! (.-onopen eb) (extend-callback (.-onopen eb) f))))
+  (let [with-eb #(f eb)]
+    (if (open? eb)
+      (with-eb)
+      (set! (.-onopen eb) (extend-callback (.-onopen eb) with-eb)))))
 
 (defn on-close
   "Registers a fn to be called when the eventbus is closed.
