@@ -14,8 +14,7 @@
 
 (ns vertx.core
   "Vert.x core functionality."
-  ;; TODO: refer only what we actually need
-  (:require [vertx.utils :refer :all])
+  (:require [vertx.utils :as util])
   (:import [org.vertx.java.core Handler VertxException VertxFactory VoidHandler]
            [org.vertx.java.core.json JsonObject]))
 
@@ -126,7 +125,7 @@
 (defn config
   "Returns the configuration map from the current *container*, with the keys converted to keywords."
   []
-  (decode (.config (get-container))))
+  (util/decode (.config (get-container))))
 
 (defn deploy-module
   "Deploys the module with the given name to *container*.
@@ -144,7 +143,7 @@
   ([module-name config instances handler]
      (.deployModule (get-container)
                     module-name
-                    (encode config)
+                    (util/encode config)
                     (or instances 1)
                     (as-async-result-handler handler))))
 
@@ -177,7 +176,7 @@
   ([main config instances handler]
      (.deployVerticle (get-container)
                       main
-                      (encode config)
+                      (util/encode config)
                       (or instances 1)
                       (as-async-result-handler handler))))
 
@@ -201,7 +200,7 @@
   ([main config instances multi-threaded? handler]
      (.deployWorkerVerticle (get-container)
                             main
-                      (encode config)
+                      (util/encode config)
                       (or instances 1)
                       multi-threaded?
                       (as-async-result-handler handler))))
