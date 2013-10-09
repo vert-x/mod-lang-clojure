@@ -54,70 +54,132 @@
   (-> (core/get-vertx) (.createSockJSServer http-server)))
 
 (defn install-app
-  "Install an application with a handler that will be called when new SockJS sockets are created
-   TODO: better doc"
+  "Installs a SockJS application.
+   When the server receives a SockJS request that matches the
+   configured :prefix, it creates an instance of SockJSSocket and
+   passes it to the connect handler. handler can either be a
+   single-arity fn or a Handler instance that will be passed the
+   socket. Returns the server instance.
+
+   config can contain the following values:
+
+   * :prefix - A url prefix for the application. All http requests whose
+     paths begins with selected prefix will be handled by the
+     application. This property is mandatory.
+   * :insert_JSESSIONID - Some hosting providers enable sticky sessions
+     only to requests that have JSESSIONID cookie set. This setting
+     controls if the server should set this cookie to a dummy value. By
+     default setting JSESSIONID cookie is enabled. More sophisticated
+     behaviour can be achieved by supplying a function.
+   * :session_timeout - The server sends a close event when a client
+     receiving connection have not been seen for a while. This delay is
+     configured by this setting. By default the close event will be
+     emitted when a receiving connection wasn't seen for 5 seconds.
+   * :heartbeat_period - In order to keep proxies and load balancers
+     from closing long running http requests we need to pretend that the
+     connecion is active and send a heartbeat packet once in a
+     while. This setting controlls how often this is done. By default a
+     heartbeat packet is sent every 5 seconds.
+   * :max_bytes_streaming - Most streaming transports save responses on
+     the client side and don't free memory used by delivered
+     messages. Such transports need to be garbage-collected once in a
+     while. :max_bytes_streaming sets a minimum number of bytes that can
+     be send over a single http streaming request before it will be
+     closed. After that client needs to open new request. Setting this
+     value to one effectively disables streaming and will make streaming
+     transports to behave like polling transports. The default value is
+     128K.
+   * :library_url - Transports which don't support cross-domain
+     communication natively ('eventsource' to name one) use an iframe
+     trick. A simple page is served from the SockJS server (using its
+     foreign domain) and is placed in an invisible iframe. Code run from
+     this iframe doesn't need to worry about cross-domain issues, as it's
+     being run from domain local to the SockJS server. This iframe also
+     does need to load SockJS javascript client library, and this option
+     lets you specify its url (if you're unsure, point it to the latest
+     minified SockJS client release, this is the default). The default
+     value is http://cdn.sockjs.org/sockjs-0.3.4.min.js"
   [server config handler]
   (.installApp server (u/encode config) (core/as-handler handler)))
 
-(def default-auth-timeout ^:const (* 5 60 1000))
-(def default-auth-address ^:const (str "vertx.basicauthmanager.authorise"))
+(def ^:const default-auth-timeout (* 5 60 1000))
+(def ^:const default-auth-address (str "vertx.basicauthmanager.authorise"))
 
 (defn bridge
-  "Install an app which bridges the SockJS server to the event bus
-   app-config The config for the app
-   inboundPermitted A list of JSON objects which define permitted matches for inbound (client->server) traffic
-   outboundPermitted A list of JSON objects which define permitted matches for outbound (server->client) traffic
-   authTimeout Default time an authorisation will be cached for in the bridge (defaults to 5 minutes)
-   authAddress Address of auth manager. Defaults to 'vertx.basicauthmanager.authorise'
-   TODO: better doc"
-  ([server app-config inbound-permitted outbound-permitted]
-     (bridge server app-config inbound-permitted outbound-permitted
+  "Install an app which bridges the SockJS server to the event bus.
+   config is a map of configuration options (see install-app).
+   inbound-permitted and outbound-permitted are lists of JSON objects
+   which define permitted matches for inbound (client->server) and
+   outbound (server->client) traffic, respectively. See the \"Securing
+   the Bridge\" section of the manual for the proper usage of these
+   options. auth-timeout specifies the amount of time (in ms) an
+   authorisation will be cached in the bridge (defaults to 5 minutes).
+   auth-address specifies the address of the auth manager (defaults to
+   'vertx.basicauthmanager.authorise')"
+  ([server config inbound-permitted outbound-permitted]
+     (bridge server config inbound-permitted outbound-permitted
              default-auth-timeout default-auth-address))
 
-  ([server app-config inbound-permitted outbound-permitted auth-timeout]
-     (bridge server app-config inbound-permitted outbound-permitted auth-timeout
+  ([server config inbound-permitted outbound-permitted auth-timeout]
+     (bridge server config inbound-permitted outbound-permitted auth-timeout
              default-auth-address))
 
-  ([server app-config inbound-permitted outbound-permitted auth-timeout auth-address]
-     (.bridge server (u/encode app-config) (u/encode inbound-permitted)
+  ([server config inbound-permitted outbound-permitted auth-timeout auth-address]
+     (.bridge server (u/encode config) (u/encode inbound-permitted)
               (u/encode outbound-permitted) auth-timeout auth-address)))
 
 
 (defn- eb-bridge-hook
   "Make a implememtion of EventBusBridgeHook, take a kv pair as handlers."
-  [n-h]
+  [hooks]
   (letfn [(call-if [f & args]
             (if f
               (boolean (apply f args))
               true))] 
     (reify EventBusBridgeHook
       (handleSocketClosed [_ sock]
-        (call-if (:closed n-h) sock))
+        (call-if (:closed hooks) sock))
 
       (handleSendOrPub [_ sock is-send msg address]
         (call-if
-         (if is-send (:send n-h) (:publish n-h))
+         (if is-send (:send hooks) (:publish hooks))
          sock msg address))
       
       (handlePreRegister [_ sock address]
-        (call-if (:pre-register n-h) sock address))
+        (call-if (:pre-register hooks) sock address))
 
       (handlePostRegister [_ sock address]
-        (call-if (:post-register n-h) sock address))
+        (call-if (:post-register hooks) sock address))
 
       (handleUnregister [_ sock address]
-        (call-if (:unregister n-h) sock address)))))
+        (call-if (:unregister hooks) sock address)))))
 
 (defn set-hooks
-  "Set a ```EventBusBridgeHook``` to the server.
-   name-handlers are six pair of kv, v is implementation of EventBusBridgeHook,
-   k is keyworkd and meaning is:
-   :closed        The socket has been closed
-   :send          Clent is sending
-   :publish       Client is publishing
-   :pre-register  Called before client registers a handler
-   :post-register Called after client registers a handler
-   :unregister    Client is unregistering a handler
-   TODO: better doc"
-  [server & {:as name-handlers}]
-  (.setHook server (eb-bridge-hook name-handlers)))
+  "Registers functions to be called when certain events occur on an event bus bridge.
+   Takes the following kwargs:
+
+   :closed        Called when the socket has been closed. The fn will be
+                  passed the SockJSSocket
+   :send          Called when the clent is sends data. The fn will be
+                  passed SockJSSocket, the message, and the eventbus
+                  address. The fn must return truthy for the send to be
+                  allowed.
+   :publish       Called when the clent is publishes data. The fn will be
+                  passed SockJSSocket, the message, and the eventbus
+                  address. The fn must return truthy for the publish to be
+                  allowed.
+   :pre-register  Called before a client handler registration is processed.
+                  The fn will be passed the SockJSSocket and the address.
+                  The fn must return truthy for the registration to be
+                  allowed.
+   :post-register Called after a client handler registration is processed.
+                  The fn will be passed the SockJSSocket and the address.
+   :unregister    Called before a client handler unregistration is processed.
+                  The fn will be passed the SockJSSocket and the address.
+                  The fn must return truthy for the unregistration to be
+                  allowed.
+
+  Returns the server. Calling set-hooks more than once will overwrite
+  the hooks set previously."
+  [server & {:as hooks}]
+  (.setHook server (eb-bridge-hook hooks)))

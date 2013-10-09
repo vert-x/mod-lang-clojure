@@ -2687,7 +2687,7 @@ The configuration can take the following fields:
   only to requests that have JSESSIONID cookie set. This setting
   controls if the server should set this cookie to a dummy value. By
   default setting JSESSIONID cookie is enabled. More sophisticated
-  beaviour can be achieved by supplying a function.
+  behaviour can be achieved by supplying a function.
 * `:session_timeout`: The server sends a `close` event when a client
   receiving connection have not been seen for a while. This delay is
   configured by this setting. By default the `close` event will be
@@ -2706,7 +2706,7 @@ The configuration can take the following fields:
   value to one effectively disables streaming and will make streaming
   transports to behave like polling transports. The default value is
   128K.
-* `library_url`: Transports which don't support cross-domain
+* `:library_url`: Transports which don't support cross-domain
   communication natively ('eventsource' to name one) use an iframe
   trick. A simple page is served from the SockJS server (using its
   foreign domain) and is placed in an invisible iframe. Code run from
@@ -2842,7 +2842,7 @@ handlers and for sending messages is exactly the same as the server
 side one. Please consult the JavaScript core manual chapter on the
 EventBus for a description of that API.
 
-**There is one more thing to do before getting this working, please read the following section....**
+**There is one more thing to do before getting this working, please read the "Securing the Bridge" section**
 
 ## Using the Event Bus from client-side ClojureScript
 

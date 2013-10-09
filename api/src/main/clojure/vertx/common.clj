@@ -16,7 +16,6 @@
     (:require [vertx.core :as c]
               [vertx.buffer :as buf]))
 
-;; TODO: these should probably be a protocol
 (defn ^:internal ^:no-doc internal-close
   "A common close implementation. Should be wrapped by other namespaces."
   [obj handler]
