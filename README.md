@@ -18,7 +18,7 @@ Every commit triggers a [CI](https://vertx.ci.cloudbees.com/job/vert.x-mod-lang-
 build, and we publish a SNAPSHOT when that succeeds. So if you would
 rather run the latest commit, update your `langs.properties` with:
 
-    clojure=io.vertx~lang-clojure~0.2.0-SNAPSHOT:io.vertx.lang.clojure.ClojureVerticleFactory
+    clojure=io.vertx~lang-clojure~0.3.0-SNAPSHOT:io.vertx.lang.clojure.ClojureVerticleFactory
     .clj=clojure
 
 **Note that this module only works with Vert.x 2.0.0 or greater.**
