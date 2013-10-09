@@ -16,29 +16,43 @@
     "Internal utility functions."
   (:require [clojure.string :as s]
             [clojure.data.json :as json])
-  (:import [org.vertx.java.core.json JsonArray JsonObject]
+  (:import [org.vertx.java.core.json JsonArray JsonElement JsonObject]
            [clojure.lang BigInt Ratio Seqable]
            [java.util Map UUID]
            java.math.BigDecimal))
 
+(defprotocol Encodeable
+  (encode [data]))
 
-;; TODO: implement as protocols?
-(defn encode
-  [data]
-  (condp instance? data
-    BigDecimal (double data)
-    BigInt     (long data)
-    Map        (JsonObject. (json/write-str data))
-    Ratio      (double data)
-    Seqable    (JsonArray. (json/write-str data))
-    data))
+(extend-protocol Encodeable
+  Object
+  (encode [data] data)
+  nil
+  (encode [data] nil)
+  BigDecimal
+  (encode [data] (double data))
+  BigInt
+  (encode [data] (long data))
+  Map
+  (encode [data]
+    (JsonObject. (json/write-str data)))
+  Ratio
+  (encode [data] (double data))
+  Seqable
+  (encode [data]
+    (JsonArray. (json/write-str data))))
 
-(defn decode
-  [j]
-  (condp instance? j
-    JsonObject (json/read-str (.encode j) :key-fn keyword)
-    JsonArray  (json/read-str (.encode j) :key-fn keyword)
-    j))
+(defprotocol Decodeable
+  (decode [data]))
+
+(extend-protocol Decodeable
+  Object
+  (decode [data] data)
+  nil
+  (decode [data] nil)
+  JsonElement
+  (decode [data]
+    (json/read-str (.encode data) :key-fn keyword)))
 
 (defn uuid
   "Generates a uuid."
