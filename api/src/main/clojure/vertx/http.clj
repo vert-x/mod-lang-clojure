@@ -51,7 +51,7 @@
    server instance. They are translated into .setXXX calls by
    camel-casing the keyword key. Example: {:key-store-path
    \"/some/path\"} will trigger a call to .setKeyStorePath on the
-   server object. See the docuementation for
+   server object. See the documentation for
    org.vertx.java.core.http.HttpServer for a full list of properties."
   ([]
      (server nil))
@@ -155,7 +155,7 @@
    Properties is a map of options for the server instance. They are
    translated into .setXXX calls by camel-casing the keyword
    key. Example: {:status-code 418} will trigger a call to
-   .setStatusCode on the response object. See the docuementation for
+   .setStatusCode on the response object. See the documentation for
    org.vertx.java.core.http.HttpServerResponse for a full list of
    properties."
   ([req] (server-response req nil))
@@ -273,7 +273,7 @@
    client instance. They are translated into .setXXX calls by
    camel-casing the keyword key. Example: {:key-store-path
    \"/some/path\"} will trigger a call to .setKeyStorePath on the
-   client object. See the docuementation for
+   client object. See the documentation for
    org.vertx.java.core.http.HttpClient for a full list of properties."
   ([]
      (client nil))
