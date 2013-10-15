@@ -198,6 +198,36 @@
                        (partial server-listen-handler server port host))))))
 
 
+(deftest compression-request
+  (letfn [(req-handler [req]
+            (is (= :GET (http/request-method req)))
+            (is (= "/get/compression/" (.uri req)))
+            (let [resp (http/server-response req)]
+              (http/end resp "body-content")))
+
+          (server-listen-handler [orig-server port host err server]
+            (is (not err))
+            (is (= orig-server server))
+            (-> (http/client {:host "localhost"
+                              :port 4043
+                              :try-use-compression true})
+                (http/get "/get/compression/"
+                          (fn [resp]
+                            (assert-status-code resp)
+                            (http/on-body resp
+                                          (fn [buf]
+                                            (t/test-complete
+                                             (is (= (buf/buffer "body-content") buf)))))))
+                (http/end)))]
+
+    (let [server (http/server {:compression-supported true})
+          port 4043
+          host "localhost"]
+      (-> server
+          (http/on-request req-handler)
+          (http/listen port host
+                       (partial server-listen-handler server port host))))))
+
 
 (deftest http-client-request
   (letfn [(send-request [client method h]
