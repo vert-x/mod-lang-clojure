@@ -17,7 +17,7 @@
   (:require [clojure.string :as s]
             [clojure.data.json :as json])
   (:import [org.vertx.java.core.json JsonArray JsonElement JsonObject]
-           [clojure.lang BigInt Ratio Seqable]
+           [clojure.lang BigInt IPersistentMap Ratio Seqable]
            [java.util Map UUID]
            java.math.BigDecimal))
 
@@ -33,6 +33,12 @@
   (encode [data] (double data))
   BigInt
   (encode [data] (long data))
+  ;; clojure maps are Maps and Seqables, and sometimes the Seqable
+  ;; version gets called for a them. Let's explicitly extend
+  ;; the clojure map interface to prevent that.
+  IPersistentMap
+  (encode [data]
+    (JsonObject. (json/write-str data)))
   Map
   (encode [data]
     (JsonObject. (json/write-str data)))
