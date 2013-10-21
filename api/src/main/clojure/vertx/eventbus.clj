@@ -80,7 +80,7 @@
 (defn ^:private message-handler
   "Wraps a fn in a Handler, binding *current-message*"
   [handler]
-  (if (core/handler? handler)
+  (if (or (nil? handler) (core/handler? handler))
     handler
     (core/as-handler
      (fn [m]
