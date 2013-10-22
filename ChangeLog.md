@@ -3,6 +3,9 @@
 ## v0.3.0 - unreleased
 
 * BREAKING CHANGE: Pass the eventbus to on-open callbacks in the ClojureScript client [#53](/../../issues/53)
+* nil message handlers are now properly handled [#56](/../../issues/56)
+* Maps were sometimes encoded as JsonArrays [#57](/../../issues/57)
+* vertx.logging/get-logger now always returns a logger, even when embedded [#59](/../../issues/59)
 
 ## [v0.2.0](/../../tree/0.2.0) - 2013-09-17
 
