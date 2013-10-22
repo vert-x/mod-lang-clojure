@@ -14,18 +14,26 @@
 
 (ns vertx.logging
   "Functions for logging to the Vert.x logging subsystem."
-  (:require [vertx.core :as core]))
+  (:require [vertx.core :as core])
+  (:import org.vertx.java.core.logging.impl.LoggerFactory))
 
 (def ^{:dynamic true
        :internal true
        :no-doc true
-       :doc "Used to provide a logger when we are outside of a vertx context. Should never be used by user code."}
-  *logger*)
+       :doc "Used to provide a logger when we are outside of a vertx container. Should never be used by user code."}
+  *logger* nil)
+
+(defn- standalone-logger []
+  (LoggerFactory/getLogger "vertx.logging"))
 
 (defn get-logger
-  "Returns the currently active Logger retrieved from vertx.core/*container*."
+  "Returns the currently active Logger retrieved from vertx.core/*container*.
+  If no container is available, it falls back to creating a logger."
   []
-  (or (.logger (core/get-container)) *logger*))
+  (or (if-let [cont (core/get-container false)]
+        (.logger cont))
+      *logger*
+      (standalone-logger)))
 
 (defn info?
   "Returns true if info logging is enabled."

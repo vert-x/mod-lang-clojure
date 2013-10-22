@@ -55,10 +55,14 @@
       (throw (VertxException. "No vertx instance available."))))
 
 (defn get-container
-  "Returns the currently active vertx container instance (*container*), throwing if not set."
-  [] 
-  (or *container*
-      (throw (VertxException. "No container instance available."))))
+  "Returns the currently active vertx container instance (*container*).
+   If throw? is truthy, throws when the container isn't available."
+  ([]
+     (get-container true))
+  ([throw?] 
+     (or *container*
+         (and throw?
+              (throw (VertxException. "No container instance available."))))))
 
 (defn ^:internal ^:no-doc handler?
   "Returns true if h is an instance of org.vertx.java.core.Handler"
