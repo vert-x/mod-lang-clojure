@@ -134,3 +134,25 @@
   "Looks up the given name as a resource, returning its canonical path as a String."
   [name]
   (.getCanonicalPath (io/file (io/resource name))))
+
+(defn wait-for
+  "Waits for (t) to be true before invoking f, if passed. Evaluates
+   test every 100 ms attempts times before giving up. Attempts
+   defaults to 300. Passing :forever for attempts will loop until the
+   end of time or (t) is true, whichever comes first."
+  ([t]
+     (wait-for t (constantly true)))
+  ([t f]
+     (wait-for t f 300))
+  ([t f attempts]
+     (let [wait #(Thread/sleep 100)]
+       (cond
+        (t)                   (f)
+        (= :forever attempts) (do
+                                (wait)
+                                (recur t f :forever))
+        (< attempts 0)        (throw (IllegalStateException.
+                                      (str "Gave up waiting for " t)))
+        :default              (do
+                                (wait)
+                                (recur t f (dec attempts)))))))

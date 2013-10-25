@@ -18,6 +18,7 @@
             [vertx.utils :as u]
             [vertx.logging :as log]
             [vertx.eventbus :as eb]
+            [clojure.java.io :as io]
             [clojure.tools.nrepl.server :as nrepl]))
 
 (defn ^:private repl-port [server]
@@ -30,31 +31,38 @@
 
 (defn ^:private -stop-repl [id]
   (when-let [server (get @repls id)]
-    (log/info "Stopping nREPL on %s:%s"
-              (repl-host @server)
-              (repl-port @server))
+    (log/info
+     (format "Stopping nREPL at %s:%s"
+             (repl-host @server)
+             (repl-port @server)))
     (swap! repls dissoc id)
     (.close @server)))
+
+(defn ^:private write-port-file [port]
+  (let [f (doto (io/file ".nrepl-port")
+            .deleteOnExit)]
+    (spit f port)
+    (log/debug "Wrote nrepl port to" (.getAbsolutePath f))))
 
 (defn ^:private -start-repl [port host]
   (log/info (format "Starting nREPL at %s:%s" host port))
   (let [server
         (nrepl/start-server
          :port port
-         :bind host)]
+         :bind host)
+        actual-port (repl-port server)]
+    (write-port-file actual-port)
     (require 'clj-stacktrace.repl 'complete.core)
     (log/info (format "nREPL bound to %s:%s"
                       (repl-host server)
-                      (repl-port server)))
+                      actual-port))
     server))
 
 (defn stop-repl
   "Stops the nREPL server with the given id, asynchronously."
   [id]
-  (let [logger (log/get-logger)]
-    (future
-      (binding [log/*logger* logger]
-        (-stop-repl id)))))
+  (future-call (bound-fn []
+                 (-stop-repl id))))
 
 (defn start-repl
   "Starts an nREPL server, asynchrously.
@@ -65,12 +73,10 @@
   ([]
      (start-repl 0))
   ([port]
-     (start-repl 0 "127.0.0.1"))
+     (start-repl port "127.0.0.1"))
   ([port host]
-     (let [id (str "repl-" (u/uuid))
-           logger (log/get-logger)]
+     (let [id (str "repl-" (u/uuid))]
        (swap! repls assoc id
-              (future
-                (binding [log/*logger* logger]
-                  (-start-repl port host))))
+              (future-call (bound-fn []
+                             (-start-repl port host))))
        id)))
