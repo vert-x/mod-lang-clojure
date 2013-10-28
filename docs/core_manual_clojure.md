@@ -309,7 +309,7 @@ deployment id.
                  (when-not err
                    (core/undeploy-verticle deploy-id))))
 
-# Scaling your application
+
 
 A verticle instance is almost always single threaded (the only
 exception is multi-threaded worker verticles which are an advanced
@@ -3442,13 +3442,13 @@ can specify a handler function as an argument to `close`.
 # Using nREPL
 
 You can start nREPL endpoints within a verticle by calling the
-`vertx.repl/start-repl` function. By default, it binds to a random
+`vertx.repl/start` function. By default, it binds to a random
 port on localhost, or you can pass a port or port and host:
 
-    (repl/start-repl)
+    (repl/start)
 
-`start-repl` returns the id of the nREPL server, and can be passed to 
-`vertx.repl/stop-repl` to shut it down. 
+`start` returns the id of the nREPL server, and can be passed to 
+`vertx.repl/stop` to shut it down. 
 
 Any number of nREPL servers can be active at one time. The nREPL
 servers run inside of a worker verticle, so code evaluated in the repl

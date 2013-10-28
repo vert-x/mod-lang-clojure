@@ -21,21 +21,24 @@
 
 (use-fixtures :each t/as-embedded)
 
-(deftest start-repl-should-return-an-id
-  (let [id (repl/start-repl)]
+(deftest start-should-return-an-id
+  (let [id (repl/start)]
     (is id)
-    (t/test-complete (repl/stop-repl id))))
+    (t/test-complete (repl/stop id))))
 
-(deftest start-repl-should-write-port-file
-  (let [id (repl/start-repl)]
+(deftest start-should-write-port-file
+  (let [id (repl/start)]
     (is (t/wait-for #(.exists (io/file ".nrepl-port"))))
-    (t/test-complete (repl/stop-repl id))))
+    (t/test-complete (repl/stop id))))
 
-(deftest start-repl-should-actually-provide-a-repl
-  (let [id (repl/start-repl 4321)]
+(deftest start-should-actually-provide-a-repl
+  (let [id (repl/start 4321)]
     ;; wait for the port file to be written; at that point,
     ;; nrepl should be bound to the port
     (t/wait-for #(.exists (io/file ".nrepl-port")))
+    ;; and then wait some more to prevent intermittent failures on
+    ;; fast machines
+    (Thread/sleep 100)
     (with-open [conn (nrepl/connect :port 4321)]
     (let [client (nrepl/client conn 120000)]
       (is (= "success"
@@ -43,7 +46,7 @@
                      (nrepl/message
                       client
                       {:op :eval :code "(str \"success\")"})))))))
-    (t/test-complete (repl/stop-repl id))))
+    (t/test-complete (repl/stop id))))
 
 
 

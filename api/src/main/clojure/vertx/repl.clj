@@ -29,7 +29,7 @@
 
 (defonce ^:private repls (atom {}))
 
-(defn ^:private -stop-repl [id]
+(defn ^:private -stop [id]
   (when-let [server (get @repls id)]
     (log/info
      (format "Stopping nREPL at %s:%s"
@@ -44,7 +44,7 @@
     (spit f port)
     (log/debug "Wrote nrepl port to" (.getAbsolutePath f))))
 
-(defn ^:private -start-repl [port host]
+(defn ^:private -start [port host]
   (log/info (format "Starting nREPL at %s:%s" host port))
   (let [server
         (nrepl/start-server
@@ -58,25 +58,25 @@
                       actual-port))
     server))
 
-(defn stop-repl
+(defn stop
   "Stops the nREPL server with the given id, asynchronously."
   [id]
   (future-call (bound-fn []
-                 (-stop-repl id))))
+                 (-stop id))))
 
-(defn start-repl
+(defn start
   "Starts an nREPL server, asynchrously.
    port defaults to 0, which means \"any available port\". host
    defaults to \"127.0.0.1\". Returns an id for the server that can be
-   passed to stop-repl to shut it down. the repl will automatically be
+   passed to stop to shut it down. the repl will automatically be
    shutdown when the verticle that started it is stopped."
   ([]
-     (start-repl 0))
+     (start 0))
   ([port]
-     (start-repl port "127.0.0.1"))
+     (start port "127.0.0.1"))
   ([port host]
      (let [id (str "repl-" (u/uuid))]
        (swap! repls assoc id
               (future-call (bound-fn []
-                             (-start-repl port host))))
+                             (-start port host))))
        id)))

@@ -17,9 +17,9 @@
       (http/on-request req-handler)
       (http/listen 8080 "localhost")))
 
-(defn stop-repl-server [] (repl/stop-repl @repl-server-id))
+(defn stop-repl-server [] (repl/stop @repl-server-id))
 
-(reset! repl-server-id (repl/start-repl))
+(reset! repl-server-id (repl/start))
 
 ;;after startup repl server, you could get connection with nrepl based on terminal
 ;;then could invoke start-http-server to startup a httpserver
