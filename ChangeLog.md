@@ -2,7 +2,13 @@
 
 ## v0.3.0 - unreleased
 
-* BREAKING CHANGE: Pass the eventbus to on-open callbacks in the ClojureScript client [#53](/../../issues/53)
+Non-backwards-compatible changes:
+
+* Pass the eventbus to on-open callbacks in the ClojureScript client [#53](/../../issues/53)
+* The APIs for the `deploy-*` functions in `vertx.core` have switched to kwarg args [#61](/../../issues/61)
+
+Other changes:
+
 * nil message handlers are now properly handled [#56](/../../issues/56)
 * Maps were sometimes encoded as JsonArrays [#57](/../../issues/57)
 * vertx.logging/get-logger now always returns a logger, even when embedded [#59](/../../issues/59)

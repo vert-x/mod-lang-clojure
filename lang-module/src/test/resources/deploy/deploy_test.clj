@@ -24,7 +24,8 @@
      (t/test-complete
       (t/assert= "started" m))))
 
-  (core/deploy-worker-verticle "deploy/child.clj" {:ham "biscuit"}))
+  (core/deploy-worker-verticle "deploy/child.clj"
+                               :config {:ham "biscuit"}))
 
 (defn test-deploy []
   (eb/on-message
@@ -33,23 +34,25 @@
      (t/test-complete
       (t/assert= "started" m))))
 
-  (core/deploy-verticle "deploy/child.clj" {:ham "biscuit"}))
+  (core/deploy-verticle "deploy/child.clj"
+                        :config {:ham "biscuit"}))
 
 (defn test-deploy-with-handler []
   (core/deploy-verticle
-   "deploy/child.clj" {:ham "biscuit"} 1
-   (fn [err id]
-     (t/test-complete
-      (t/assert-nil err)
-      (t/assert-not-nil id)))))
+   "deploy/child.clj"
+   :config {:ham "biscuit"}
+   :handler (fn [err id]
+              (t/test-complete
+               (t/assert-nil err)
+               (t/assert-not-nil id)))))
 
 (defn test-deploy-failure []
   (core/deploy-verticle
-   "deploy/does_not_exist.clj" nil 1
-   (fn [err id]
-     (t/test-complete
-      (t/assert-not-nil err)
-      (t/assert-nil id)))))
+   "deploy/does_not_exist.clj"
+   :handler (fn [err id]
+              (t/test-complete
+               (t/assert-not-nil err)
+               (t/assert-nil id)))))
 
 (defn test-undeploy []
   (eb/on-message
@@ -59,21 +62,23 @@
        (t/test-complete))))
 
   (core/deploy-verticle
-   "deploy/child.clj" {:ham "biscuit"} 1
-   (fn [err id]
-     (t/assert-not-nil id)
-     (core/undeploy-verticle id))))
+   "deploy/child.clj"
+   :config {:ham "biscuit"}
+   :handler (fn [err id]
+              (t/assert-not-nil id)
+              (core/undeploy-verticle id))))
 
 (defn test-undeploy-with-handler []
   (core/deploy-verticle
-   "deploy/child.clj" {:ham "biscuit"} 1
-   (fn [err id]
-     (t/assert-not-nil id)
-     (core/undeploy-verticle
-      id
-      (fn [err]
-        (t/test-complete
-         (t/assert-nil err)))))))
+   "deploy/child.clj"
+   :config {:ham "biscuit"} 
+   :handler (fn [err id]
+              (t/assert-not-nil id)
+              (core/undeploy-verticle
+               id
+               (fn [err]
+                 (t/test-complete
+                  (t/assert-nil err)))))))
 
 (defn test-undeploy-failure []
   (core/undeploy-verticle

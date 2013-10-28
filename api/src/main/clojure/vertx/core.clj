@@ -133,23 +133,24 @@
 
 (defn deploy-module
   "Deploys the module with the given name to *container*.
-   If instances is not provided, it defaults to 1. handler can either
-   be a two-arity fn that will be passed the exception (if any) and
-   module id from the result of the deploy call, or a
-   org.vertx.java.core.Handler that will be called with the
-   AsyncResult object that wraps the exception and id."
-  ([module-name]
-     (deploy-module module-name nil nil nil))
-  ([module-name config]
-     (deploy-module module-name config nil nil))
-  ([module-name config instances]
-     (deploy-module module-name config instances nil))
-  ([module-name config instances handler]
-     (.deployModule (get-container)
-                    module-name
-                    (util/encode config)
-                    (or instances 1)
-                    (as-async-result-handler handler))))
+   Takes the following kwarg arguments (default):
+
+   :config     A configuration map for the module ({})
+   :handler    Either be a two-arity fn that will be passed
+               the exception (if any) and module id from the
+               result of the deploy call, or a
+               org.vertx.java.core.Handler that will be
+               called with the AsyncResult object that wraps
+               the exception and id (nil)
+   :instances  The number of instances of the module to
+               deploy (1)"
+  [module-name & {:keys [config instances handler]
+                  :or {config {} instances 1}}]
+  (.deployModule (get-container)
+                 module-name
+                 (util/encode config)
+                 instances
+                 (as-async-result-handler handler)))
 
 (defn undeploy-module
   "Undeploys the module identified by id from *container*.
@@ -165,49 +166,50 @@
 
 (defn deploy-verticle
   "Deploys the verticle with the given main file path to *container*.
-   main must be on the effective classpath. If instances is not
-   provided, it defaults to 1. handler can either be a two-arity fn
-   that will be passed the exception (if any) and verticle id from the
-   result of the deploy call, or a org.vertx.java.core.Handler that
-   will be called with the AsyncResult object that wraps the exception
-   and id."
-  ([main]
-     (deploy-verticle main nil nil nil))
-  ([main config]
-     (deploy-verticle main config nil nil))
-  ([main config instances]
-     (deploy-verticle main config instances nil))
-  ([main config instances handler]
-     (.deployVerticle (get-container)
-                      main
-                      (util/encode config)
-                      (or instances 1)
-                      (as-async-result-handler handler))))
+   main must be on the effective classpath.
+   Takes the following kwarg arguments (default):
+
+   :config     A configuration map for the verticle ({})
+   :handler    Either be a two-arity fn that will be passed
+               the exception (if any) and verticle id from the
+               result of the deploy call, or a
+               org.vertx.java.core.Handler that will be
+               called with the AsyncResult object that wraps
+               the exception and id (nil)
+   :instances  The number of instances of the verticle to
+               deploy (1)"
+  [main & {:keys [config instances handler]
+           :or {config {} instances 1}}]
+  (.deployVerticle (get-container)
+                   main
+                   (util/encode config)
+                   instances
+                   (as-async-result-handler handler)))
 
 (defn deploy-worker-verticle
   "Deploys the worker verticle with the given main file path to *container*.
-   main must be on the effective classpath. If instances or
-   multi-threaded? not provided, they default to 1 and false,
-   respectively. handler can either be a two-arity fn that will be
-   passed the exception (if any) and verticle id from the result of
-   the deploy call, or a org.vertx.java.core.Handler that will be
-   called with the AsyncResult object that wraps the exception and
-   id."
-  ([main]
-     (deploy-worker-verticle main {} 1 false nil))
-  ([main config]
-     (deploy-worker-verticle main config 1 false nil))
-  ([main config instances]
-     (deploy-worker-verticle main config instances false nil))
-  ([main config instances multi-threaded?]
-     (deploy-worker-verticle main config instances multi-threaded? nil))
-  ([main config instances multi-threaded? handler]
-     (.deployWorkerVerticle (get-container)
-                            main
-                      (util/encode config)
-                      (or instances 1)
-                      multi-threaded?
-                      (as-async-result-handler handler))))
+   main must be on the effective classpath.
+   Takes the following kwarg arguments (default):
+
+   :config           A configuration map for the verticle ({})
+   :handler          Either be a two-arity fn that will be passed
+                     the exception (if any) and verticle id from the
+                     result of the deploy call, or a
+                     org.vertx.java.core.Handler that will be
+                     called with the AsyncResult object that wraps
+                     the exception and id (nil)
+   :instances        The number of instances of the verticle to
+                     deploy (1)
+   :multi-threaded?  When true, the verticle will be accessed
+                     by multiple threads concurrently (false)"
+  [main & {:keys [config instances multi-threaded? handler]
+           :or {config {} instances 1}}]
+  (.deployWorkerVerticle (get-container)
+                         main
+                         (util/encode config)
+                         instances
+                         (boolean multi-threaded?)
+                         (as-async-result-handler handler)))
 
 (defn undeploy-verticle
   "Undeploys the verticle identified by id from *container*.

@@ -174,7 +174,8 @@ meanings.
 
 You should use `vertx.core/deploy-module` to deploy a module, for example:
 
-    (core/deploy-module "io.vertx~mod-mailer~2.0.0-beta1" config)
+    (core/deploy-module "io.vertx~mod-mailer~2.0.0-beta1" 
+                        :config config)
 
 Would deploy an instance of the `io.vertx~mod-mailer~2.0.0-beta1`
 module with the specified configuration map. Please see the
@@ -186,7 +187,8 @@ Configuration can be passed to a verticle that is deployed
 programmatically. Inside the deployed verticle the configuration is
 accessed with the `vertx.core/config` function. For example:
 
-    (core/deploy-verticle "my_verticle.clj" {:name "foo" :age 234})
+    (core/deploy-verticle "my_verticle.clj" 
+                          :config {:name "foo" :age 234})
 
 Then, in `my_verticle.clj` you can access the config via
 `vertx.core/config` as previously explained.
@@ -208,11 +210,18 @@ For example, you could create a verticle `app.clj` as follows:
     (let [cfg (config)]
       ;; start the verticles that make up the app
       
-      (deploy-verticle "verticle1.clj" (:verticle1Config cfg))
-      (deploy-verticle "verticle2.clj" (:verticle2Config cfg) 5)
-      (deploy-verticle "verticle3.clj" (:verticle3Config cfg))
-      (deploy-worker-verticle "verticle4.clj" (:verticle4Config cfg))
-      (deploy-worker-verticle "verticle5.clj" (:verticle5Config cfg) 10))
+      (deploy-verticle "verticle1.clj" 
+                       :config (:verticle1Config cfg))
+      (deploy-verticle "verticle2.clj" 
+                       :config (:verticle2Config cfg) 
+                       :instances 5)
+      (deploy-verticle "verticle3.clj" 
+                       :config (:verticle3Config cfg))
+      (deploy-worker-verticle "verticle4.clj" 
+                              :config (:verticle4Config cfg))
+      (deploy-worker-verticle "verticle5.clj" 
+                              :config (:verticle5Config cfg) 
+                              :instances 10))
 
 Then set the `app.clj` verticle as the main of your module and then
 you can start your entire application by simply running:
@@ -254,11 +263,13 @@ Vert.x scales by deploying many verticle instances concurrently.
 If you want more than one instance of a particular verticle or module
 to be deployed, you can specify the number of instances as follows:
 
-    (core/deploy-verticle "foo.ChildVerticle" config 10) 
+    (core/deploy-verticle "foo.ChildVerticle" 
+                          :instances 10) 
 
 Or
     
-    (core/deploy-module "io.vertx~some-mod~1.0" config 10)
+    (core/deploy-module "io.vertx~some-mod~1.0" 
+                        :instances 10)
   
 The above examples would deploy 10 instances.
 
@@ -270,10 +281,10 @@ has returned. If you want to be notified when the verticle/module has
 completed being deployed, you can pass a function to `deploy-verticle`,
 which will be called when it's complete:
 
-    (core/deploy-verticle "my_verticle.clj" nil 10 
-      (fn [err deploy-id]
-        (when-not err
-          (println "It's been deployed OK!"))))
+    (core/deploy-verticle "my_verticle.clj" 
+      :handler (fn [err deploy-id]
+                 (when-not err
+                   (println "It's been deployed OK!"))))
 
 The first parameter passed to the fn is an exception which will be not
 `nil` if a failure occurred, otherwise it will be `nil`.
@@ -292,11 +303,11 @@ a verticle manually, however if you do want to do this, it can be done
 by calling the `vertx.core/undeploy-verticle` function, passing in the
 deployment id.
 
-    (core/deploy-verticle "my_verticle.rb" nil 1 
-      (fn [err deploy-id]
-        ;; Immediately undeploy it
-        (when-not err
-          (core/undeploy-verticle deploy-id))))
+    (core/deploy-verticle "my_verticle.rb" 
+      :handler (fn [err deploy-id]
+                 ;; Immediately undeploy it
+                 (when-not err
+                   (core/undeploy-verticle deploy-id))))
 
 # Scaling your application
 

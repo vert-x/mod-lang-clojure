@@ -26,9 +26,9 @@
                            (if (= 2 (swap! msg-count inc))
                              (t/test-complete)))))
   
-  (vertx/deploy-verticle "v1.clj" {} 1
-                        (fn [& _]
-                          (vertx/deploy-verticle "v2.clj"))))
+  (vertx/deploy-verticle "v1.clj" 
+                        :handler (fn [& _]
+                                   (vertx/deploy-verticle "v2.clj"))))
 
 (defn test-samely-named-verticles-are-not-isolated []
   (let [received-messages (atom #{})]
@@ -39,6 +39,6 @@
                              (t/test-complete
                               (t/assert= #{1 2} @received-messages))))))
   
-  (vertx/deploy-verticle "v1.clj" {} 2))
+  (vertx/deploy-verticle "v1.clj" :instances 2))
 
 (t/start-tests)
