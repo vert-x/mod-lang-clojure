@@ -50,7 +50,6 @@
     <!-- plugin versions -->
     <maven.compiler.plugin.version>3.0</maven.compiler.plugin.version>
     <maven.failsafe.plugin.version>2.14</maven.failsafe.plugin.version>
-    <maven.surefire.plugin.version>2.14</maven.surefire.plugin.version>
     <maven.resources.plugin.version>2.6</maven.resources.plugin.version>
     <maven.dependency.plugin.version>2.7</maven.dependency.plugin.version>
     <maven.assembly.plugin.version>2.4</maven.assembly.plugin.version>
@@ -61,7 +60,7 @@
     <version.codox>0.6.3.1</version.codox>
 
     <!-- dependency versions -->
-    <version.vertx>2.0.2-final</version.vertx>
+    <version.vertx>2.1M1</version.vertx>
     <version.vertx.testtools>2.0.2-final</version.vertx.testtools>
     <version.sockjs>0.3.4</version.sockjs>
     <version.shimdandy>1.0.1</version.shimdandy>

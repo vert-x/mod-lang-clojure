@@ -15,6 +15,7 @@ Other changes:
 * vertx.logging/get-logger now always returns a logger, even when embedded [#59](/../../issues/59)
 * repl/start now properly honors a port argument [#60](/../../issues/60)
 * repl/start now writes out the actual bound port to .nrepl-port [#58](/../../issues/58)
+* The module can now run under Vert.x 2.1M1 in addition to 2.0.x [#66](/../../issues/66)
 
 ## [v0.2.0](/../../tree/0.2.0) - 2013-09-17
 

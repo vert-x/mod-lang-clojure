@@ -23,12 +23,12 @@ import org.vertx.java.core.logging.impl.LoggerFactory;
 import org.vertx.java.platform.Container;
 import org.vertx.java.platform.Verticle;
 import org.vertx.java.platform.VerticleFactory;
-import org.vertx.java.platform.impl.ModuleClassLoader;
 
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -49,7 +49,7 @@ public class ClojureVerticleFactory implements VerticleFactory {
         }
         catch (URISyntaxException | MalformedURLException ignored) {}
 
-        this.cl = new ModuleClassLoader(cl, runtimeUrls.toArray(new URL[0]), false);
+        this.cl = new URLClassLoader(runtimeUrls.toArray(new URL[0]), cl);
         this.runtime = ClojureRuntimeShim.newRuntime(this.cl);
         this.runtime.invoke("vertx.core/-bind-container-roots", vertx, container);
     }
