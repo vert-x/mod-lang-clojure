@@ -13,8 +13,8 @@ Other changes:
 * nil message handlers are now properly handled [#56](/../../issues/56)
 * Maps were sometimes encoded as JsonArrays [#57](/../../issues/57)
 * vertx.logging/get-logger now always returns a logger, even when embedded [#59](/../../issues/59)
-* start-repl now properly honors a port argument [#60](/../../issues/60)
-* start-repl now writes out the actual bound port to .nrepl-port [#58](/../../issues/58)
+* repl/start now properly honors a port argument [#60](/../../issues/60)
+* repl/start now writes out the actual bound port to .nrepl-port [#58](/../../issues/58)
 
 ## [v0.2.0](/../../tree/0.2.0) - 2013-09-17
 
