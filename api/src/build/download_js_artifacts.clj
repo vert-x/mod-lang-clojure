@@ -4,8 +4,7 @@
 ;; download vertxbus and sockjs, so they can be available to the
 ;; ClojureScript compiler for downstream projects via deps.cljs.
 
-(let [artifacts {"vertxbus.js" ;"https://raw.github.com/eclipse/vert.x/v${version.vertx}/src/dist/client/vertxbus.js"
-                 "https://raw.github.com/eclipse/vert.x/master/src/dist/client/vertxbus.js"
+(let [artifacts {"vertxbus.js" "https://raw.github.com/eclipse/vert.x/v${version.vertx}/src/dist/client/vertxbus.js"
                  "sockjs.js" "http://cdn.sockjs.org/sockjs-${version.sockjs}.js"}
       dest-dir (doto (io/file "target/classes/js")
                  .mkdirs)]
