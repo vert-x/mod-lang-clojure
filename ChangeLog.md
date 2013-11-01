@@ -19,6 +19,7 @@ Other changes:
 * repl/start now writes out the actual bound port to .nrepl-port [#58](/../../issues/58)
 * The module can now run under Vert.x 2.1M1 in addition to 2.0.x [#66](/../../issues/66)
 * `vertx.http/remote-address` now includes the source InetSocketAddress object as `:basis`
+* The module now uses Clojure 1.6.0-alpha1 instead of a custom Clojure build that prevented memory leaks [#63](/../../issues/63)
 
 ## [v0.2.0](/../../tree/0.2.0) - 2013-09-17
 

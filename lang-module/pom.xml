@@ -44,7 +44,7 @@
       <scope>compile</scope>
     </dependency>
     <dependency>
-      <groupId>org.clojars.tcrawley</groupId>
+      <groupId>org.clojure</groupId>
       <artifactId>clojure</artifactId>
       <scope>compile</scope>
     </dependency>
@@ -152,7 +152,7 @@
             <configuration>
               <outputDirectory>target/mods/${module.name}/lib</outputDirectory>
               <includeScope>runtime</includeScope>
-              <excludeGroupIds>io.vertx,org.clojars.tcrawley,org.clojure,clj-stacktrace,clojure-complete</excludeGroupIds>
+              <excludeGroupIds>io.vertx,org.clojure,clj-stacktrace,clojure-complete</excludeGroupIds>
               <excludeArtifactIds>shimdandy-impl</excludeArtifactIds>
             </configuration>
           </execution>
@@ -192,7 +192,7 @@
             <include>**/integration/**</include>
           </includes>
           <classpathDependencyExcludes>
-            <classpathDependencyExclude>org.clojars.tcrawley:clojure</classpathDependencyExclude>
+            <classpathDependencyExclude>org.clojure:clojure</classpathDependencyExclude>
             <classpathDependencyExclude>org.projectodd.shimdandy:shimdandy-impl</classpathDependencyExclude>
           </classpathDependencyExcludes>
           <additionalClasspathElements>
