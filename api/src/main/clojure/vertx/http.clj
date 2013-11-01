@@ -145,10 +145,9 @@
   (parse-multi-map (.trailers req-or-resp)))
 
 (defn remote-address
-  "Returns the remote address from the request as {:host \"127.0.0.1\" :port 5566}."
+  "Returns the remote address from the request as {:host \"127.0.0.1\" :port 5566 :basis inet-socket-address-object}."
   [req]
-  (let [addr (.remoteAddress req)]
-    {:host (.getHostName addr) :port (.getPort addr)}))
+  (u/inet-socket-address->map (.remoteAddress req)))
 
 (defn server-response
   "Creates a response object for the given request object.

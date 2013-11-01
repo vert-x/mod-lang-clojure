@@ -83,3 +83,8 @@
           (set-property obj prop value)) props)
   obj)
 
+(defn inet-socket-address->map [addr]
+  (if addr
+    {:host (.getHostString addr)
+     :port (.getPort addr)
+     :basis addr}))

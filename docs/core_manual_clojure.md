@@ -1674,7 +1674,7 @@ side of the HTTP connection. This will return an `InetSocketAddress`
 object. Alternatively, you can use the `vertx.http/remote-address`
 function to retrieve the remote address as a map of the form:
 
-    {:host "hostname" :port 1234}
+    {:host "127.0.0.1" :port 1234 :basis actual-inet-socket-address-object}
 
 #### Absolute URI
 

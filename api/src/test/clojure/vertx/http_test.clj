@@ -37,7 +37,7 @@
               (is (= {:k "v"} (http/params req)))
               (is (= "dummy" (:dummy header)))
               (is (= ["v1" "v2"] (:dummy-v header)))
-              (is (.startsWith (:host addr) "localhost"))
+              (is (= (:host addr) "127.0.0.1"))
               (is (> (:port addr) -1))
               (is (.absoluteURI req)))
 

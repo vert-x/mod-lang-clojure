@@ -8,6 +8,7 @@ Non-backwards-compatible changes:
 * The APIs for the `deploy-*` functions in `vertx.core` have switched to kwarg args [#61](/../../issues/61)
 * `vertx.repl/start-repl` and `vertx.repl/stop-repl` have been renamed to `vertx.repl/start` and `vertx.repl/stop` [#62](/../../issues/62)
 * The `:stream` key in the response from `vertx.http/upload-file-info` has been renamed `:basis`
+* `vertx.http/remote-address` now returns the raw host string as `:host`, instead of the possibly DNS-resolved value [#69](/../../issues/69)
 
 Other changes:
 
@@ -17,6 +18,7 @@ Other changes:
 * repl/start now properly honors a port argument [#60](/../../issues/60)
 * repl/start now writes out the actual bound port to .nrepl-port [#58](/../../issues/58)
 * The module can now run under Vert.x 2.1M1 in addition to 2.0.x [#66](/../../issues/66)
+* `vertx.http/remote-address` now includes the source InetSocketAddress object as `:basis`
 
 ## [v0.2.0](/../../tree/0.2.0) - 2013-09-17
 
