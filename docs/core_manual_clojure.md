@@ -1764,7 +1764,7 @@ handler is a map of properties for the file:
 * :encoding     - the content transfer encoding
 * :size         - the size of the file in bytes
 * :charset      - the Charset as a String
-* :stream       - the underlying `HttpServerFileUpload` object, which is also a `ReadStream`
+* :basis        - the underlying `HttpServerFileUpload` object, which is also a `ReadStream`
 * :save-fn      - a single-arity fn that can be passed a path to save the file to disk
 
 Example:
@@ -1773,7 +1773,7 @@ Example:
       (fn [upload]
        (println "Got an upload" (:filename upload))))
 
-The `HttpServerFileUpload` object (available as `:stream`) is a
+The `HttpServerFileUpload` object (available as `:basis`) is a
 `ReadStream` so you read the data and stream it to any object that
 implements `WriteStream` using a Pump, as previously discussed.
 

@@ -184,7 +184,7 @@
    * :encoding     - the content transfer encoding
    * :size         - the size of the file in bytes
    * :charset      - the Charset as a String
-   * :stream       - the original file object, which is also a ReadStream
+   * :basis        - the original file object, which is also a ReadStream
    * :save-fn      - a single-arity fn that can be passed a path to save the file to disk"
   [file]
   {:filename (.filename file)
@@ -193,7 +193,7 @@
    :encoding (.contentTransferEncoding file)
    :charset (.name (.charset file))
    :size (.size file)
-   :stream file
+   :basis file
    :save-fn (fn [path] (.streamToFileSystem file path))})
 
 (defn on-upload

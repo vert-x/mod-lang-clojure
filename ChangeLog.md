@@ -7,6 +7,7 @@ Non-backwards-compatible changes:
 * Pass the eventbus to on-open callbacks in the ClojureScript client [#53](/../../issues/53)
 * The APIs for the `deploy-*` functions in `vertx.core` have switched to kwarg args [#61](/../../issues/61)
 * `vertx.repl/start-repl` and `vertx.repl/stop-repl` have been renamed to `vertx.repl/start` and `vertx.repl/stop` [#62](/../../issues/62)
+* The `:stream` key in the response from `vertx.http/upload-file-info` has been renamed `:basis`
 
 Other changes:
 

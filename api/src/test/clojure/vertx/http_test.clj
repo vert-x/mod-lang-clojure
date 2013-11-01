@@ -119,7 +119,7 @@
                                 (is (= "tmp-0.txt" (:filename file-info)))
                                 (is (= "image/gif" (:content-type file-info)))
                                 (stream/on-data
-                                 (:stream file-info)
+                                 (:basis file-info)
                                  (fn [data]
                                    (is (= (buf/buffer "Vert.x Rocks!") data))))))
 
