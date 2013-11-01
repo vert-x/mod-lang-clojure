@@ -60,7 +60,7 @@
           ]
     (let [server (http/server)
           matcher (rm/matcher)
-          port 8080
+          port 8111
           host "localhost"]
       (-> server
           (http/on-request matcher)

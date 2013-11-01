@@ -243,7 +243,7 @@
                                               (post-request client)))))]
 
     (let [server (http/server)
-          port 8080
+          port 8111
           host "localhost"]
       (-> server
           (http/on-request req-handler)
@@ -277,7 +277,7 @@
                                     (buf/append! sent-buf! data)
                                     (ws/write-binary-frame ws data))))))))]
     (let [server (http/server)
-          port 8080
+          port 8111
           host "localhost"]
       (-> server
           (ws/on-websocket ws-handler)

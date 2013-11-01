@@ -66,7 +66,7 @@
             (net/connect port client-connect-handler))]
 
     (let [server (net/server)
-          port 8080]
+          port 8111]
       (-> server
           (net/on-connect (comp assert-socket-addresses
                                 echo-handler
@@ -95,7 +95,7 @@
                   (stream/write socket data)))))]
 
     (let [server (net/server)
-          port 8080]
+          port 8111]
       (-> server
           (net/on-connect #(stream/pump % %))
           (net/listen port "localhost"
@@ -141,7 +141,7 @@
                    :trust-store-path (t/resource-path "keystores/client-truststore.jks")
                    :trust-store-password "wibble"
                    :client-auth-required true})
-          port 8080]
+          port 8111]
       (-> server
           (net/on-connect (comp assert-socket-addresses
                                 echo-handler
@@ -169,7 +169,7 @@
             (is (= orig-server server))
             (net/connect port client-connect-handler))]
     (let [server (net/server)
-          port 8080]
+          port 8111]
       (-> server
           (net/on-connect (comp assert-socket-addresses
                                 echo-handler))
