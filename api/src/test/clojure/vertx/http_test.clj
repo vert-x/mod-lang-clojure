@@ -63,9 +63,9 @@
           (server-listen-handler [orig-server port host err server]
             (is (not err))
             (is (= orig-server server))
-            (client-request (http/client {:port port :host host})))]
+            (client-request (http/client {:port port :host host :try-use-compression true})))]
 
-    (let [server (http/server) port 8888 host "localhost"]
+    (let [server (http/server {:compression-supported true}) port 8888 host "localhost"]
       (-> server
           (http/on-request req-handler)
           (http/listen port host (partial server-listen-handler server port host))))))
