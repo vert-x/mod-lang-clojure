@@ -33,7 +33,7 @@
                                 (is (= 1235 (:port sender)))
                                 (t/test-complete (is (= "data" (.toString data))))
                                 )))
-            (udp/send peer1 "data" "127.0.0.1" 1234 (fn [err] (is (nil? err)))))
+            (udp/send peer1 "data" "127.0.0.1" 1234 (fn [err _] (is (nil? err)))))
 
           (listen-peer1-handler [peer1 peer2 err socket]
             (is (nil? err))
@@ -44,7 +44,7 @@
                                 (is (= "127.0.0.1" (:host sender)))
                                 (is (= 1234 (:port sender)))
                                 (is (= "data" (.toString data)))
-                                (udp/send peer2 "data" "127.0.0.1" 1235 (fn [err] (is (nil? err))))
+                                (udp/send peer2 "data" "127.0.0.1" 1235 (fn [err _] (is (nil? err))))
                                 )))
 
             (udp/listen peer2 "127.0.0.1" 1235 (partial listen-peer2-handler peer1 peer2)))]
