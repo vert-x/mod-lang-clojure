@@ -3439,6 +3439,113 @@ To close an AsyncFile call the `close` function. Closing is asynchronous
 and if you want to be notified when the close has been completed you
 can specify a handler function as an argument to `close`.
 
+# DNS Client
+
+Often you will find yourself in situations where you need to obtain
+DNS informations in an asynchronous fashion. Unfortunally this is not
+possible with the API that is shipped with Java itself. Because of
+this Vert.x offers it's own API for DNS resolution which is fully
+asynchronous.
+
+The DNS client functionality is provided by the `vertx.dns` namespace. 
+
+All of the functions in the namespace return the DnsClient object that
+was used to perform the lookup, and take several different
+specifications of the servers to be used:
+
+* a DnsClient object returned from another call
+* a single InetSocketAddress object
+* a String in the form "host" or "host:port" (port defaults to 53)
+* a collection of InetSocketAddress objects
+* a collection of "host"/"host:port" Strings
+
+When collections are provided, they are tried in order, moving to the
+next when the current server returns an error.
+
+## lookup
+
+Tries to lookup the A (ipv4) or AAAA (ipv6) record for a given
+name. The first which is returned will be used, so it behaves the same
+way as `nslookup`.
+	
+To lookup the A / AAAA record for "vertx.io" you would typically use it like:
+
+    (require '[vertx.dns :as dns])
+    
+    (dns/lookup "10.0.0.1" "vertx.io"
+                (fn [err r]
+                   (if err
+                     (println "ERROR:" (.code err))
+                     (println (:address r)))))
+
+You can also pass a type argument of `:ipv4` or `:ipv6` to constrain
+the lookup to a particular IP version:
+
+        (dns/lookup "10.0.0.1" "vertx.io" :ipv4
+                (fn [err r] ...))
+                
+See the API documentation for more details.
+
+## resolve
+
+Tries to resolve various record types for a given name. This is quite
+similar to using "dig" on unix like operating systems.
+
+The type of record to be resolved must be one of: A, AAAA, CNAME, MX,
+NS, PTR, SRV, or TXT.
+
+The data passed to the handler function depends on the type of record
+requested.
+    
+To lookup all the A records for "vertx.io" you would typically do:
+
+    (dns/resolve ["10.0.0.1" "10.0.0.2"] :A "vertx.io"
+                 (fn [err r]
+                   (if err
+                     (println "ERROR:" (.code err))
+                     (doseq [x r] (println x)))))
+    
+See the API documentation for more details.
+
+## reverseLookup
+
+Tries to do a reverse lookup for an ip address. This is basically the
+same as `resolve` for a PTR record, but allows you to just pass in the
+ip address and not a valid PTR query string.
+
+To do a reverse lookup for the ip address 127.0.0.1: 
+
+    (dns/reverse-lookup ["10.0.0.1" "10.0.0.2"] "127.0.0.1"
+                 (fn [err r]
+                   (if err
+                     (println "ERROR:" (.code err))
+                     (println r))))
+                     
+See the API documentation for more details.
+
+## Error handling
+
+As you saw in previous sections, any error results in an DnsException
+object being passed as the first argument of the handler function. This
+exception provides a `code` field that specifies the error code.
+
+The error codes are specified by the DnsResponseCode enum, and are:
+
+* NOERROR - No record was found for a given query
+* FORMERROR - Format error 
+* SERVFAIL - Server failure
+* NXDOMAIN - Name error
+* NOTIMPL - Not implemented by DNS Server
+* REFUSED - DNS Server refused the query
+* YXDOMAIN - Domain name should not exist
+* YXRRSET - Resource record should not exist
+* NXRRSET - RRSET does not exist
+* NOTZONE - Name not in zone
+* BADVER - Bad extension mechanism for version
+* BADSIG - Bad signature
+* BADKEY - Bad key
+* BADTIME - Bad timestamp
+
 # Using nREPL
 
 You can start nREPL endpoints within a verticle by calling the

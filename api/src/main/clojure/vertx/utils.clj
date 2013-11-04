@@ -88,3 +88,8 @@
     {:host (.getHostString addr)
      :port (.getPort addr)
      :basis addr}))
+
+(defn inet-address->map [addr]
+  (if addr
+    {:address (.getHostAddress addr)
+     :basis addr}))
