@@ -20,6 +20,7 @@ Other changes:
 * The module can now run under Vert.x 2.1M1 in addition to 2.0.x [#66](/../../issues/66)
 * `vertx.http/remote-address` now includes the source InetSocketAddress object as `:basis`
 * The module now uses Clojure 1.6.0-alpha1 instead of a custom Clojure build that prevented memory leaks [#63](/../../issues/63)
+* (vertx.buffer/append! buf string encoding) now works [#71](/../../issues/71)
 
 ## [v0.2.0](/../../tree/0.2.0) - 2013-09-17
 

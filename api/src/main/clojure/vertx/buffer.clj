@@ -79,7 +79,7 @@
          (throw (IllegalArgumentException.
                  (str "Can't append data of class " (class data))))))
     ([buf data-string encoding]
-       (.append data-string encoding)))
+       (.appendString buf data-string encoding)))
 
   (defn set!
     "Sets bufferable data in a buffer.

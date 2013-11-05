@@ -97,9 +97,12 @@
     (b/append! b! data)
     (is (= data (b/get-string b! 0 (.length data))))))
 
-;; TODO: implement
 (deftest test-append-string-other-encoding
-  )
+  (let [b! (b/buffer)
+        data "ham-biscuit"
+        len (count (.getBytes data "UTF-16"))]
+    (b/append! b! data "UTF-16")
+    (is (= data (b/get-string b! 0 len "UTF-16")))))
 
 (deftest test-set-buffer
   (let [b1! (t/random-buffer 100)
