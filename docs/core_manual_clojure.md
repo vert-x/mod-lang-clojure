@@ -1417,7 +1417,238 @@ trust store, and also to supply a client certificate:
        :trust-store-password "password"
        :key-store-path "/path/to/keystore/holding/client/cert/client-keystore.jks"
        :key-store-password "password"})
+
+# User Datagram Protocol (UDP) 
+
+Using User Datagram Protocol (UDP) with Vert.x is a piece of cake. 
+
+UDP is a connection-less transport which basically means you have no
+persistent connection to a remote peer.
+
+Instead you can send and receive packages and the remote address is
+contained in each of them.
+
+Note that UDP is not as safe as TCP to use, as there are no guarantees
+that a sent datagram packet will be received by its endpoint at all.
+
+The only guarantee is that it will either be receive completely or not
+at all.
+
+Also you usually can't send data larger than the MTU size of
+your network interface, because each datagram will be send as
+one packet.
+
+But be aware that even if the packet size is smaller then the MTU it
+may still fail.
+
+The size at which it will fail depends on the operating system etc. So
+a good rule of thumb is to try to send small packets.
+
+Because of the nature of UDP it is best fit for applications where you
+are allowed to drop packets (a monitoring application, for example).
+
+The benefits are that it has a lot less overhead compared to TCP,
+which can be handled by the NetServer and NetClient (see above).
+
+## Creating a DatagramSocket
+
+To use send or receive UDP, you first need to create a datagram socket:
+
+    (require '[vertx.datagram :as udp])
+    
+    (udp/socket)
+    
+    ;; or specify :ipv4/:ipv6 specifically
+    (udp/socket :ipv6)
+    
+The `socket` function takes additional options - See the 'Datagram
+socket properties' section below.
+
+The returned socket is not bound to a specific port. 
+
+## Sending Datagram packets
+
+As mentioned before, User Datagram Protocol (UDP) sends data in
+packets to remote peers but is not connected to them in a persistent
+fashion.
+
+This means each packet can be sent to a different remote peer.
+
+Sending packets is as easy as shown here:
+
+    (-> (udp/socket)
+        (udp/send "content" 1234 "10.0.0.1"))
         
+    ;; send with a result handler
+    (-> (udp/socket)
+        (udp/send "content" 1234 "10.0.0.1"
+                  (fn [err socket)
+                    (println err))))
+
+Be aware that even if `err` is nil, it only means the data was written
+to the network stack, but gives no guarantee that it ever reached or 
+will reach the remote peer at all.
+
+If you need such a guarantee then you want to use TCP with some 
+handshaking logic build on top.
+
+## Receiving Datagram packets
+
+If you want to receive packets you need to bind the datagram socket by 
+calling `vertx.datagram/listen` on it, and register a function to 
+receive the packets via `vertx.datagram/on-data`:
+
+    (-> (udp/socket)
+        (udp/on-data (fn [packet-map] ...))
+        (udp/listen 1234 "0.0.0.0"))
+
+The packet passed to the handler function is a map with the following form:
+
+    {:data a-Buffer
+     :basis the-DatagramPacket-object
+     :sender {:host "the-host"
+              :port 12345
+              :basis the-InetSocketAddress-object}}
+
+## Multicast
+
+### Sending Multicast packets
+
+Multicast allows multiple sockets to receive the same packets. This
+works by have them join a multicast group to which you can send
+packets.
+
+We will look at how to join a multicast group and receive packets in
+the next section - for now, let's focus on how to send them. Sending
+multicast packets is no different than sending normal datagram
+packets.
+
+The only difference is that you would pass in a multicast group
+address to the send method:
+
+    (-> (udp/socket)
+        (udp/send "content" 1234 "230.0.0.1"))
+        
+All sockets that have joined the multicast group 230.0.0.1 will
+receive the packet.
+   
+### Receiving Multicast packets
+
+If you want to receive packets for a specific multicast group you need
+to bind the socket by calling `vertx.datagram/listen`, then join the
+multicast group by calling `vertx.datagram/join-multicast-group`.
+
+This way you will be able to receive packets that were sent to the
+address and port on which the socket listens and also to those sent to
+the multicast group.
+
+Beside this you also want to set a handler function which will be called for
+each received packet.
+
+So to listen on a specific address and port and also receive packets
+for the Multicast group 230.0.0.1 you would do something like shown
+here:
+
+    (-> (udp/socket)
+        (udp/listen 1234)
+        (udp/on-data
+          (fn [packet] ...))
+        (udp/join-multicast-group "230.0.0.1"
+          (fn [err socket]
+            (if-not err 
+              (println "join succeeded")))))
+
+### Leaving a Multicast group 
+
+There are sometimes situations where you want to receive packets for a
+multicast group for a limited time.
+
+In these situations you can first join a multicast group, then leave
+the group later:
+
+    (-> (udp/socket)
+        (udp/listen 1234)
+        (udp/on-data
+          (fn [packet] ...))
+        (udp/join-multicast-group "230.0.0.1"
+          (fn [err socket]
+            ;; only be part of the group for a second
+            (core/timer 1000
+              (udp/leave-multicast-group socket "230.0.0.1")))))
+
+### Blocking multicast
+
+It's also possible to block multicast for a specific sender address.
+
+Be aware this only works on some operating systems and kernel
+versions. Please check the Operating System documentation to see if
+it's supported.
+
+This an expert feature.
+
+To block multicast from a specic address you can call
+ `vertx.datagram/block-multicast-sender`:
+ 
+    (-> (udp/socket)
+        (udp/join-multicast-group "230.0.0.1")
+        ;; This would block packets which are sent from 10.0.0.2
+        (udp/block-multicast-sender "230.0.0.1" "10.0.0.2"))
+
+## DatagramSocket properties
+
+There are several properties you can set on a datagram socket:
+
+* `:send-buffer-size` - the send buffer size in bytes.
+
+* `:receive-buffer-size` - the TCP receive buffer size in bytes.
+
+* `:reuse-address` - if true then addresses in TIME_WAIT state can be reused after
+                     they have been closed.
+
+* `:traffic-class` - ??
+
+* `:broadcast` - controls the SO_BROADCAST socket option. When this option is set, 
+                 Datagram (UDP) packets may be sent to a local interface's broadcast address.
+
+* `:multicast-loopback-mode` - controls the IP_MULTICAST_LOOP socket option.
+                               When this option is set, multicast packets will
+                               also be received on the local interface. 
+
+* `:multicast-time-to-live` - controls the IP_MULTICAST_TTL socket option. TTL stands for "Time to Live,"
+                              but in this context it specifies the number of IP hops that a packet is
+                              allowed to go through, specifically for multicast traffic. Each router
+                              or gateway that forwards a packet decrements the TTL. If the TTL is
+                              decremented to 0 by a router, it will not be forwarded.
+
+
+You can set these properties at socket creation time by passing them
+as a map to `vertx.datagram/socket`:
+
+    (udp/socket :ipv4 {:broadcast true})
+    
+Or set them on an existing socket object, either by passing them as a
+map to `vertx.utils/set-properties`:
+
+    (utils/set-properties socket {:broadcast true})
+
+Or by calling the corresponding java setter methods on the socket
+object:
+
+    (.setBroadcast socket true)
+
+
+## DatagramSocket Local Address
+
+You can find out the local address of the socket (i.e. the address of
+ this side of the UDP Socket) by calling
+ `vertx.datagram/local-address`. This will only return an address-map
+ if the socket is actually listening.
+    
+## Closing a DatagramSocket
+
+You can close a socket by passing it to the `vertx.datagram/close`
+function.  This will close the socket and release all its resources.
+
 <a id="flow-control"> </a> 
 # Flow Control - Streams and Pumps
 
