@@ -15,7 +15,8 @@
 (ns vertx.stream
   "Functions that operate on Vert.x ReadStreams and WriteStreams."
   (:require [vertx.buffer :as buf]
-            [vertx.core :as core])
+            [vertx.core :as core]
+            [vertx.utils :as util])
   (:import (org.vertx.java.core.streams Pump)))
 
 (defn on-data
@@ -50,7 +51,7 @@
    passed the exception.
    Returns the stream."
   [stream handler]
-  (.exceptionHandler stream (core/as-handler handler)))
+  (.exceptionHandler stream (core/as-handler handler util/exception->map)))
 
 (defn write
   "Write data to the stream.

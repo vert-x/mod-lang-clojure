@@ -286,7 +286,7 @@ which will be called when it's complete:
                  (when-not err
                    (println "It's been deployed OK!"))))
 
-The first parameter passed to the fn is an exception which will be not
+The first parameter passed to the fn is an exception-map which will be not
 `nil` if a failure occurred, otherwise it will be `nil`.
 
 The second parameter is the deployment id string. It will be `nil` if
@@ -1056,8 +1056,8 @@ an exception occurs (note that we're using a function from the
         (net/on-connect
           (fn [sock]
             (stream/on-exception sock
-              (fn [ex] 
-                (println "Oops. Something went wrong" ex)))))
+              (fn [ex-map] 
+                (println "Oops. Something went wrong" (:message ex-map))))))
     (net/listen 1234 "localhost"))
 
 ### Event Bus Write Handler
@@ -1168,7 +1168,7 @@ followed by the hostname or ip address of the server. It takes a block
 as the connect handler. This handler will be called when the
 connection actually occurs.
 
-The first argument passed into the connect handler is an exception -
+The first argument passed into the connect handler is an exception-map -
 this will be `nil` if the connect succeeded. The second argument is
 the socket itself - this will be `nil` if the connect failed.
 
@@ -3018,7 +3018,7 @@ argument.
 This function will be called when the operation is complete, or an error
 has occurred.
 
-The first argument passed into the function is an exception, if an error
+The first argument passed into the function is an exception-map, if an error
 occurred. This will be `nil` if the operation completed
 successfully. If the operation returns a result that will be passed in
 the second argument to the handler.
@@ -3475,7 +3475,7 @@ To lookup the A / AAAA record for "vertx.io" you would typically use it like:
     (dns/lookup "10.0.0.1" "vertx.io"
                 (fn [err r]
                    (if err
-                     (println "ERROR:" (.code err))
+                     (println "ERROR:" (:type err))
                      (println (:address r)))))
 
 You can also pass a type argument of `:ipv4` or `:ipv6` to constrain
@@ -3502,7 +3502,7 @@ To lookup all the A records for "vertx.io" you would typically do:
     (dns/resolve ["10.0.0.1" "10.0.0.2"] :A "vertx.io"
                  (fn [err r]
                    (if err
-                     (println "ERROR:" (.code err))
+                     (println "ERROR:" (:type err))
                      (doseq [x r] (println x)))))
     
 See the API documentation for more details.
@@ -3518,33 +3518,33 @@ To do a reverse lookup for the ip address 127.0.0.1:
     (dns/reverse-lookup ["10.0.0.1" "10.0.0.2"] "127.0.0.1"
                  (fn [err r]
                    (if err
-                     (println "ERROR:" (.code err))
+                     (println "ERROR:" (:type err))
                      (println r))))
                      
 See the API documentation for more details.
 
 ## Error handling
 
-As you saw in previous sections, any error results in an DnsException
-object being passed as the first argument of the handler function. This
-exception provides a `code` field that specifies the error code.
+As you saw in previous sections, any error results in an exception-map
+being passed as the first argument of the handler function. This
+exception-map provides a `type` entry that specifies the error type.
 
-The error codes are specified by the DnsResponseCode enum, and are:
+The error types are:
 
-* NOERROR - No record was found for a given query
-* FORMERROR - Format error 
-* SERVFAIL - Server failure
-* NXDOMAIN - Name error
-* NOTIMPL - Not implemented by DNS Server
-* REFUSED - DNS Server refused the query
-* YXDOMAIN - Domain name should not exist
-* YXRRSET - Resource record should not exist
-* NXRRSET - RRSET does not exist
-* NOTZONE - Name not in zone
-* BADVER - Bad extension mechanism for version
-* BADSIG - Bad signature
-* BADKEY - Bad key
-* BADTIME - Bad timestamp
+* :NOERROR - No record was found for a given query
+* :FORMERROR - Format error 
+* :SERVFAIL - Server failure
+* :NXDOMAIN - Name error
+* :NOTIMPL - Not implemented by DNS Server
+* :REFUSED - DNS Server refused the query
+* :YXDOMAIN - Domain name should not exist
+* :YXRRSET - Resource record should not exist
+* :NXRRSET - RRSET does not exist
+* :NOTZONE - Name not in zone
+* :BADVER - Bad extension mechanism for version
+* :BADSIG - Bad signature
+* :BADKEY - Bad key
+* :BADTIME - Bad timestamp
 
 # Using nREPL
 

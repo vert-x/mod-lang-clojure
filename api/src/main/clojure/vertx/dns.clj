@@ -19,7 +19,15 @@
             [vertx.utils :as u]
             [clojure.string :as str])
   (:import java.net.InetSocketAddress
-           org.vertx.java.core.dns.DnsClient))
+           (org.vertx.java.core.dns DnsClient DnsException)))
+
+(extend-type DnsException
+  u/ExceptionAsMap
+  (exception->map [e]
+    (let [code (.code e)]
+      {:type (keyword (.name code))
+       :message (str code)
+       :basis e})))
 
 (defn- sock-address-from-string [address]
   (let [[server port] (str/split address #":")]
@@ -57,9 +65,16 @@
    the lookup to ipv4, ipv6, or first found, respectively.
 
    handler can either be a two-arity fn that will be passed the
-   exception (if any) and result of the lookup call, or a
+   exception-map (if any) and result of the lookup call, or a
    org.vertx.java.core.Handler that will be called with the
    AsyncResult object that wraps the exception and raw result.
+
+   The exception-map that may be passed to the handler will be a
+   map of the form:
+
+     {:type :NXDOMAIN ;; or other error type
+      :message \"NXDOMAIN: type 3, name error\"
+      :basis the-DnsException-object}
 
    The result passed to a handler function will be a map of the form:
 
@@ -130,9 +145,16 @@
           passed a collection of TXT entries as Strings.
 
    handler can either be a two-arity fn that will be passed the
-   exception (if any) and result from the resolve call, or a
+   exception-map (if any) and result from the resolve call, or a
    org.vertx.java.core.Handler that will be called with the
    AsyncResult object that wraps the exception and raw result.
+
+   The exception-map that may be passed to the handler will be a
+   map of the form:
+
+     {:type :NXDOMAIN ;; or other error type
+      :message \"NXDOMAIN: type 3, name error\"
+      :basis the-DnsException-object}
 
    Returns a client object that can be passed to other dns calls."
   [client-or-servers name type handler]
@@ -180,9 +202,16 @@
    If no port is specified, the dns default port (53) is assumed.
 
    handler can either be a two-arity fn that will be passed the
-   exception (if any) and result of the lookup call, or a
+   exception-map (if any) and result of the lookup call, or a
    org.vertx.java.core.Handler that will be called with the
    AsyncResult object that wraps the exception and raw result.
+
+   The exception-map that may be passed to the handler will be a
+   map of the form:
+
+     {:type :NXDOMAIN ;; or other error type
+      :message \"NXDOMAIN: type 3, name error\"
+      :basis the-DnsException-object}
 
    The result passed to a handler function will be a map of the form:
 

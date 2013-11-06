@@ -99,8 +99,8 @@
 (defn as-async-result-handler
   "Wraps the given fn in a org.vertx.java.core.Handler for handling an AsyncResult.
    If include-result-or-result-fn is true (the default), the fn will
-   be passed the exception and the result from the AsyncResult,
-   otherwise just the exception. If include-result-or-result-fn is a
+   be passed an exception-map and the result from the AsyncResult,
+   otherwise just the exception-map. If include-result-or-result-fn is a
    fn, it will be passed the result before passing it to the handler
    fn. Returns f unmodified if it is nil or already a Handler."
   ([f]
@@ -111,7 +111,7 @@
        (as-handler
         (fn [r]
           (if include-result-or-result-fn
-            (f (.cause r)
+            (f (util/exception->map (.cause r))
                (if (fn? include-result-or-result-fn)
                  (include-result-or-result-fn (.result r))
                  (.result r)))
@@ -137,7 +137,7 @@
 
    :config     A configuration map for the module ({})
    :handler    Either be a two-arity fn that will be passed
-               the exception (if any) and module id from the
+               the exception-map (if any) and module id from the
                result of the deploy call, or a
                org.vertx.java.core.Handler that will be
                called with the AsyncResult object that wraps
@@ -193,7 +193,7 @@
 
    :config           A configuration map for the verticle ({})
    :handler          Either be a two-arity fn that will be passed
-                     the exception (if any) and verticle id from the
+                     the exception-map (if any) and verticle id from the
                      result of the deploy call, or a
                      org.vertx.java.core.Handler that will be
                      called with the AsyncResult object that wraps
@@ -214,7 +214,7 @@
 (defn undeploy-verticle
   "Undeploys the verticle identified by id from *container*.
    handler can either be a single-arity fn that will be passed the
-   exception (if any) from the result of the deploy call, or a
+   exception-map (if any) from the result of the deploy call, or a
    org.vertx.java.core.Handler that will be called with the
    AsyncResult object that wraps the exception."
   ([id]

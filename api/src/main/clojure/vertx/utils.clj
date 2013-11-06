@@ -93,3 +93,16 @@
   (if addr
     {:address (.getHostAddress addr)
      :basis addr}))
+
+(defprotocol ExceptionAsMap
+  (exception->map [this]))
+
+(extend-protocol ExceptionAsMap
+  nil
+  (exception->map [_] nil)
+  Throwable
+  (exception->map [e]
+    {:message (.getMessage e)
+     :cause (.getCause e)
+     :basis e}))
+

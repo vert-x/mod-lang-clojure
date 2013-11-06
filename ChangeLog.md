@@ -9,6 +9,7 @@ Non-backwards-compatible changes:
 * `vertx.repl/start-repl` and `vertx.repl/stop-repl` have been renamed to `vertx.repl/start` and `vertx.repl/stop` [#62](/../../issues/62)
 * The `:stream` key in the response from `vertx.http/upload-file-info` has been renamed `:basis`
 * `vertx.http/remote-address` now returns the raw host string as `:host`, instead of the possibly DNS-resolved value [#69](/../../issues/69)
+* Exceptions passed to callbacks are now decomposed into maps [#74](/../../issues/74)
 
 Other changes:
 

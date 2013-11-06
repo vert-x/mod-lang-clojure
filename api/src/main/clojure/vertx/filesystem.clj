@@ -36,7 +36,7 @@
    If recursive? is true and src represents a directory, then the
    directory and its contents will be copied recursively to
    dest. recursive? defaults to false. handler can either be a
-   single-arity fn that will be passed the exception (if any) from the
+   single-arity fn that will be passed the exception-map (if any) from the
    result of the copy call, or a Handler that will be called with the
    AsyncResult object that wraps the exception.
 
@@ -51,7 +51,7 @@
 (defn move
   "Move a file from the src path to dest path, asynchronously.
    handler can either be a single-arity fn that will be passed the
-   exception (if any) from the result of the move call, or a Handler
+   exception-map (if any) from the result of the move call, or a Handler
    that will be called with the AsyncResult object that wraps the
    exception.
 
@@ -63,7 +63,7 @@
 (defn truncate
   "Truncate the file represented by path to length len in bytes, asynchronously.
    handler can either be a single-arity fn that will be passed the
-   exception (if any) from the result of the truncate call, or a
+   exception-map (if any) from the result of the truncate call, or a
    Handler that will be called with the AsyncResult object that wraps
    the exception.
 
@@ -78,7 +78,7 @@
    If dir-perms is provided and path is a directory, it will have its
    permisions changed recursively, with perms being applied to any
    files, and dir-perms being applied to directories. handler can
-   either be a single-arity fn that will be passed the exception (if
+   either be a single-arity fn that will be passed the exception-map (if
    any) from the result of the call, or a Handler that will be called
    with the AsyncResult object that wraps the exception.
 
@@ -105,7 +105,7 @@
 (defn properties
   "Obtain properties for the file represented by path, asynchronously.
    handler can either be a two-arity fn that will be passed the
-   exception (if any) and properties (as a map) from the result of the
+   exception-map (if any) and properties (as a map) from the result of the
    call, or a Handler that will be called with the AsyncResult object
    that wraps the exception and FileProps object.
 
@@ -128,7 +128,7 @@
   "Creates a link on the file system from path to existing, asynchronously.
    If symbolic? is true (the default), the resulting link is symbolic,
    otherwise a had link is created. handler can either be a
-   single-arity fn that will be passed the exception (if any) from the
+   single-arity fn that will be passed the exception-map (if any) from the
    result of the call, or a Handler that will be called with the
    AsyncResult object that wraps the exception."
   ([path existing handler]
@@ -143,7 +143,7 @@
 (defn resolve-symlink
   "Returns the path representing the file that the symbolic link specified by path points to, asynchronously.
    handler can either be a two-arity fn that will be passed the
-   exception (if any) and the String path from the result of the call,
+   exception-map (if any) and the String path from the result of the call,
    or a Handler that will be called with the AsyncResult object that
    wraps the exception and the String path."
   [path handler]
@@ -153,7 +153,7 @@
 (defn delete
   "Deletes the file on the file system represented by path, asynchronously.
    handler can either be a single-arity fn that will be passed the
-   exception (if any) from the result of the call, or a Handler that
+   exception-map (if any) from the result of the call, or a Handler that
    will be called with the AsyncResult object that wraps the
    exception.
 
@@ -174,7 +174,7 @@
    as specified by:
    http://download.oracle.com/javase/7/docs/api/java/nio/file/attribute/PosixFilePermissions.html
    handler can either be a single-arity fn that will be passed the
-   exception (if any) from the result of the call, or a Handler that
+   exception-map (if any) from the result of the call, or a Handler that
    will be called with the AsyncResult object that wraps the
    exception.
 
@@ -191,7 +191,7 @@
   "Read the contents of the directory specified by path, asynchronously.
    If a filter regex is specified then only the paths that match it
    will be returned. handler can either be a two-arity fn that will be
-   passed the exception (if any) and a vector of String paths from the
+   passed the exception-map (if any) and a vector of String paths from the
    result of the call, or a Handler that will be called with the
    AsyncResult object that wraps the exception and a String[] of
    paths."
@@ -204,7 +204,7 @@
 (defn read-file
   "Reads the entire file as represented by the path path as a Buffer, asynchronously.
    handler can either be a two-arity fn that will be passed the
-   exception (if any) and the Buffer from the result of the call, or a
+   exception-map (if any) and the Buffer from the result of the call, or a
    Handler that will be called with the AsyncResult object that wraps
    the exception and the buffer.
 
@@ -218,7 +218,7 @@
   "Creates the file, and writes the specified data to the file represented by path, asynchronously.
    data can anything bufferable (see vertx.buffer).  handler
    can either be a single-arity fn that will be passed the
-   exception (if any) from the result of the call, or a Handler that
+   exception-map (if any) from the result of the call, or a Handler that
    will be called with the AsyncResult object that wraps the
    exception."
   [path data handler]
@@ -228,7 +228,7 @@
 (defn open
   "Open the file represented by path, asynchronously.
    handler can either be a two-arity fn that will be passed the
-   exception (if any) and the AsyncFile instance from the result of
+   exception-map (if any) and the AsyncFile instance from the result of
    the call, or a Handler that will be called with the AsyncResult
    object that wraps the exception and the buffer.
 
@@ -257,7 +257,7 @@
    rwxr-x--- as specified by:
    http://download.oracle.com/javase/7/docs/api/java/nio/file/attribute/PosixFilePermissions.html
    handler can either be a single-arity fn that will be passed the
-   exception (if any) from the result of the call, or a Handler that
+   exception-map (if any) from the result of the call, or a Handler that
    will be called with the AsyncResult object that wraps the
    exception."
   ([path handler]
@@ -269,7 +269,7 @@
 (defn exists?
   "Determines whether the file as specified by the path {@code path} exists, asynchronously.
    handler can either be a two-arity fn that will be passed the
-   exception (if any) and the boolean result of the call, or a Handler
+   exception-map (if any) and the boolean result of the call, or a Handler
    that will be called with the AsyncResult object that wraps the
    exception and the boolean result."
   [path handler]
@@ -285,7 +285,7 @@
 (defn file-system-properties
   "Returns properties of the file-system being used by the specified path, asynchronously.
    handler can either be a two-arity fn that will be passed the
-   exception (if any) and properties (as a map) from the result of the
+   exception-map (if any) and properties (as a map) from the result of the
    call, or a Handler that will be called with the AsyncResult object
    that wraps the exception and FileSystemProps object."
   [path handler]
@@ -298,7 +298,7 @@
    data can anything bufferable (see vertx.buffer).  If pos
    lies outside of the current size of the file, the file will be
    enlarged to encompass it. handler can either be a single-arity fn
-   that will be passed the exception (if any) from the result of the
+   that will be passed the exception-map (if any) from the result of the
    call, or a Handler that will be called with the AsyncResult object
    that wraps the exception.  
 
@@ -312,7 +312,7 @@
   "Reads length bytes of data from the file at position pos in the file, asynchronously.
    If provided, the read data will be written into buffer! at offset.
    handler can either be a two-arity fn that will be passed the
-   exception (if any) and the Buffer from the result of the
+   exception-map (if any) and the Buffer from the result of the
    call, or a Handler that will be called with the AsyncResult object
    that wraps the exception and Buffer object.
 
@@ -328,7 +328,7 @@
 (defn close
   "Close the file, asynchronously.
    handler can either be a single-arity fn that will be passed the
-   exception (if any) from the result of the call, or a Handler that
+   exception-map (if any) from the result of the call, or a Handler that
    will be called with the AsyncResult object that wraps the
    exception."
   ([file]
@@ -339,7 +339,7 @@
 (defn flush
   "Flush any writes made to this file to underlying persistent storage, asynchronously.
    handler can either be a single-arity fn that will be passed the
-   exception (if any) from the result of the call, or a Handler that
+   exception-map (if any) from the result of the call, or a Handler that
    will be called with the AsyncResult object that wraps the
    exception.
 

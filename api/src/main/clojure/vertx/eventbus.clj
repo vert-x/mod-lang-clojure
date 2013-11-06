@@ -144,7 +144,7 @@
    the fn is called.
 
    result-handler can either be a single-arity fn that will be passed
-   the exception (if any) from the result of the deploy call, or a
+   the exception-map (if any) from the result of the deploy call, or a
    org.vertx.java.core.Handler that will be called with the
    AsyncResult object that wraps the exception. The result-handler
    will be called when the register has been propagated to all nodes.

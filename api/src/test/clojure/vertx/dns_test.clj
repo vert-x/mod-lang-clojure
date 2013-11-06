@@ -62,7 +62,8 @@
             (fn [err r]
               (t/test-complete
                (is err)
-               (is (instance? DnsException err))
+               (is (instance? DnsException (:basis err)))
+               (is (= :NXDOMAIN (:type err)))
                (is (nil? r))))))
 
 (defn check-resolve-result [check-fn err r]
@@ -134,7 +135,8 @@
                     (fn [err r]
                       (t/test-complete
                        (is err)
-                       (is (instance? DnsException err))
+                       (is (instance? DnsException (:basis err)))
+                       (is (= :NXDOMAIN (:type err)))
                        (is (nil? r))))))
 
 (deftest sock-address-from-string

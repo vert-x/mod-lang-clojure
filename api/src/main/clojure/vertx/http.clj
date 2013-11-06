@@ -62,7 +62,7 @@
 (defn listen
   "Tells the http-server to start listening for connections on port.
    If host is not provided, it defaults to \"0.0.0.0\". handler can
-   either be a two-arity fn that will be passed the exception (if any)
+   either be a two-arity fn that will be passed the exception-map (if any)
    and server from the result of the listen call, or a Handler
    instance that will be called with the AsyncResult object that wraps
    the exception and server. Returns the server instance.
