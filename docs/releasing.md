@@ -32,3 +32,4 @@ You're done!
 For reference:
 
 <https://docs.sonatype.org/display/Repository/Sonatype+OSS+Maven+Repository+Usage+Guide>
+<http://wickedsource.org/2013/09/23/releasing-your-project-to-maven-central-guide/>
