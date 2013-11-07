@@ -1,11 +1,11 @@
 ;; Copyright 2013 the original author or authors.
-;; 
+;;
 ;; Licensed under the Apache License, Version 2.0 (the "License");
 ;; you may not use this file except in compliance with the License.
 ;; You may obtain a copy of the License at
-;; 
+;;
 ;;      http://www.apache.org/licenses/LICENSE-2.0
-;; 
+;;
 ;; Unless required by applicable law or agreed to in writing, software
 ;; distributed under the License is distributed on an "AS IS" BASIS,
 ;; WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -60,7 +60,16 @@
    messages to that handler."
   (:refer-clojure :exclude [send])
   (:require [vertx.core :as core]
-            [vertx.utils :refer :all]))
+            [vertx.utils :refer :all])
+  (:import org.vertx.java.core.eventbus.ReplyException))
+
+(extend-type ReplyException
+  ExceptionAsMap
+  (exception->map [e]
+    {:type (keyword (.name (.failureType e)))
+     :code (.failureCode e)
+     :message (.getMessage e)
+     :basis e}))
 
 (def ^{:dynamic true
        :doc "The currently active EventBus instance.
@@ -79,30 +88,68 @@
 
 (defn ^:private message-handler
   "Wraps a fn in a Handler, binding *current-message*"
-  [handler]
-  (if (or (nil? handler) (core/handler? handler))
-    handler
-    (core/as-handler
-     (fn [m]
-       (binding [*current-message* m]
-         (handler (decode (.body m))))))))
+  ([handler]
+     (message-handler handler nil))
+  ([handler with-timeout?]
+     (if (or (nil? handler) (core/handler? handler))
+       handler
+       (core/as-handler
+        (fn [val]
+          (let [msg (if with-timeout? (.result val) val)
+                decoded (if msg (decode (.body msg)))]
+            (binding [*current-message* msg]
+              (if with-timeout?
+                (handler (exception->map (.cause val)) decoded)
+                (handler decoded)))))))))
+
+(defn default-reply-timeout
+  "Retrieves the current default reply timeout.
+   See set-default-reply-timeout!"
+  []
+  (.getDefaultReplyTimeout (get-eventbus)))
+
+(defn set-default-reply-timeout!
+  "Sets a default timeout, in ms, for replies.
+   If a messages is sent specifying a reply handler but without
+   specifying a timeout, then the reply handler is timed out, i.e. it
+   is automatically unregistered if a message hasn't been received
+   before timeout. The default value for default send timeout is -1,
+   which means 'never timeout'."
+  [timeout]
+  (.setDefaultReplyTimeout (get-eventbus) timeout))
 
 (defn send
   "Sends a message to the given address.
    A send will only be received by one handler, regardless of the
-   number registered. reply-handler can either be a single-arity fn
-   that will be passed the body of any reply, or a
-   org.vertx.java.core.Handler that will be called with the Message
-   object that represents the reply. If reply-handler is a fn,
-   *current-message* will be bound to the actual Message object when
-   the fn is called."
+   number registered.
+
+   A reply-handler can be specified to receive any replies to the
+   message. If no timeout is provided, the reply-handler should be a
+   single-arity function that will receive the reply. If a timeout is
+   specified, the reply-handler should be a two-arity function that
+   will be passed an exception-map as the first parameter, and the
+   reply as the second. The exception-map will be nil unless the
+   timeout expired before a reply was received or no handlers were
+   listening to the address.
+
+   reply-handler can also be a org.vertx.java.core.Handler that will
+   that will called with the raw object that represents the reply.
+
+   If reply-handler is a fn, *current-message* will be bound to the
+   actual Message object when the fn is called."
   ([addr content]
      (send addr content nil))
   ([addr content reply-handler]
      (.send (get-eventbus)
             addr
             (encode content)
-            (message-handler reply-handler))))
+            (message-handler reply-handler)))
+  ([addr content timeout reply-handler]
+     (.sendWithTimeout (get-eventbus)
+                       addr
+                       (encode content)
+                       timeout
+                       (message-handler reply-handler :with-timeout))))
 
 (defn publish
   "Publishes a message to the given address.
@@ -113,17 +160,29 @@
 
 (defn reply*
   "Replies to the given message.
-   reply-handler can either be a single-arity fn that will be passed
-   the body of any reply, or a org.vertx.java.core.Handler that will
-   be called with the Message object that represents the reply. If
-   reply-handler is a fn, *current-message* will be bound to the
+   A reply-handler can be specified to receive any replies to the
+   message. If no timeout is provided, the reply-handler should be a
+   single-arity function that will receive the reply. If a timeout is
+   specified, the reply-handler should be a two-arity function that
+   will be passed an exception-map as the first parameter, and the
+   reply as the second. The exception-map will be nil unless the
+   timeout expired before a reply was received or no handlers were
+   listening to the address.
+
+   reply-handler can also be a org.vertx.java.core.Handler that will
+   that will called with the raw object that represents the reply.
+
+   If reply-handler is a fn, *current-message* will be bound to the
    actual Message object when the fn is called."
   ([m]
      (.reply m))
   ([m content]
      (.reply m (encode content)))
   ([m content reply-handler]
-     (.reply m (encode content) (message-handler reply-handler))))
+     (.reply m (encode content) (message-handler reply-handler)))
+  ([m content timeout reply-handler]
+     (.replyWithTimeout m (encode content) timeout
+                        (message-handler reply-handler :with-timeout))))
 
 (defn reply
   "Replies to *current-message*.
@@ -131,7 +190,22 @@
   ([content]
      (reply* *current-message* content))
   ([content reply-handler]
-     (reply* *current-message* content reply-handler)))
+     (reply* *current-message* content reply-handler))
+  ([content timeout reply-handler]
+     (reply* *current-message* content timeout reply-handler)))
+
+(defn fail*
+  "Sends a failure reply to the sender of the given message.
+   failure-code and message are an integer code and string specific to
+  your application."
+  [m failure-code message]
+  (.fail m failure-code message))
+
+(defn fail
+  "Sends a failure reply to the sender of *current-message*.
+   See reply-failure*."
+  [failure-code message]
+  (fail* *current-message* failure-code message))
 
 (defonce ^:private registered-handlers (atom {}))
 
@@ -151,7 +225,7 @@
 
    If local-only? is true, the handler won't be propagated to all
    nodes, and only registered on the current node. Default is false.
-   
+
    Returns an id for the handler that can be passed to
    unregister-handler."
   ([addr handler]

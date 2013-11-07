@@ -16,7 +16,8 @@
   (:require [vertx.testtools :as t]
             [vertx.core :as core]
             [vertx.eventbus :as eb]
-            [clojure.test :refer [deftest is use-fixtures]]))
+            [clojure.test :refer [deftest is use-fixtures]])
+  (:import org.vertx.java.core.eventbus.ReplyException))
 
 (use-fixtures :each t/as-embedded)
 
@@ -140,3 +141,53 @@
                [{:a "b"} 2]
                {:a "biscuit" :b nil :c true :d false :e 1 :f 1.1 :g [1 2 3]}]]
       (tfn m))))
+
+(deftest send-with-timeout-times-out
+  (let [addr "eb.timeout.test"]
+    (eb/on-message addr identity) ;; won't reply
+    (eb/send addr "ham" 100
+           (fn [err _]
+             (t/test-complete
+              (is err)
+              (is (instance? ReplyException (:basis err)))
+              (is (= :TIMEOUT (:type err))))))))
+
+(deftest reply-with-timeout-times-out
+  (let [addr "eb.timeout.reply.test"]
+    (eb/on-message
+     addr
+     (fn [m]
+       (eb/reply
+        m 100
+        (fn [err _]
+          (t/test-complete
+           (println err)
+           (is err)
+           (is (instance? ReplyException (:basis err)))
+           (is (= :TIMEOUT (:type err)))))))) 
+    (eb/send addr "ham" identity)))
+
+(deftest send-with-timeout-and-no-handler-triggers-error
+  (eb/send "i-don't-exist" "ham" 100
+           (fn [err _]
+             (t/test-complete
+              (is err)
+              (is (instance? ReplyException (:basis err)))
+              (is (= :NO_HANDLERS (:type err)))))))
+
+(deftest reply-with-fail
+  (let [addr "eb.timeout.reply.fail.test"]
+    (eb/on-message
+     addr
+     (fn [m]
+       (eb/fail 1 "busted"))) 
+    (eb/send
+     addr "ham"
+     100
+     (fn [err _]
+       (t/test-complete
+        (is err)
+        (is (instance? ReplyException (:basis err)))
+        (is (= :RECIPIENT_FAILURE (:type err)))
+        (is (= 1 (:code err)))
+        (is (= "busted" (:message err))))))))

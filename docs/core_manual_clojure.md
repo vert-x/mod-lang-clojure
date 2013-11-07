@@ -520,6 +520,89 @@ It is legal also to send an empty reply or null reply.
 The replies themselves can also be replied to so you can create a
 dialog between two different verticles consisting of multiple rounds.
 
+#### Specifying timeouts for replies
+
+If you send a message specifying a reply handler, and the reply never
+comes, then, by default, you'll be left with a handler that never gets
+unregistered.
+
+To remedy this you can also specify a timeout in ms and a two-arity
+reply handler function. If a reply is received before timeout your
+handler will be called with the message as the second parameter,
+but if no reply is received before timeout, the handler will be
+automatically unregistered and your handler will be called with an
+exception-map as the first parameter you can deal with it in your code.
+
+Here's an example:
+
+    (eb/send "test.address" "This is a message" 1000 
+      (fn [err m]
+        (if err
+          (println "No reply was received before the 1 second timeout!")
+          (println "I received a reply" m))))
+
+If the send times out, first parameter to the handler function will be
+an exception map of the form:
+
+    {:type :TIMEOUT
+     :message "Timed out waiting for reply"
+     :basis the-ReplyException-object}
+     
+
+You can also set a default timeout on the event bus itself - this
+timeout will be used if you are using the `send` function without a
+timeout. The default value of the default timeout is `-1` which means
+that reply handlers will never timeout (this is for backward
+compatibility reasons with earlier versions of Vert.x). Note that when
+using the `send` function without a timeout, your handler will never
+be passed an exception-map when a timeout occurs.
+
+    (eb/set-default-reply-timeout! 5000)
+
+When replying to messages you can also provide a timeout and a
+two-arity reply handler function to get replies to the replies within a
+timeout. The API used is similar to before:
+
+    (eb/on-message "test.address"
+      (fn [m]
+        (eb/reply "This is a reply" 1000 
+          (fn [err m]
+            (if err
+              (println "No reply was received before the 1 second timeout!")
+              (println "I received a reply" m))))))
+
+#### Getting notified of reply failures
+
+If you send a message with a timeout and result handler function, and
+there are no handlers available to send the message to, the handler
+function will be called with an exception-map containing `:type
+:NO_HANDLERS`.
+
+If you send a message with a timeout and result handler, and the
+recipent of the message responds by calling `vertx.eventbus/fail`, the
+handler function will be called with an exception map of the form:
+
+    {:type :RECIPIENT_FAILURE
+     :message "an application specific error message"
+     :code an-application-specific-int-code
+     :basis the-ReplyException-object}
+
+For example:
+
+    (eb/on-message "test.address"
+      (fn [m]
+        (eb/fail 123 "Not enough aardvarks")))
+        
+    
+    (eb/send "test.address" "This is a message" 1000 
+      (fn [err m]
+        (if err
+          (do
+            (println "Failure type:" (:type err))
+            (println "Failure code:" (:code err))
+            (println "Failure message: (:message err)))
+          (println "I received a reply" m))))
+          
 ### Message types
 
 The message you send can be any of the following types:
