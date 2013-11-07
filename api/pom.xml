@@ -20,7 +20,6 @@
     <dependency>
       <groupId>org.clojure</groupId>
       <artifactId>clojure</artifactId>
-      <version>1.5.1</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
