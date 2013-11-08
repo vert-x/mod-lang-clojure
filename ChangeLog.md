@@ -1,6 +1,6 @@
 # ChangeLog
 
-## v0.3.0 - unreleased
+## [v0.3.0](/../../tree/0.3.0) - 2013-11-08
 
 Non-backwards-compatible changes:
 
