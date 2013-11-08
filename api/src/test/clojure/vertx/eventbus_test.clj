@@ -161,7 +161,6 @@
         m 100
         (fn [err _]
           (t/test-complete
-           (println err)
            (is err)
            (is (instance? ReplyException (:basis err)))
            (is (= :TIMEOUT (:type err)))))))) 
