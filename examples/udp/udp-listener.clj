@@ -14,16 +14,13 @@
 
 (ns example.udp.udp-listener
   (:require [vertx.core :as vertx]
-            [vertx.datagram :as udp]
-            [vertx.stream :as stream]))
+            [vertx.datagram :as udp]))
 
-(let [peer (udp/socket)]
-  (udp/listen peer "127.0.0.1" 1234
-              (fn [err _]
-                (stream/on-data peer
-                                (fn [packet]
-                                  (let [data (udp/data packet)
-                                        sender (udp/sender packet)
-                                        info (format "Receive packet %s, from host: %s port: %s"
-                                                     data (:host sender) (:port sender))]
-                                    (println info)))))))
+(-> (udp/socket)
+    (udp/on-data
+     (fn [packet]
+       (println (format "Received packet '%s' from host: %s port: %s"
+                        (:data packet)
+                        (-> packet :sender :host)
+                        (-> packet :sender :port)))))
+    (udp/listen 1234))

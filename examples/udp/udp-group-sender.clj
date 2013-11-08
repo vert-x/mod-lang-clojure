@@ -18,10 +18,9 @@
 
 (let [peer (udp/socket)]
   (doseq [i (range 10)]
-    (let [s (format "hello %s\n" i)]
-      (udp/send peer "group-data" "230.0.0.1" 1234
+    (let [data (format "hello %s" i)]
+      (udp/send peer data "230.0.0.1" 1234
                 (fn [err _]
                   (if (nil? err)
-                    (println "send group packet:" s)
-                    (println (.getMessage err)))))
-      )))
+                    (println "sent group packet:" data)
+                    (println (:message err))))))))
