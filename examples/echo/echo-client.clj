@@ -30,5 +30,5 @@
  1234 "localhost"
  (fn [err socket]
    (if err
-     (throw err)
+     (throw (:basis err))
      (send-data socket))))

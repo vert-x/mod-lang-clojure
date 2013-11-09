@@ -7,12 +7,14 @@
 (def eb (atom nil))
 
 (defn open-eventbus []
-  (reset! eb (eb/eventbus "http://localhost:8080/eventbus"))
-  (eb/on-open @eb #(ef/at "#status_info" (ef/content "connected")))
-  (eb/on-close @eb (fn []
-                     (ef/at
-                      "#status_info" (ef/content "Not connected"))
-                     (reset! eb nil))))
+  (let [eventbus (eb/eventbus "http://localhost:8080/eventbus")]
+      (eb/on-open eventbus (fn [bus]
+                             (reset! eb bus)
+                             (ef/at "#status_info" (ef/content "connected"))))
+      (eb/on-close eventbus (fn []
+                              (ef/at
+                               "#status_info" (ef/content "Not connected"))
+                              (reset! eb nil)))))
 
 (defn close-eventbus []
   (when @eb
@@ -26,8 +28,8 @@
 
 (defn display-message [id addr m]
   (append-text id 
-               (format "Address: %s Message: %s"
-                       addr m)))
+               (str "Address: " addr
+                    " Message: " m)))
 
 (defn publish [addr message]
   (when @eb
