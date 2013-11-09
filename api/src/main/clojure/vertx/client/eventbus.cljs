@@ -65,7 +65,8 @@
   (let [with-eb #(f eb)]
     (if (open? eb)
       (with-eb)
-      (set! (.-onopen eb) (extend-callback (.-onopen eb) with-eb)))))
+      (set! (.-onopen eb) (extend-callback (.-onopen eb) with-eb))))
+  eb)
 
 (defn on-close
   "Registers a fn to be called when the eventbus is closed.
@@ -74,7 +75,8 @@
   [eb f]
   (if (closed? eb)
     (f)
-    (set! (.-onclose eb) (extend-callback (.-onclose eb) f))))
+    (set! (.-onclose eb) (extend-callback (.-onclose eb) f)))
+  eb)
 
 (defn- wrap-handler [f]
   #(f (js->clj %)))
