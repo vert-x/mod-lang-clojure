@@ -1,8 +1,12 @@
 # ChangeLog
 
+## 0.4.0 - unreleased
+
+* `vertx.client.eventbus/on-open` & `vertx.client.eventbus/on-close` now return the eventbus to ease chaining [#81](/../../issues/81)
+
 ## [v0.3.0](/../../tree/0.3.0) - 2013-11-08
 
-Non-backwards-compatible changes:
+Breaking changes:
 
 * Pass the eventbus to on-open callbacks in the ClojureScript client [#53](/../../issues/53)
 * The APIs for the `deploy-*` functions in `vertx.core` have switched to kwarg args [#61](/../../issues/61)
