@@ -44,12 +44,26 @@
     (spit f port)
     (log/debug "Wrote nrepl port to" (.getAbsolutePath f))))
 
-(defn ^:private -start [port host]
+(def ^:internal session-contexts (atom {}))
+
+(defn ^:private wrapped-context-handler [context h]
+  (bound-fn [{:keys [op code session] :as m}]
+    (if (= "eval" op)
+      (do
+        (swap! session-contexts assoc session context)
+        (h (assoc m :code
+             (format "(do (.setContext (vertx.core/get-vertx) (@vertx.repl/session-contexts \"%s\"))\n%s)"
+               session
+               code))))
+      (h m))))
+
+(defn ^:private -start [context port host]
   (log/info (format "Starting nREPL at %s:%s" host port))
   (let [server
         (nrepl/start-server
-         :port port
-         :bind host)
+          :handler (wrapped-context-handler context (nrepl/default-handler))
+          :port port
+          :bind host)
         actual-port (repl-port server)]
     (write-port-file actual-port)
     (require 'clj-stacktrace.repl 'complete.core)
@@ -75,8 +89,9 @@
   ([port]
      (start port "127.0.0.1"))
   ([port host]
-     (let [id (str "repl-" (u/uuid))]
+     (let [id (str "repl-" (u/uuid))
+           context (.getContext (core/get-vertx))]
        (swap! repls assoc id
-              (future-call (bound-fn []
-                             (-start port host))))
+         (future-call (bound-fn []
+                        (-start context port host))))
        id)))

@@ -3,6 +3,7 @@
 ## 0.4.0 - unreleased
 
 * `vertx.client.eventbus/on-open` & `vertx.client.eventbus/on-close` now return the eventbus to ease chaining [#81](/../../issues/81)
+* nrepl worker threads now have the context for \*vertx\* conveyed [#84](/../../issues/84)
 
 ## [v0.3.0](/../../tree/0.3.0) - 2013-11-08
 
