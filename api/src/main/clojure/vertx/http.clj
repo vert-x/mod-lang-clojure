@@ -70,7 +70,7 @@
    Be aware this is an async operation and the server may not bound on
    return of the function."
   ([server port]
-     (listen server nil nil))
+     (listen server port nil nil))
   ([server port host]
      (listen server port host nil))
   ([server port host handler]
