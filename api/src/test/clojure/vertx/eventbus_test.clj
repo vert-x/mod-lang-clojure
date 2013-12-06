@@ -30,7 +30,9 @@
              addr
              (fn [m]
                (t/test-complete
-                (is (= msg m))
+                 (is (= msg m))
+                 (is eb/*current-message*)
+                 (is (= addr eb/*current-address*))
                 (eb/unregister-handler @id)))))
     (is (not (nil? @id)))
     (eb/send addr msg)))

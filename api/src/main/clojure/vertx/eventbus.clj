@@ -86,6 +86,10 @@
   "Bound to the current Message instance when a handler fn is called."
   nil)
 
+(def ^:dynamic *current-address*
+  "Bound to the current receiving address when a handler fn is called."
+  nil)
+
 (defn ^:private message-handler
   "Wraps a fn in a Handler, binding *current-message*"
   ([handler]
@@ -97,7 +101,8 @@
         (fn [val]
           (let [msg (if with-timeout? (.result val) val)
                 decoded (if msg (decode (.body msg)))]
-            (binding [*current-message* msg]
+            (binding [*current-message* msg
+                      *current-address* (if msg (.address msg))]
               (if with-timeout?
                 (handler (exception->map (.cause val)) decoded)
                 (handler decoded)))))))))
@@ -214,8 +219,9 @@
    handler can either be a single-arity fn that will be passed the
    body of the message, or a org.vertx.java.core.Handler that will be
    called with the Message object itself. If handler is a fn,
-   *current-message* will be bound to the actual Message object when
-   the fn is called.
+   *current-message* and *current-address* will be bound to the actual
+   Message object and address that received the message, respectively,
+   when the fn is called.
 
    result-handler can either be a single-arity fn that will be passed
    the exception-map (if any) from the result of the deploy call, or a
