@@ -46,7 +46,8 @@
   (:require [clojure.string :as string]
             [vertx.utils :as u]
             [vertx.core :as core])
-  (:import [org.vertx.java.core.sockjs EventBusBridgeHook]))
+  (:import org.vertx.java.core.sockjs.EventBusBridgeHook
+           org.vertx.java.core.impl.DefaultFutureResult))
 
 (defn sockjs-server
   "Create a SockJS server that wraps an HTTP server."
@@ -132,32 +133,46 @@
 (defn- eb-bridge-hook
   "Make a implememtion of EventBusBridgeHook, take a kv pair as handlers."
   [hooks]
-  (letfn [(call-if [f & args]
-            (if f
+  (letfn [(call-hook [key-fn & args]
+            (if-let [f (key-fn hooks)]
               (boolean (apply f args))
               true))] 
     (reify EventBusBridgeHook
+      (handleSocketCreated [_ sock]
+        (call-hook :created sock))
+      
       (handleSocketClosed [_ sock]
-        (call-if (:closed hooks) sock))
+        (call-hook :closed sock))
 
       (handleSendOrPub [_ sock is-send msg address]
-        (call-if
-         (if is-send (:send hooks) (:publish hooks))
+        (call-hook
+          (if is-send :send :publish)
          sock msg address))
+
+      (handleAuthorise [_ message session-id handler]
+        (call-hook #(:authorise % (:authorize %))
+          (u/decode message)
+          session-id
+          (fn [pass]
+            (.setHandler (DefaultFutureResult. (boolean pass))
+              handler))))
       
       (handlePreRegister [_ sock address]
-        (call-if (:pre-register hooks) sock address))
+        (call-hook :pre-register sock address))
 
       (handlePostRegister [_ sock address]
-        (call-if (:post-register hooks) sock address))
+        (call-hook :post-register sock address))
 
       (handleUnregister [_ sock address]
-        (call-if (:unregister hooks) sock address)))))
+        (call-hook :unregister sock address)))))
 
 (defn set-hooks
   "Registers functions to be called when certain events occur on an event bus bridge.
-   Takes the following kwargs:
+   Takes the following keyword arguments:
 
+   :created       Called when the socket is created. The fn will be
+                  passed SockJSSocket. The fn must return truthy for the creation
+                  to be allowed.
    :closed        Called when the socket has been closed. The fn will be
                   passed the SockJSSocket
    :send          Called when the clent is sends data. The fn will be
@@ -168,6 +183,13 @@
                   passed SockJSSocket, the message, and the eventbus
                   address. The fn must return truthy for the publish to be
                   allowed.
+   :authorise     Called when an authorisation message is received. Can be
+                  used to override the default mechanism. The fn will
+                  be passed the auth request as a map, the session id,
+                  and a single-arity fn that should be called with the
+                  truthy/falsey auth result (allowing you to do the
+                  auth asynchronously). This function must return
+                  truthy if it intends to handle the auth request.
    :pre-register  Called before a client handler registration is processed.
                   The fn will be passed the SockJSSocket and the address.
                   The fn must return truthy for the registration to be
