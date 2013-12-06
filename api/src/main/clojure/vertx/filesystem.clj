@@ -233,7 +233,7 @@
    object that wraps the exception and the buffer.
 
    The behavior of the open call is further controlled by a set of
-   kwarg arguments [default]:
+   keyword arguments [default]:
 
    * :create? - create the file if it does not already exist [true]
    * :read?   - open the file for reading [true]

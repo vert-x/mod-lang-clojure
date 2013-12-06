@@ -133,17 +133,17 @@
 
 (defn deploy-module
   "Deploys the module with the given name to *container*.
-   Takes the following kwarg arguments (default):
+   Takes the following keyword arguments [default]:
 
-   :config     A configuration map for the module ({})
+   :config     A configuration map for the module [{}]
    :handler    Either be a two-arity fn that will be passed
                the exception-map (if any) and module id from the
                result of the deploy call, or a
                org.vertx.java.core.Handler that will be
                called with the AsyncResult object that wraps
-               the exception and id (nil)
+               the exception and id [nil]
    :instances  The number of instances of the module to
-               deploy (1)"
+               deploy [1]"
   [module-name & {:keys [config instances handler]
                   :or {config {} instances 1}}]
   (.deployModule (get-container)
@@ -167,17 +167,17 @@
 (defn deploy-verticle
   "Deploys the verticle with the given main file path to *container*.
    main must be on the effective classpath.
-   Takes the following kwarg arguments (default):
+   Takes the following keyword arguments [default]:
 
-   :config     A configuration map for the verticle ({})
+   :config     A configuration map for the verticle [{}]
    :handler    Either be a two-arity fn that will be passed
                the exception (if any) and verticle id from the
                result of the deploy call, or a
                org.vertx.java.core.Handler that will be
                called with the AsyncResult object that wraps
-               the exception and id (nil)
+               the exception and id [nil]
    :instances  The number of instances of the verticle to
-               deploy (1)"
+               deploy [1]"
   [main & {:keys [config instances handler]
            :or {config {} instances 1}}]
   (.deployVerticle (get-container)
@@ -189,19 +189,19 @@
 (defn deploy-worker-verticle
   "Deploys the worker verticle with the given main file path to *container*.
    main must be on the effective classpath.
-   Takes the following kwarg arguments (default):
+   Takes the following keyword arguments [default]:
 
-   :config           A configuration map for the verticle ({})
+   :config           A configuration map for the verticle [{}]
    :handler          Either be a two-arity fn that will be passed
                      the exception-map (if any) and verticle id from the
                      result of the deploy call, or a
                      org.vertx.java.core.Handler that will be
                      called with the AsyncResult object that wraps
-                     the exception and id (nil)
+                     the exception and id [nil]
    :instances        The number of instances of the verticle to
-                     deploy (1)
+                     deploy [1]
    :multi-threaded?  When true, the verticle will be accessed
-                     by multiple threads concurrently (false)"
+                     by multiple threads concurrently [false]"
   [main & {:keys [config instances multi-threaded? handler]
            :or {config {} instances 1}}]
   (.deployWorkerVerticle (get-container)
