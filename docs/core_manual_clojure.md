@@ -2289,7 +2289,8 @@ directory:
 There's also a variant of `send-file` which takes the name of a file
 to serve if the specified file cannot be found:
 
-    (http/send-file response (str "web/" file) "handler_404.html")
+    (http/send-file response (str "web/" file) 
+      :not-found "handler_404.html")
 
 *Note: If you use `send-file` while using HTTPS it will copy through
  userspace, since if the kernel is copying data directly from disk to

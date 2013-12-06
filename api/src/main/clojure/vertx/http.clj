@@ -240,15 +240,23 @@
 
 (defn send-file
   "Stream a file directly from disk to the outgoing connection.
-   not-found should be the path to a resource to serve if filename is
-   not found. If not-found is not specified, a standard 404 response
-   is generated. This bypasses userspace altogether where supported by
+   This bypasses userspace altogether where supported by
    the underlying operating system. This is a very efficient way to
-   serve files. Returns the response object."
-  ([resp filename]
-     (.sendFile resp filename))
-  ([resp filename not-found]
-     (.sendFile resp filename not-found)))
+   serve files. Takes the following keyword arguments:
+
+   :not-found  The path to a resource to serve if filename is
+               not found. If not-found is not specified, a standard
+               404 responses is generated.
+   :handler    can either be a single-arity fn that will be passed the
+               exception-map (if any) from the result of the send-file
+               call, or a org.vertx.java.core.Handler that will be
+               called with the AsyncResult object that wraps the
+               exception
+
+   Returns the response object."
+  [resp filename & {:keys [not-found handler]}]
+  (.sendFile resp filename not-found
+    (core/as-async-result-handler handler false)))
 
 (defn end
   "Ends the server request or client response.
