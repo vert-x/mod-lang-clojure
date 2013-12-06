@@ -22,7 +22,7 @@
             [vertx.core :as core]
             [vertx.net :as net]
             [vertx.utils :as u])
-  (:import [org.vertx.java.core.impl CaseInsensitiveMultiMap]))
+  (:import [org.vertx.java.core.http CaseInsensitiveMultiMap]))
 
 (defn- parse-multi-map
   "Converts a vertx MultiMap into a clojure map, converting keys to
