@@ -16,7 +16,8 @@
   "Provides a set of functions for using http websockets."
   (:require [vertx.buffer :as buf]
             [vertx.core :as core]
-            [vertx.http :as http])
+            [vertx.http :as http]
+            [vertx.utils :as u])
   (:import [org.vertx.java.core.http WebSocketVersion]))
 
 
@@ -27,6 +28,18 @@
    made."
   [server handler]
   (.websocketHandler server (core/as-handler handler)))
+
+(defn remote-address
+  "Reture the remote addres for this socket. we will wrap it as a map
+  such as {:address 127.0.0.1 :port 8888}"
+  [ws]
+  (u/inet-socket-address->map (.remoteAddress ws)))
+
+(defn local-address
+  "Return the local address for this socket. we will wrap it as a map
+   such as {:address 127.0.0.1 :port 8888}"
+  [ws]
+  (u/inet-socket-address->map (.localAddress ws)))
 
 (defn- ws-version
   "convert websocket version to Enum, or vice versa
