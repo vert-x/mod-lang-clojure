@@ -60,12 +60,6 @@
   [sockjs]
   (u/inet-socket-address->map (.remoteAddress sockjs)))
 
-(defn local-address
-  "Return the local address for this socket. we will wrap it as a map
-   such as {:address 127.0.0.1 :port 8888}"
-  [sockjs]
-  (u/inet-socket-address->map (.localAddress sockjs)))
-
 (defn install-app
   "Installs a SockJS application.
    When the server receives a SockJS request that matches the

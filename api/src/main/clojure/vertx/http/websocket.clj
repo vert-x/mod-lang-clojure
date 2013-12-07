@@ -35,12 +35,6 @@
   [ws]
   (u/inet-socket-address->map (.remoteAddress ws)))
 
-(defn local-address
-  "Return the local address for this socket. we will wrap it as a map
-   such as {:address 127.0.0.1 :port 8888}"
-  [ws]
-  (u/inet-socket-address->map (.localAddress ws)))
-
 (defn- ws-version
   "convert websocket version to Enum, or vice versa
    :RFC6455->RFC6455 :HYBI-00->HYBI_00 :HYBI-08->HYBI_08"

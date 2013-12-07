@@ -285,9 +285,6 @@
             (is (= "/some/path" (.path ws)))
             (is (= "foo=bar&wibble=eek" (.query ws)))
 
-            (is (= "127.0.0.1" (:host (websocket/local-address ws))))
-            (is (= 8111 (:port (websocket/local-address ws))))
-
             (is (= "127.0.0.1" (:host (websocket/remote-address ws))))
             (is (> (:port (websocket/remote-address ws)) 1000))
 
