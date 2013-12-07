@@ -2648,7 +2648,35 @@ An example will illustrate this:
             (stream/write "Some Data")
             http/end))
       (.sendHead request))
-      
+
+### HTTP Compression
+
+Vert.x comes with support for HTTP Compression out of the box. Which means the
+HTTPClient can let the remote Http server know that it supports compression,
+and so will be able to handle compressed response bodies. A Http server is
+free to either compress with one of the supported compression algorithm or send
+the body back without compress it at all. So this is only a hint for the Http
+server which it may ignore at all.
+
+To tell the Http server which compression is supported by the `HttpClient` it
+will include a 'Accept-Encoding' header with the supported compression algorithm
+as value. Multiple compression algorithms are supported. In case of Vert.x this
+will result in have the following header added:
+
+    Accept-Encoding: gzip, deflate
+
+The Http Server will choose then from one of these. You can detect if a HttpServer
+did compress the body by checking for the 'Content-Encoding' header in the
+response sent back from it.
+If the body of the response was compressed via gzip it will include for example
+the following header:
+
+    Content-Encoding: gzip
+
+To enable compression you only need to do:
+
+    (vertx.http/client {:port 8080 :host "127.0.0.1" :try-use-compression true})
+
 ## Pumping Requests and Responses
 
 The HTTP client and server requests and responses all implement either
@@ -2940,6 +2968,19 @@ WebSocket.
 
 For more information see the
 [WebSocket API documentation](http://dev.w3.org/html5/websockets/)
+
+### Set max frameSize to the WebSockets
+
+We can set the max frame size to webSocket, since it dependent on properties
+of HttpServer and HttpClient we could directly set properties to it.
+
+    (http/server
+    {:host "foo.com" :port 8080 :max-web-socket-frame-size 1024})
+
+or to client
+
+    (http/client
+    {:host "foo.com" :port 8080 :max-web-socket-frame-size 1024})
 
 ## Routing WebSockets with Pattern Matching
 
