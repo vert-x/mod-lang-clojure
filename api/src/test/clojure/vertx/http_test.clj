@@ -14,7 +14,7 @@
 
 (ns vertx.http-test
   (:require [vertx.http :as http]
-            [vertx.http.websocket :as ws]
+            [vertx.http.websocket :as websocket]
             [vertx.buffer :as buf]
             [vertx.stream :as stream]
             [vertx.testtools :as t]
@@ -284,6 +284,13 @@
   (letfn [(ws-handler [ws]
             (is (= "/some/path" (.path ws)))
             (is (= "foo=bar&wibble=eek" (.query ws)))
+
+            (is (= "127.0.0.1" (:host (websocket/local-address ws))))
+            (is (= 8111 (:port (websocket/local-address ws))))
+
+            (is (= "127.0.0.1" (:host (websocket/remote-address ws))))
+            (is (> (:port (websocket/remote-address ws)) 1000))
+
             (stream/on-data ws (fn [data]
                                  (stream/write ws data))))
 
@@ -291,25 +298,25 @@
             (is (not err))
             (is (= orig-server server))
             (-> (http/client {:port port :host host})
-                (ws/connect "/some/path?foo=bar&wibble=eek" :RFC6455
-                            (fn [ws]
-                              (let [sent-buf! (buf/buffer)
-                                    rcv-buf! (buf/buffer)
-                                    send-count 10
-                                    send-size 100]
-                                (stream/on-data ws (fn [data]
-                                                     (buf/append! rcv-buf! data)
-                                                     (when (= (.length rcv-buf!) (* send-count send-size))
-                                                       (t/test-complete
-                                                        (is (= sent-buf! rcv-buf!))))))
-                                (dotimes [_ send-count]
-                                  (let [data (t/random-buffer send-size)]
-                                    (buf/append! sent-buf! data)
-                                    (ws/write-binary-frame ws data))))))))]
+                (websocket/connect "/some/path?foo=bar&wibble=eek" :RFC6455
+                                   (fn [ws]
+                                     (let [sent-buf! (buf/buffer)
+                                           rcv-buf! (buf/buffer)
+                                           send-count 10
+                                           send-size 100]
+                                       (stream/on-data ws (fn [data]
+                                                            (buf/append! rcv-buf! data)
+                                                            (when (= (.length rcv-buf!) (* send-count send-size))
+                                                              (t/test-complete
+                                                               (is (= sent-buf! rcv-buf!))))))
+                                       (dotimes [_ send-count]
+                                         (let [data (t/random-buffer send-size)]
+                                           (buf/append! sent-buf! data)
+                                           (websocket/write-binary-frame ws data))))))))]
     (let [server (http/server)
           port 8111
           host "localhost"]
       (-> server
-          (ws/on-websocket ws-handler)
+          (websocket/on-websocket ws-handler)
           (http/listen port host
                        (partial server-listen-handler server port host))))))
