@@ -184,7 +184,7 @@
        (eb/fail 1 "busted"))) 
     (eb/send
      addr "ham"
-     100
+     1000
      (fn [err _]
        (t/test-complete
         (is err)
