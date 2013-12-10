@@ -1,6 +1,6 @@
 # ChangeLog
 
-## 0.4.0 - unreleased
+## [v0.4.0](/../../tree/0.4.0) - 2013-12-10
 
 Bug fixes:
 
