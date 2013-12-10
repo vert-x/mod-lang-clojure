@@ -2,8 +2,19 @@
 
 ## 0.4.0 - unreleased
 
+Bug fixes:
+
 * `vertx.client.eventbus/on-open` & `vertx.client.eventbus/on-close` now return the eventbus to ease chaining [#81](/../../issues/81)
 * nrepl worker threads now have the context for \*vertx\* conveyed [#84](/../../issues/84)
+* `vertx.http/listen` now properly honors the port argument in the 2-arity version [#87](/../../issues/87)
+
+New features:
+
+* SockJS authorise and created hooks now supported [#80](/../../issues/80)
+* `remote-address` exposed for SockJS sockets, websockets, and net sockets [#79](/../../issues/79)
+* The address of a received message is now exposed as `vertx.eventbus/\*current-address*` [#77](/../../issues/77)
+* `vertx.http/send-file` now supports an optional completion callback [#76](/../../issues/76)
+* `vertx.http.sockjs/bridge` now takes an optional bridge-config map [#73](/../../issues/73)
 
 ## [v0.3.0](/../../tree/0.3.0) - 2013-11-08
 
