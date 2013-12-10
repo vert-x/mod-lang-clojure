@@ -23,12 +23,18 @@ You're done!
 6. Close the repo, then release it (you may need to refresh the list 
    for the release button to become active).
 7. Update the ChangeLog.
-8. Switch to release tag, build docs, and upload to tcrawley.org (for now)
+8. Publish the API docs:
+   * Switch to release tag
+   * `mvn install` in api to generate docs
+   * `cp target/html-docs /tmp`
+   * `git checkout gh-pages`
+   * `mv /tmp/html-docs /docs/<version>/`
+   * push the gh-pages branch
 9. Update README with link to ^ and update the version number
 10. Wait for several hours until sonatype syncs to central. You can
     check <http://search.maven.org> to know when this has completed.
 11. Announce it: twitter, clojure@, vertx@
-
+12. Register it in the [module registry](http://modulereg.vertx.io/)
 For reference:
 
 <https://docs.sonatype.org/display/Repository/Sonatype+OSS+Maven+Repository+Usage+Guide>
