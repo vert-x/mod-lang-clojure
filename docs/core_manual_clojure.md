@@ -2969,15 +2969,15 @@ WebSocket.
 For more information see the
 [WebSocket API documentation](http://dev.w3.org/html5/websockets/)
 
-### Set max frameSize to the WebSockets
+### Set a max frame size for WebSockets
 
-We can set the max frame size to webSocket, since it dependent on properties
-of HttpServer and HttpClient we could directly set properties to it.
+To set the max frame size for WebSocket, you will need to set it as a
+property on the http server:
 
     (http/server
     {:host "foo.com" :port 8080 :max-web-socket-frame-size 1024})
 
-or to client
+or client:
 
     (http/client
     {:host "foo.com" :port 8080 :max-web-socket-frame-size 1024})
