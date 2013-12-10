@@ -85,7 +85,8 @@
    passed the socket. Returns the server instance.
 
    The server can only have at most one connect handler at any one
-   time. " [server handler]
+   time. "
+  [server handler]
   (.connectHandler server (core/as-handler handler)))
 
 (defn on-close
@@ -112,6 +113,12 @@
      (.connect client port
                (or host "localhost")
                (core/as-async-result-handler handler))))
+
+(defn remote-address
+  "Returns the remote address for the socket as an address-map of the
+  form {:address \"127.0.0.1\" :port 8888 :basis inet-socket-address-object}"
+  [socket]
+  (common/internal-remote-address socket))
 
 (defn close
   "Close the server. Any open connections will be closed."

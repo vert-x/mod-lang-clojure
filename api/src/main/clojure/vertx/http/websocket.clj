@@ -17,7 +17,8 @@
   (:require [vertx.buffer :as buf]
             [vertx.core :as core]
             [vertx.http :as http]
-            [vertx.utils :as u])
+            [vertx.utils :as u]
+            [vertx.common :as common])
   (:import [org.vertx.java.core.http WebSocketVersion]))
 
 
@@ -30,10 +31,10 @@
   (.websocketHandler server (core/as-handler handler)))
 
 (defn remote-address
-  "Reture the remote addres for this socket. we will wrap it as a map
-  such as {:address 127.0.0.1 :port 8888}"
-  [ws]
-  (u/inet-socket-address->map (.remoteAddress ws)))
+  "Returns the remote address for the socket as an address-map of the
+  form {:address \"127.0.0.1\" :port 8888 :basis inet-socket-address-object}"
+  [socket]
+  (common/internal-remote-address socket))
 
 (defn- ws-version
   "convert websocket version to Enum, or vice versa

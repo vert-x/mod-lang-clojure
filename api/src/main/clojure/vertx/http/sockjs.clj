@@ -45,7 +45,8 @@
   own handler, and configuration."
   (:require [clojure.string :as string]
             [vertx.utils :as u]
-            [vertx.core :as core])
+            [vertx.core :as core]
+            [vertx.common :as common])
   (:import org.vertx.java.core.sockjs.EventBusBridgeHook
            org.vertx.java.core.impl.DefaultFutureResult))
 
@@ -55,10 +56,10 @@
   (-> (core/get-vertx) (.createSockJSServer http-server)))
 
 (defn remote-address
-  "Reture the remote addres for this socket. we will wrap it as a map
-  such as {:address 127.0.0.1 :port 8888}"
-  [sockjs]
-  (u/inet-socket-address->map (.remoteAddress sockjs)))
+  "Returns the remote address for the socket as an address-map of the
+  form {:address \"127.0.0.1\" :port 8888 :basis inet-socket-address-object}"
+  [socket]
+  (common/internal-remote-address socket))
 
 (defn install-app
   "Installs a SockJS application.
@@ -152,16 +153,16 @@
 
       (handleSendOrPub [_ sock is-send msg address]
         (call-hook
-         (if is-send :send :publish)
-         sock msg address))
+          (if is-send :send :publish)
+          sock msg address))
 
       (handleAuthorise [_ message session-id handler]
         (call-hook #(:authorise % (:authorize %))
-                   (u/decode message)
-                   session-id
-                   (fn [pass]
-                     (.setHandler (DefaultFutureResult. (boolean pass))
-                                  handler))))
+          (u/decode message)
+          session-id
+          (fn [pass]
+            (.setHandler (DefaultFutureResult. (boolean pass))
+              handler))))
 
       (handlePreRegister [_ sock address]
         (call-hook :pre-register sock address))

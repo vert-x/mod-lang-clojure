@@ -14,10 +14,13 @@
 
 (ns ^:no-doc vertx.common
     (:require [vertx.core :as c]
-              [vertx.buffer :as buf]))
+              [vertx.buffer :as buf]
+              [vertx.utils :as u]))
 
 (defn ^:internal ^:no-doc internal-close
   "A common close implementation. Should be wrapped by other namespaces."
   [obj handler]
   (.close obj (c/as-async-result-handler handler false)))
 
+(defn ^:internal ^:no-doc internal-remote-address [socket]
+  (u/inet-socket-address->map (.remoteAddress socket)))
