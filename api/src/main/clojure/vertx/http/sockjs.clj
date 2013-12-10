@@ -110,31 +110,37 @@
   [server config handler]
   (.installApp server (u/encode config) (core/as-handler handler)))
 
-(def ^:const default-auth-timeout (* 5 60 1000))
-(def ^:const default-auth-address (str "vertx.basicauthmanager.authorise"))
-
 (defn bridge
   "Install an app which bridges the SockJS server to the event bus.
-   config is a map of configuration options (see install-app).
+   app-config is a map of configuration options (see install-app).
    inbound-permitted and outbound-permitted are lists of JSON objects
    which define permitted matches for inbound (client->server) and
    outbound (server->client) traffic, respectively. See the \"Securing
    the Bridge\" section of the manual for the proper usage of these
-   options. auth-timeout specifies the amount of time (in ms) an
-   authorisation will be cached in the bridge (defaults to 5 minutes).
-   auth-address specifies the address of the auth manager (defaults to
-   'vertx.basicauthmanager.authorise')"
-  ([server config inbound-permitted outbound-permitted]
-     (bridge server config inbound-permitted outbound-permitted
-             default-auth-timeout default-auth-address))
+   options. bridge-config is a map of bridge specific configuration
+   options [default]:
 
-  ([server config inbound-permitted outbound-permitted auth-timeout]
-     (bridge server config inbound-permitted outbound-permitted auth-timeout
-             default-auth-address))
-
-  ([server config inbound-permitted outbound-permitted auth-timeout auth-address]
-     (.bridge server (u/encode config) (u/encode inbound-permitted)
-              (u/encode outbound-permitted) auth-timeout auth-address)))
+   * :auth_address             the address of the auth manager
+                               [vertx.basicauthmanager.authorise]
+   * :auth_timeout             the amount of time (in ms) an
+                               authorisation will be cached in the
+                               bridge [5 minutes]
+   * :max_address_length       the maximum length (in characters) an
+                               address a client attempts to register
+                               a handler against can be [200]
+   * :max_handlers_per_socket  the maximum number of handlers a single
+                               client can register [1000]
+   * :ping_interval            the interval (in ms) between pings to 
+                               confirm the client is still available
+                               [10000]"
+  ([server app-config inbound-permitted outbound-permitted]
+     (bridge server app-config inbound-permitted outbound-permitted {}))
+  ([server app-config inbound-permitted outbound-permitted bridge-config]
+     (.bridge server
+       (u/encode app-config)
+       (u/encode inbound-permitted)
+       (u/encode outbound-permitted)
+       (u/encode bridge-config))))
 
 
 (defn- eb-bridge-hook
