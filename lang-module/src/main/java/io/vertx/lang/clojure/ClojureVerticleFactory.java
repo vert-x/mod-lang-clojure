@@ -51,6 +51,9 @@ public class ClojureVerticleFactory implements VerticleFactory {
 
         this.cl = new URLClassLoader(runtimeUrls.toArray(new URL[0]), cl);
         this.runtime = ClojureRuntimeShim.newRuntime(this.cl);
+        this.ownsRuntime = (this.runtime.invoke("clojure.core/find-ns", 
+                                                this.runtime.invoke("clojure.core/symbol", 
+                                                                    "vertx.core")) == null);
         this.runtime.invoke("vertx.core/-bind-container-roots", vertx, container);
     }
 
@@ -66,7 +69,9 @@ public class ClojureVerticleFactory implements VerticleFactory {
 
     @Override
     public void close() {
-        this.runtime.invoke("clojure.core/shutdown-agents");
+        if (this.ownsRuntime) {
+            this.runtime.invoke("clojure.core/shutdown-agents");
+        }
     }
 
     private class ClojureVerticle extends Verticle {
@@ -93,6 +98,7 @@ public class ClojureVerticleFactory implements VerticleFactory {
 
     private static final Logger log = LoggerFactory.getLogger(ClojureVerticleFactory.class);
     private ClassLoader cl;
+    private boolean ownsRuntime;
     private ClojureRuntimeShim runtime;
 
 }
