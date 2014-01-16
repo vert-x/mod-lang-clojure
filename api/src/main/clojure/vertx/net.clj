@@ -85,7 +85,7 @@
    passed the socket. Returns the server instance.
 
    The server can only have at most one connect handler at any one
-   time. "
+   time."
   [server handler]
   (.connectHandler server (core/as-handler handler)))
 
@@ -132,5 +132,17 @@
    This bypasses userspace altogether where supported by the
    underlying operating system. This is a very efficient way to serve
    files. Returns the socket."
-  [sock filename]
-  (.sendFile sock filename))
+  [socket filename]
+  (.sendFile socket filename))
+
+(defn ssl
+  "Upgrade a socket to use SSL/TLS.
+   handler can either be a zero-arity fn or a Handler instance that
+  will be called when the upgrade completes. Returns the socket."
+  [socket handler]
+  (.ssl socket (core/as-void-handler handler)))
+
+(defn ssl?
+  "Returns true if the socket is encrypted via SSL/TLS."
+  [socket]
+  (.isSsl socket))
