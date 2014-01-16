@@ -51,14 +51,14 @@
           (client-request [client]
             (http/get-now client "/get/now?k=v" {:dummy "dummy"
                                                  :dummy-v ["v1" "v2"]}
-                          (fn [resp]
-                            (assert-status-code resp)
-                            (is (= "status-msg" (.statusMessage resp)))
-                            (is (= "add-header" (:add-header (http/headers resp))))
-                            (http/on-body
-                             resp (fn [buf]
-                                    (t/test-complete
-                                     (is (= (buf/buffer "body-content") buf))))))))
+              (fn [resp]
+                (assert-status-code resp)
+                (is (= "status-msg" (.statusMessage resp)))
+                (is (= "add-header" (:add-header (http/headers resp))))
+                (http/on-body
+                  resp (fn [buf]
+                         (t/test-complete
+                           (is (= (buf/buffer "body-content") buf))))))))
 
           (server-listen-handler [orig-server port host err server]
             (is (not err))
@@ -67,8 +67,8 @@
 
     (let [server (http/server {:compression-supported true}) port 8888 host "localhost"]
       (-> server
-          (http/on-request req-handler)
-          (http/listen port host (partial server-listen-handler server port host))))))
+        (http/on-request req-handler)
+        (http/listen port host (partial server-listen-handler server port host))))))
 
 
 (deftest form-request
@@ -89,22 +89,22 @@
             (is (= orig-server server))
             (let [body "origin=junit-testUserAlias&login=admin%40foo.bar&pass+word=admin"]
               (-> (http/client {:port port :host host})
-                  (http/post "/form"
-                             (fn [resp]
-                               (assert-status-code resp)
-                               (http/on-body resp
-                                             (fn [body]
-                                               (t/test-complete
-                                                (is (= (int 0) (.length body))))))))
+                (http/post "/form"
+                  (fn [resp]
+                    (assert-status-code resp)
+                    (http/on-body resp
+                      (fn [body]
+                        (t/test-complete
+                          (is (= (int 0) (.length body))))))))
 
-                  (http/add-header :content-length (str (.length body)))
-                  (http/add-header :content-type (str "application/x-www-form-urlencoded"))
-                  (http/end body))))]
+                (http/add-header :content-length (str (.length body)))
+                (http/add-header :content-type (str "application/x-www-form-urlencoded"))
+                (http/end body))))]
 
     (let [server (http/server) port 8888 host "localhost"]
       (-> server
-          (http/on-request req-handler)
-          (http/listen port host (partial server-listen-handler server port host))))))
+        (http/on-request req-handler)
+        (http/listen port host (partial server-listen-handler server port host))))))
 
 
 
@@ -114,14 +114,14 @@
             (http/expect-multi-part req)
             (let [resp (http/server-response req {:chunked true})]
               (http/on-upload req
-                              (fn [file-info]
-                                (is (= "file" (:name file-info)))
-                                (is (= "tmp-0.txt" (:filename file-info)))
-                                (is (= "image/gif" (:content-type file-info)))
-                                (stream/on-data
-                                 (:basis file-info)
-                                 (fn [data]
-                                   (is (= (buf/buffer "Vert.x Rocks!") data))))))
+                (fn [file-info]
+                  (is (= "file" (:name file-info)))
+                  (is (= "tmp-0.txt" (:filename file-info)))
+                  (is (= "image/gif" (:content-type file-info)))
+                  (stream/on-data
+                    (:basis file-info)
+                    (fn [data]
+                      (is (= (buf/buffer "Vert.x Rocks!") data))))))
 
               (stream/on-end req (fn []
                                    (let [forms (http/form-attributes req)]
@@ -133,28 +133,28 @@
             (is (= orig-server server))
             (let [boundary "dLV9Wyq26L_-JQxk6ferf-RT153LhOO"
                   body (str "--" boundary "\r\n"
-                            "Content-Disposition: form-data; name=\"file\"; filename=\"tmp-0.txt\"\r\n"
-                            "Content-Type: image/gif\r\n"
-                            "\r\n"
-                            "Vert.x Rocks!\r\n"
-                            "--" boundary "--\r\n")]
+                         "Content-Disposition: form-data; name=\"file\"; filename=\"tmp-0.txt\"\r\n"
+                         "Content-Type: image/gif\r\n"
+                         "\r\n"
+                         "Vert.x Rocks!\r\n"
+                         "--" boundary "--\r\n")]
               (-> (http/client {:port port :host host})
-                  (http/post "/form"
-                             (fn [resp]
-                               (assert-status-code resp)
-                               (http/on-body resp
-                                             (fn [body]
-                                               (t/test-complete
-                                                (is (= (int 0) (.length body))))))))
+                (http/post "/form"
+                  (fn [resp]
+                    (assert-status-code resp)
+                    (http/on-body resp
+                      (fn [body]
+                        (t/test-complete
+                          (is (= (int 0) (.length body))))))))
 
-                  (http/add-header :content-length (str (.length body)))
-                  (http/add-header :content-type (str "multipart/form-data; boundary="boundary))
-                  (http/end body))))]
+                (http/add-header :content-length (str (.length body)))
+                (http/add-header :content-type (str "multipart/form-data; boundary="boundary))
+                (http/end body))))]
 
     (let [server (http/server) port 8888 host "localhost"]
       (-> server
-          (http/on-request req-handler)
-          (http/listen port host (partial server-listen-handler server port host))))))
+        (http/on-request req-handler)
+        (http/listen port host (partial server-listen-handler server port host))))))
 
 
 (deftest ssl-request
@@ -175,14 +175,14 @@
                               :key-store-password "wibble"
                               :trust-store-path (t/resource-path "keystores/client-truststore.jks")
                               :trust-store-password "wibble"})
-                (http/get "/get/ssl/"
-                          (fn [resp]
-                            (assert-status-code resp)
-                            (http/on-body resp
-                                          (fn [buf]
-                                            (t/test-complete
-                                             (is (= (buf/buffer "body-content") buf)))))))
-                (http/end)))]
+              (http/get "/get/ssl/"
+                (fn [resp]
+                  (assert-status-code resp)
+                  (http/on-body resp
+                    (fn [buf]
+                      (t/test-complete
+                        (is (= (buf/buffer "body-content") buf)))))))
+              (http/end)))]
 
     (let [server (http/server {:SSL true
                                :key-store-path (t/resource-path "keystores/server-keystore.jks")
@@ -193,9 +193,9 @@
           port 4043
           host "localhost"]
       (-> server
-          (http/on-request req-handler)
-          (http/listen port host
-                       (partial server-listen-handler server port host))))))
+        (http/on-request req-handler)
+        (http/listen port host
+          (partial server-listen-handler server port host))))))
 
 
 (deftest compression-request
@@ -211,22 +211,22 @@
             (-> (http/client {:host "localhost"
                               :port 4043
                               :try-use-compression true})
-                (http/get "/get/compression/"
-                          (fn [resp]
-                            (assert-status-code resp)
-                            (http/on-body resp
-                                          (fn [buf]
-                                            (t/test-complete
-                                             (is (= (buf/buffer "body-content") buf)))))))
-                (http/end)))]
+              (http/get "/get/compression/"
+                (fn [resp]
+                  (assert-status-code resp)
+                  (http/on-body resp
+                    (fn [buf]
+                      (t/test-complete
+                        (is (= (buf/buffer "body-content") buf)))))))
+              (http/end)))]
 
     (let [server (http/server {:compression-supported true})
           port 4043
           host "localhost"]
       (-> server
-          (http/on-request req-handler)
-          (http/listen port host
-                       (partial server-listen-handler server port host))))))
+        (http/on-request req-handler)
+        (http/listen port host
+          (partial server-listen-handler server port host))))))
 
 
 (deftest http-client-request
@@ -276,9 +276,9 @@
           port 8111
           host "localhost"]
       (-> server
-          (http/on-request req-handler)
-          (http/listen port host
-                       (partial server-listen-handler server port host))))))
+        (http/on-request req-handler)
+        (http/listen port host
+          (partial server-listen-handler server port host))))))
 
 (deftest websocket-request
   (letfn [(ws-handler [ws]
@@ -295,25 +295,25 @@
             (is (not err))
             (is (= orig-server server))
             (-> (http/client {:port port :host host})
-                (websocket/connect "/some/path?foo=bar&wibble=eek" :RFC6455
-                                   (fn [ws]
-                                     (let [sent-buf! (buf/buffer)
-                                           rcv-buf! (buf/buffer)
-                                           send-count 10
-                                           send-size 100]
-                                       (stream/on-data ws (fn [data]
-                                                            (buf/append! rcv-buf! data)
-                                                            (when (= (.length rcv-buf!) (* send-count send-size))
-                                                              (t/test-complete
-                                                               (is (= sent-buf! rcv-buf!))))))
-                                       (dotimes [_ send-count]
-                                         (let [data (t/random-buffer send-size)]
-                                           (buf/append! sent-buf! data)
-                                           (websocket/write-binary-frame ws data))))))))]
+              (websocket/connect "/some/path?foo=bar&wibble=eek" :RFC6455
+                (fn [ws]
+                  (let [sent-buf! (buf/buffer)
+                        rcv-buf! (buf/buffer)
+                        send-count 10
+                        send-size 100]
+                    (stream/on-data ws (fn [data]
+                                         (buf/append! rcv-buf! data)
+                                         (when (= (.length rcv-buf!) (* send-count send-size))
+                                           (t/test-complete
+                                             (is (= sent-buf! rcv-buf!))))))
+                    (dotimes [_ send-count]
+                      (let [data (t/random-buffer send-size)]
+                        (buf/append! sent-buf! data)
+                        (websocket/write-binary-frame ws data))))))))]
     (let [server (http/server)
           port 8111
           host "localhost"]
       (-> server
-          (websocket/on-websocket ws-handler)
-          (http/listen port host
-                       (partial server-listen-handler server port host))))))
+        (websocket/on-websocket ws-handler)
+        (http/listen port host
+          (partial server-listen-handler server port host))))))
