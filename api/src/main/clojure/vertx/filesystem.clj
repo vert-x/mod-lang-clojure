@@ -91,6 +91,18 @@
      (.chmod (get-file-system) path perms dir-perms
              (core/as-async-result-handler handler false))))
 
+(defn chown
+  "Changes the ownership on the file at path to user and group, asynchronously.
+   handler can either be a single-arity fn that will be passed the
+   exception-map (if any) from the result of the call, or a Handler that
+   will be called with the AsyncResult object that wraps the
+   exception."
+  ([path user handler]
+     (chown path user nil handler))
+  ([path user group handler]
+     (.chown (get-file-system) path user group
+       (core/as-async-result-handler handler false))))
+
 (defn ^:internal ^:no-doc file-props->map [props]
   (hash-map
    :creation-time      (.creationTime props)
@@ -263,8 +275,8 @@
   ([path handler]
      (create-file path nil handler))  
   ([path perms handler]
-       (.createFile (get-file-system) path perms
-           (core/as-async-result-handler handler false))))
+     (.createFile (get-file-system) path perms
+       (core/as-async-result-handler handler false))))
 
 (defn exists?
   "Determines whether the file as specified by the path {@code path} exists, asynchronously.

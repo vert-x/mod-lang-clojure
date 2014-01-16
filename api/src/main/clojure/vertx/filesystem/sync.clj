@@ -60,6 +60,13 @@
   ([path perms dir-perms]
      (.chmodSync (fs/get-file-system) path perms dir-perms)))
 
+(defn chown
+  "Changes the ownership on the file at path to user and group, synchronously."
+  ([path user]
+     (chown path user nil))
+  ([path user group]
+     (.chownSync (fs/get-file-system) path user group)))
+
 (defn properties
   "Obtain properties for the file represented by path, synchronously.
 
