@@ -39,7 +39,6 @@
     :ipv6 InternetProtocolFamily/IPv6
     nil))
 
-;;TODO: setting properties
 (defn socket
   "Creates a datagram socket (DatagramSocket) instance using vertx.core/*vertx*.
    protocol-family can be one of :ipv4, ipv6. properties is a map of
@@ -109,11 +108,13 @@
      (join-multicast-group socket group-address nil))
   ([socket group-address handler]
      (.listenMulticastGroup socket group-address
-                            (core/as-async-result-handler handler)))
+       (core/as-async-result-handler handler)))
+  ([socket group-address interface handler]
+     (join-multicast-group socket group-address interface nil handler))
   ([socket group-address interface source-address handler]
-     (.listenMulticastGroup socket group-address interface
-                            source-address
-                            (core/as-async-result-handler handler))))
+     (.listenMulticastGroup socket group-address
+       interface source-address
+       (core/as-async-result-handler handler))))
 
 (defn leave-multicast-group
   "Removes the socket from a multicast group.
@@ -129,10 +130,12 @@
      (leave-multicast-group socket group-address nil))
   ([socket group-address handler]
      (.unlistenMulticastGroup socket group-address
-                              (core/as-async-result-handler handler)))
-  ([socket group-address addr source handler]
-     (.unlistenMulticastGroup socket group-address addr source
-                              (core/as-async-result-handler handler))))
+       (core/as-async-result-handler handler)))
+  ([socket group-address interface handler]
+     (leave-multicast-group socket group-address interface nil handler))
+  ([socket group-address interface source handler]
+     (.unlistenMulticastGroup socket group-address interface source
+       (core/as-async-result-handler handler))))
 
 (defn block-multicast-sender
   "Blocks packets from the given source-address for the given group.

@@ -19,6 +19,7 @@
   (:import [org.vertx.java.core.json JsonArray JsonElement JsonObject]
            [clojure.lang BigInt IPersistentMap Ratio Seqable]
            [java.util Map UUID]
+           [java.net NetworkInterface InetAddress]
            java.math.BigDecimal))
 
 (defprotocol Encodeable
@@ -106,3 +107,7 @@
      :cause (.getCause e)
      :basis e}))
 
+(defn interface-name
+  "Looks up the name of the interface for the given address String."
+  [address]
+  (-> address InetAddress/getByName NetworkInterface/getByInetAddress .getName))
