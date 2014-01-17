@@ -42,10 +42,9 @@
               (is (.absoluteURI req)))
 
             (let [resp (http/server-response req {:status-code 200
-                                                  ;;:status-message "status-msg"
+                                                  :status-message "status-msg"
                                                   :chunked false})]
               (doto resp
-                (.setStatusMessage "status-msg")
                 (http/add-header "add-header" "add-header")
                 (http/end "body-content"))))
 
