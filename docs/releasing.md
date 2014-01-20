@@ -26,9 +26,11 @@ You're done!
 8. Publish the API docs:
    * Switch to release tag
    * `mvn install` in api to generate docs
-   * `cp target/html-docs /tmp`
+   * `mv target/html-docs /tmp`
    * `git checkout gh-pages`
    * `mv /tmp/html-docs /docs/<version>/`
+   * edit index.html to refer to new docs
+   * commit
    * push the gh-pages branch
 9. Update README with link to ^ and update the version number
 10. Wait for several hours until sonatype syncs to central. You can

@@ -1,5 +1,17 @@
 # ChangeLog
 
+## [v1.0.0.Beta1](/../../tree/1.0.0.Beta1) - 2014-01-20
+
+Bug fixes:
+
+* The runtime factory now only shuts down runtimes it creates [#94](/../../issues/94)
+
+New features:
+
+* The `PlatformManager` is now wrapped via the `vertx.embed.platform` ns [#34](/../../issues/34)
+* The new chown functionality in 2.1M3 is exposed via `vertx.filesystem/chown` [#93](/../../issues/93)
+* The `NetSockets` can now be upgraded to SSL/TLS [#91](/../../issues/91)
+
 ## [v0.4.0](/../../tree/0.4.0) - 2013-12-10
 
 Bug fixes:
