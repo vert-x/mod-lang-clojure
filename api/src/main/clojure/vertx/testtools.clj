@@ -31,7 +31,7 @@
                           (symbol
                            ((core/config) :methodName))))))
 
-(def ^:private ^:dynamic *embedded-latch*
+(def ^:internal ^:dynamic *embedded-latch*
   "Used when doing embedded testing to signify test completion."
   nil)
 

@@ -39,5 +39,6 @@
   `(binding [core/*vertx* ~vertx]
      ~@body))
 
-;; TODO: platform manager support, docs
+
+
 

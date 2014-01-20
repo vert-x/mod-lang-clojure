@@ -109,13 +109,14 @@
      (if (or (nil? f) (handler? f))
        f
        (as-handler
-        (fn [r]
-          (if include-result-or-result-fn
-            (f (util/exception->map (.cause r))
-               (if (fn? include-result-or-result-fn)
-                 (include-result-or-result-fn (.result r))
-                 (.result r)))
-            (f (.cause r))))))))
+         (fn [r]
+           (let [ex-map (util/exception->map (.cause r))]
+             (if include-result-or-result-fn
+               (f ex-map
+                 (if (fn? include-result-or-result-fn)
+                   (include-result-or-result-fn (.result r))
+                   (.result r)))
+               (f ex-map))))))))
 
 (defn as-void-handler
   "Wraps the given fn in a Handler that ignores the event.
