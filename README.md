@@ -1,6 +1,6 @@
 # mod-lang-clojure
 
-A fledgling Vert.x language implementation for Clojure
+The Clojure language implementation for Vert.x
 
 ## Usage
 
