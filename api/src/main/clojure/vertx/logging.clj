@@ -15,7 +15,8 @@
 (ns vertx.logging
   "Functions for logging to the Vert.x logging subsystem."
   (:require [vertx.core :as core])
-  (:import org.vertx.java.core.logging.impl.LoggerFactory))
+  (:import org.vertx.java.core.logging.Logger
+           org.vertx.java.core.logging.impl.LoggerFactory))
 
 (def ^{:dynamic true
        :internal true
@@ -26,7 +27,7 @@
 (defn- standalone-logger []
   (LoggerFactory/getLogger "vertx.logging"))
 
-(defn get-logger
+(defn ^Logger get-logger
   "Returns the currently active Logger retrieved from vertx.core/*container*.
   If no container is available, it falls back to creating a logger."
   []

@@ -51,11 +51,12 @@
                     (string/upper-case name)
                     (string/upper-case name))
         method (symbol (str "." name))
-        re-method (symbol (str "." name "WithRegEx"))]
+        re-method (symbol (str "." name "WithRegEx"))
+        matcher (with-meta 'matcher {:tag 'RouteMatcher})]
     `(defn ~name ~doc
        ([~'pattern ~'handler]
           (~name (matcher) ~'pattern ~'handler))
-       ([~'matcher ~'pattern ~'handler]
+       ([~matcher ~'pattern ~'handler]
           (if (instance? java.util.regex.Pattern ~'pattern)
             (~re-method ~'matcher (str ~'pattern) (core/as-handler ~'handler))
             (~method ~'matcher ~'pattern (core/as-handler ~'handler)))))))
@@ -78,5 +79,5 @@
    not specified. Default behaviour is to return a 404."
   ([handler]
      (no-match (matcher handler)))
-  ([matcher handler]
+  ([^RouteMatcher matcher handler]
      (.noMatch matcher (core/as-handler handler)) matcher))

@@ -17,14 +17,14 @@
   (:require [vertx.buffer :as buf]
             [vertx.core :as core]
             [vertx.utils :as util])
-  (:import (org.vertx.java.core.streams Pump)))
+  (:import (org.vertx.java.core.streams ExceptionSupport Pump ReadStream WriteStream)))
 
 (defn on-data
   "Set a data handler on a ReadStream.
    As data is read, the handler will be called with the data as a Buffer.
    handler can either be a Handler or a single-arity fn.
    Returns the stream."
-  [stream handler]
+  [^ReadStream stream handler]
   (.dataHandler stream (core/as-handler handler)))
 
 (defn on-drain
@@ -33,7 +33,7 @@
    the write queue has been reduced to maxSize / 2.
    handler can either be a Handler or a zero-arity fn.
    Returns the stream."
-  [stream handler]
+  [^WriteStream stream handler]
   (.drainHandler stream (core/as-void-handler handler)))
 
 (defn on-end
@@ -42,7 +42,7 @@
    this handler will be called.
    handler can either be a Handler or a zero-arity fn.
    Returns the stream."
-  [stream handler]
+  [^ReadStream stream handler]
   (.endHandler stream (core/as-void-handler handler)))
 
 (defn on-exception
@@ -50,15 +50,15 @@
    handler can either be a Handler or a single-arity fn that will be
    passed the exception.
    Returns the stream."
-  [stream handler]
+  [^ExceptionSupport stream handler]
   (.exceptionHandler stream (core/as-handler handler util/exception->map)))
 
 (defn write
   "Write data to the stream.
    data can anything bufferable (see vertx.buffer)."
-  ([stream data]
+  ([^WriteStream stream data]
      (.write stream (buf/as-buffer data)))
-  ([stream data-str enc]
+  ([^WriteStream stream data-str enc]
      (.write stream (buf/buffer data-str enc))))
 
 (defn pump

@@ -17,9 +17,8 @@
   (:require [vertx.buffer :as buf]
             [vertx.core :as core]
             [vertx.http :as http]
-            [vertx.utils :as u]
-            [vertx.common :as common])
-  (:import [org.vertx.java.core.http WebSocketVersion]))
+            [vertx.utils :as u])
+  (:import [org.vertx.java.core.http HttpClient HttpServer WebSocket WebSocketVersion]))
 
 
 (defn on-websocket
@@ -27,27 +26,19 @@
    handler can either be a single-arity fn or a Handler instance that
    will be passed the ServerWebSocket when a successful connection is
    made."
-  [server handler]
+  [^HttpServer server handler]
   (.websocketHandler server (core/as-handler handler)))
 
 (defn remote-address
   "Returns the remote address for the socket as an address-map of the
   form {:address \"127.0.0.1\" :port 8888 :basis inet-socket-address-object}"
-  [socket]
-  (common/internal-remote-address socket))
+  [^WebSocket socket]
+    (u/inet-socket-address->map (.remoteAddress socket)))
 
-(defn- ws-version
-  "convert websocket version to Enum, or vice versa
-   :RFC6455->RFC6455 :HYBI-00->HYBI_00 :HYBI-08->HYBI_08"
-  [version] (if (keyword? version)
-              (condp = version
-                :RFC6455 WebSocketVersion/RFC6455
-                :HYBI-00 WebSocketVersion/HYBI_00
-                :HYBI-08 WebSocketVersion/HYBI_08)
-              (condp = version
-                WebSocketVersion/RFC6455 :RFC6455
-                WebSocketVersion/HYBI_00 :HYBI-00
-                WebSocketVersion/HYBI_08 :HYBI-08)))
+(def ^:private ws-version
+  {:RFC6455 WebSocketVersion/RFC6455
+   :HYBI-00 WebSocketVersion/HYBI_00
+   :HYBI-08 WebSocketVersion/HYBI_08})
 
 (defn connect
   "Connect the HTTP client to a websocket at the specified URI.
@@ -60,7 +51,7 @@
      (connect client uri nil nil handler))
   ([client uri version handler]
      (connect client uri version nil handler))
-  ([client uri version header handler]
+  ([^HttpClient client uri version header handler]
      (.connectWebsocket client uri (ws-version version)
                         (http/encode-headers header)
                         (core/as-handler handler))))
@@ -68,11 +59,11 @@
 (defn write-binary-frame
   "Write data Buffer to websocket as a binary frame.
    Returns the websocket."
-  [ws data]
+  [^WebSocket ws data]
   (.writeBinaryFrame ws (buf/as-buffer data)))
 
 (defn write-text-frame
   "Write data String to websocket as a text frame.
    Returns the websocket."
-  [ws data]
+  [^WebSocket ws data]
   (.writeTextFrame ws (str data)))

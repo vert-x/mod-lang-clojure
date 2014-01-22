@@ -16,10 +16,10 @@
     "Internal utility functions."
   (:require [clojure.string :as s]
             [clojure.data.json :as json])
-  (:import [org.vertx.java.core.json JsonArray JsonElement JsonObject]
+  (:import [org.vertx.java.core.json JsonArray JsonObject]
            [clojure.lang BigInt IPersistentMap Ratio Seqable]
            [java.util Map UUID]
-           [java.net NetworkInterface InetAddress]
+           [java.net NetworkInterface InetAddress InetSocketAddress]
            java.math.BigDecimal))
 
 (defprotocol Encodeable
@@ -39,15 +39,15 @@
   ;; the clojure map interface to prevent that.
   IPersistentMap
   (encode [data]
-    (JsonObject. (json/write-str data)))
+    (JsonObject. ^String (json/write-str data)))
   Map
   (encode [data]
-    (JsonObject. (json/write-str data)))
+    (JsonObject. ^String (json/write-str data)))
   Ratio
   (encode [data] (double data))
   Seqable
   (encode [data]
-    (JsonArray. (json/write-str data))))
+    (JsonArray. ^String (json/write-str data))))
 
 (defprotocol Decodeable
   (decode [data]))
@@ -57,7 +57,10 @@
   (decode [data] data)
   nil
   (decode [data] nil)
-  JsonElement
+  JsonArray
+  (decode [data]
+    (json/read-str (.encode data) :key-fn keyword))
+  JsonObject
   (decode [data]
     (json/read-str (.encode data) :key-fn keyword)))
 
@@ -68,7 +71,7 @@
 
 (defn camelize [input] 
   (let [words (s/split (name input) #"[\s_-]+")] 
-    (s/join (cons (.toLowerCase (first words))
+    (s/join (cons (.toLowerCase ^String (first words))
                   (map #(str (.toUpperCase (subs % 0 1)) (subs % 1))
                        (rest words)))))) 
 
@@ -84,13 +87,13 @@
           (set-property obj prop value)) props)
   obj)
 
-(defn inet-socket-address->map [addr]
+(defn inet-socket-address->map [^InetSocketAddress addr]
   (if addr
     {:host (.getHostString addr)
      :port (.getPort addr)
      :basis addr}))
 
-(defn inet-address->map [addr]
+(defn inet-address->map [^InetAddress addr]
   (if addr
     {:address (.getHostAddress addr)
      :basis addr}))
@@ -111,3 +114,5 @@
   "Looks up the name of the interface for the given address String."
   [address]
   (-> address InetAddress/getByName NetworkInterface/getByInetAddress .getName))
+
+(def byte-arr-class (Class/forName "[B"))

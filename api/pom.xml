@@ -22,6 +22,16 @@
       <artifactId>vertx-platform</artifactId>
     </dependency>
     <dependency>
+      <groupId>io.vertx</groupId>
+      <artifactId>testtools</artifactId>
+      <exclusions>
+        <exclusion>
+          <groupId>org.apache.directory.server</groupId>
+          <artifactId>apacheds-protocol-dns</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
       <groupId>org.clojure</groupId>
       <artifactId>clojure</artifactId>
       <scope>provided</scope>
@@ -44,15 +54,19 @@
     </dependency>
 
     <dependency>
-        <groupId>io.vertx</groupId>
-        <artifactId>testtools</artifactId>
-        <scope>test</scope>
-      </dependency>
-
-    <dependency>
       <groupId>org.clojars.tcrawley</groupId>
       <artifactId>codox.core</artifactId>
       <scope>provided</scope>
+    </dependency>
+
+    <!-- We exclude this above and bring it in just as a test dep
+         because it causes `lein deps:tree` to blow the stack, possibly due 
+         to a cyclic dep? -->
+    <dependency>
+      <groupId>org.apache.directory.server</groupId>
+      <artifactId>apacheds-protocol-dns</artifactId>
+      <version>1.5.7</version>
+      <scope>test</scope>
     </dependency>
   </dependencies>
 
@@ -65,13 +79,24 @@
         <artifactId>clojure-maven-plugin</artifactId>
         <version>${clojure.maven.plugin.version}</version>
         <extensions>true</extensions>
+        <configuration>
+          <temporaryOutputDirectory>true</temporaryOutputDirectory>
+          <warnOnReflection>true</warnOnReflection>
+        </configuration>
         <executions>
+          <execution>
+            <id>compile</id>
+            <phase>compile</phase>
+            <goals>
+              <goal>compile</goal>
+            </goals>
+          </execution>
           <execution>
             <id>test</id>
             <phase>test</phase>
             <goals>
               <goal>test</goal>
-            </goals>
+            </goals>            
           </execution>
            <execution>
             <id>generate-codox</id>

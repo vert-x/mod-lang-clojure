@@ -45,10 +45,10 @@
   own handler, and configuration."
   (:require [clojure.string :as string]
             [vertx.utils :as u]
-            [vertx.core :as core]
-            [vertx.common :as common])
-  (:import org.vertx.java.core.sockjs.EventBusBridgeHook
-           org.vertx.java.core.impl.DefaultFutureResult))
+            [vertx.core :as core])
+  (:import (org.vertx.java.core.sockjs EventBusBridgeHook SockJSServer SockJSSocket)
+           org.vertx.java.core.impl.DefaultFutureResult
+           (org.vertx.java.core.json JsonArray JsonObject)))
 
 (defn sockjs-server
   "Create a SockJS server that wraps an HTTP server."
@@ -58,8 +58,8 @@
 (defn remote-address
   "Returns the remote address for the socket as an address-map of the
   form {:address \"127.0.0.1\" :port 8888 :basis inet-socket-address-object}"
-  [socket]
-  (common/internal-remote-address socket))
+  [^SockJSSocket socket]
+  (u/inet-socket-address->map (.remoteAddress socket)))
 
 (defn install-app
   "Installs a SockJS application.
@@ -107,7 +107,7 @@
      lets you specify its url (if you're unsure, point it to the latest
      minified SockJS client release, this is the default). The default
      value is http://cdn.sockjs.org/sockjs-0.3.4.min.js"
-  [server config handler]
+  [^SockJSServer server config handler]
   (.installApp server (u/encode config) (core/as-handler handler)))
 
 (defn bridge
@@ -135,12 +135,12 @@
                                [10000]"
   ([server app-config inbound-permitted outbound-permitted]
      (bridge server app-config inbound-permitted outbound-permitted {}))
-  ([server app-config inbound-permitted outbound-permitted bridge-config]
+  ([^SockJSServer server app-config inbound-permitted outbound-permitted bridge-config]
      (.bridge server
-       (u/encode app-config)
-       (u/encode inbound-permitted)
-       (u/encode outbound-permitted)
-       (u/encode bridge-config))))
+       ^JsonObject (u/encode app-config)
+       ^JsonArray (u/encode inbound-permitted)
+       ^JsonArray (u/encode outbound-permitted)
+       ^JsonObject (u/encode bridge-config))))
 
 
 (defn- eb-bridge-hook
@@ -167,7 +167,7 @@
           (u/decode message)
           session-id
           (fn [pass]
-            (.setHandler (DefaultFutureResult. (boolean pass))
+            (.setHandler (DefaultFutureResult. ^Boolean (boolean pass))
               handler))))
 
       (handlePreRegister [_ sock address]
@@ -216,5 +216,5 @@
 
   Returns the server. Calling set-hooks more than once will overwrite
   the hooks set previously."
-  [server & {:as hooks}]
+  [^SockJSServer server & {:as hooks}]
   (.setHook server (eb-bridge-hook hooks)))

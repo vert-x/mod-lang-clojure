@@ -61,7 +61,10 @@
   (:refer-clojure :exclude [send])
   (:require [vertx.core :as core]
             [vertx.utils :refer :all])
-  (:import org.vertx.java.core.eventbus.ReplyException))
+  (:import [org.vertx.java.core AsyncResult Handler]
+           org.vertx.java.core.buffer.Buffer
+           [org.vertx.java.core.json JsonArray JsonObject]
+           [org.vertx.java.core.eventbus EventBus Message ReplyException]))
 
 (extend-type ReplyException
   ExceptionAsMap
@@ -77,7 +80,7 @@
              You should only need to bind this for advanced usage."}
   *eventbus* nil)
 
-(defn get-eventbus
+(defn ^EventBus get-eventbus
   "Returns the currently active EventBus instance."
   []
   (or *eventbus* (.eventBus (core/get-vertx))))
@@ -90,7 +93,7 @@
   "Bound to the current receiving address when a handler fn is called."
   nil)
 
-(defn ^:private message-handler
+(defn ^:private ^Handler message-handler
   "Wraps a fn in a Handler, binding *current-message*"
   ([handler]
      (message-handler handler nil))
@@ -99,12 +102,12 @@
        handler
        (core/as-handler
         (fn [val]
-          (let [msg (if with-timeout? (.result val) val)
+          (let [^Message msg (if with-timeout? (.result ^AsyncResult val) val)
                 decoded (if msg (decode (.body msg)))]
             (binding [*current-message* msg
                       *current-address* (if msg (.address msg))]
               (if with-timeout?
-                (handler (exception->map (.cause val)) decoded)
+                (handler (exception->map (.cause ^AsyncResult val)) decoded)
                 (handler decoded)))))))))
 
 (defn default-reply-timeout
@@ -144,24 +147,61 @@
    actual Message object when the fn is called."
   ([addr content]
      (send addr content nil))
-  ([addr content reply-handler]
-     (.send (get-eventbus)
-            addr
-            (encode content)
-            (message-handler reply-handler)))
-  ([addr content timeout reply-handler]
-     (.sendWithTimeout (get-eventbus)
-                       addr
-                       (encode content)
-                       timeout
-                       (message-handler reply-handler :with-timeout))))
+  ([^String addr content reply-handler]
+     (let [eb (get-eventbus)
+           h (message-handler reply-handler)
+           encoded (encode content)]
+       (condp instance? encoded
+         Boolean        (.send eb addr ^Boolean encoded h)
+         byte-arr-class (.send eb addr ^bytes encoded h)
+         Buffer         (.send eb addr ^Buffer encoded h)
+         Byte           (.send eb addr ^Byte encoded h)
+         Character      (.send eb addr ^Character encoded h)
+         Double         (.send eb addr ^Double encoded h)
+         Float          (.send eb addr ^Double encoded h)
+         JsonArray      (.send eb addr ^JsonArray encoded h)
+         JsonObject     (.send eb addr ^JsonObject encoded h)
+         Short          (.send eb addr ^Double encoded h)
+         String         (.send eb addr ^String encoded h)
+         (.send eb addr ^Object encoded h))))
+  ([^String addr content ^Long timeout reply-handler]
+     (let [eb (get-eventbus)
+           h (message-handler reply-handler :with-timeout)
+           encoded (encode content)]
+       (condp instance? encoded
+         Boolean        (.sendWithTimeout eb addr ^Boolean encoded timeout h)
+         byte-arr-class (.sendWithTimeout eb addr ^bytes encoded timeout h)
+         Buffer         (.sendWithTimeout eb addr ^Buffer encoded timeout h)
+         Byte           (.sendWithTimeout eb addr ^Byte encoded timeout h)
+         Character      (.sendWithTimeout eb addr ^Character encoded timeout h)
+         Double         (.sendWithTimeout eb addr ^Double encoded timeout h)
+         Float          (.sendWithTimeout eb addr ^Double encoded timeout h)
+         JsonArray      (.sendWithTimeout eb addr ^JsonArray encoded timeout h)
+         JsonObject     (.sendWithTimeout eb addr ^JsonObject encoded timeout h)
+         Short          (.sendWithTimeout eb addr ^Double encoded timeout h)
+         String         (.sendWithTimeout eb addr ^String encoded timeout h)
+         (.sendWithTimeout eb addr ^Object encoded timeout h)))))
 
 (defn publish
   "Publishes a message to the given address.
    A publish will be received by all handlers registered on the
   address."
-  [addr content]
-  (.publish (get-eventbus) addr (encode content)))
+  [^String addr content]
+  (let [eb (get-eventbus)
+        encoded (encode content)]
+       (condp instance? encoded
+         Boolean        (.publish eb addr ^Boolean encoded)
+         byte-arr-class (.publish eb addr ^bytes encoded)
+         Buffer         (.publish eb addr ^Buffer encoded)
+         Byte           (.publish eb addr ^Byte encoded)
+         Character      (.publish eb addr ^Character encoded)
+         Double         (.publish eb addr ^Double encoded)
+         Float          (.publish eb addr ^Double encoded)
+         JsonArray      (.publish eb addr ^JsonArray encoded)
+         JsonObject     (.publish eb addr ^JsonObject encoded)
+         Short          (.publish eb addr ^Double encoded)
+         String         (.publish eb addr ^String encoded)
+         (.publish eb addr ^Object encoded))))
 
 (defn reply*
   "Replies to the given message.
@@ -179,15 +219,28 @@
 
    If reply-handler is a fn, *current-message* will be bound to the
    actual Message object when the fn is called."
-  ([m]
+  ([^Message m]
      (.reply m))
-  ([m content]
+  ([^Message m content]
      (.reply m (encode content)))
-  ([m content reply-handler]
+  ([^Message m content reply-handler]
      (.reply m (encode content) (message-handler reply-handler)))
-  ([m content timeout reply-handler]
-     (.replyWithTimeout m (encode content) timeout
-                        (message-handler reply-handler :with-timeout))))
+  ([^Message m content ^Long timeout reply-handler]
+     (let [h (message-handler reply-handler :with-timeout)
+           encoded (encode content)]
+       (condp instance? encoded
+         Boolean        (.replyWithTimeout m ^Boolean encoded timeout h)
+         byte-arr-class (.replyWithTimeout m ^bytes encoded timeout h)
+         Buffer         (.replyWithTimeout m ^Buffer encoded timeout h)
+         Byte           (.replyWithTimeout m ^Byte encoded timeout h)
+         Character      (.replyWithTimeout m ^Character encoded timeout h)
+         Double         (.replyWithTimeout m ^Double encoded timeout h)
+         Float          (.replyWithTimeout m ^Double encoded timeout h)
+         JsonArray      (.replyWithTimeout m ^JsonArray encoded timeout h)
+         JsonObject     (.replyWithTimeout m ^JsonObject encoded timeout h)
+         Short          (.replyWithTimeout m ^Double encoded timeout h)
+         String         (.replyWithTimeout m ^String encoded timeout h)
+         (.replyWithTimeout m ^Object encoded timeout h)))))
 
 (defn reply
   "Replies to *current-message*.
@@ -203,7 +256,7 @@
   "Sends a failure reply to the sender of the given message.
    failure-code and message are an integer code and string specific to
   your application."
-  [m failure-code message]
+  [^Message m failure-code message]
   (.fail m failure-code message))
 
 (defn fail
@@ -242,8 +295,7 @@
      (let [h (message-handler handler)
            id (uuid)]
        (if local-only?
-         (.registerLocalHandler (get-eventbus) addr h
-                                (core/as-async-result-handler result-handler false))
+         (.registerLocalHandler (get-eventbus) addr h)
          (.registerHandler (get-eventbus) addr h
                            (core/as-async-result-handler result-handler false)))
        (swap! registered-handlers assoc id [addr h])

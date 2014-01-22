@@ -16,8 +16,8 @@
   "Provides a broad set of functions for creating TCP servers and
    clients."
   (:require [vertx.core :as core]
-            [vertx.common :as common]
-            [vertx.utils :as u]))
+            [vertx.utils :as u])
+  (:import (org.vertx.java.core.net NetClient NetServer NetSocket)))
 
 (defn ^:internal normalize-ssl-props [props]
   (let [replacements {:ssl :SSL}]
@@ -72,7 +72,7 @@
      (listen server port nil))
   ([server port host]
      (listen server port host nil))
-  ([server port host handler]
+  ([^NetServer server port host handler]
      (.listen server port
               (or host "0.0.0.0")
               (core/as-async-result-handler handler))))
@@ -86,14 +86,14 @@
 
    The server can only have at most one connect handler at any one
    time."
-  [server handler]
+  [^NetServer server handler]
   (.connectHandler server (core/as-handler handler)))
 
 (defn on-close
   "Attaches a handler to the socket that will be called when the socket is closed.
    handler can either be a zero-arity fn or a Handler instance.
    Returns the socket."
-  [socket handler]
+  [^NetSocket socket handler]
   (.closeHandler socket (core/as-void-handler handler)))
 
 (defn connect
@@ -109,7 +109,7 @@
      (connect port nil handler))
   ([port host handler]
      (connect (client) port host handler))
-  ([client port host handler]
+  ([^NetClient client port host handler]
      (.connect client port
                (or host "localhost")
                (core/as-async-result-handler handler))))
@@ -117,32 +117,32 @@
 (defn remote-address
   "Returns the remote address for the socket as an address-map of the
   form {:address \"127.0.0.1\" :port 8888 :basis inet-socket-address-object}"
-  [socket]
-  (common/internal-remote-address socket))
+  [^NetSocket socket]
+  (u/inet-socket-address->map (.remoteAddress socket)))
 
 (defn close
   "Close the server. Any open connections will be closed."
   ([server]
      (close server nil))
-  ([server handler]
-     (common/internal-close server handler)))
+  ([^NetServer server handler]
+     (.close server (core/as-async-result-handler handler false))))
 
 (defn send-file
   "Stream a file directly from disk to the outgoing connection.
    This bypasses userspace altogether where supported by the
    underlying operating system. This is a very efficient way to serve
    files. Returns the socket."
-  [socket filename]
+  [^NetSocket socket filename]
   (.sendFile socket filename))
 
 (defn ssl
   "Upgrade a socket to use SSL/TLS.
    handler can either be a zero-arity fn or a Handler instance that
   will be called when the upgrade completes. Returns the socket."
-  [socket handler]
+  [^NetSocket socket handler]
   (.ssl socket (core/as-void-handler handler)))
 
 (defn ssl?
   "Returns true if the socket is encrypted via SSL/TLS."
-  [socket]
+  [^NetSocket socket]
   (.isSsl socket))

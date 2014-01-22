@@ -15,8 +15,10 @@
 (ns vertx.core
   "Vert.x core functionality."
   (:require [vertx.utils :as util])
-  (:import [org.vertx.java.core Handler VertxException VertxFactory VoidHandler]
-           [org.vertx.java.core.json JsonObject]))
+  (:import [org.vertx.java.core
+            AsyncResult Context Handler Vertx VertxException VertxFactory VoidHandler]
+           [org.vertx.java.core.json JsonObject]
+           org.vertx.java.platform.Container))
 
 (defonce ^{:dynamic true
            :doc "The currently active default vertx instance.
@@ -48,13 +50,13 @@
     (f))
   (swap! -vertx-stop-fns dissoc id))
 
-(defn get-vertx
+(defn ^Vertx get-vertx
   "Returns the currently active vertx instance (*vertx*), throwing if not set."
   [] 
   (or *vertx*
       (throw (VertxException. "No vertx instance available."))))
 
-(defn get-container
+(defn ^Container get-container
   "Returns the currently active vertx container instance (*container*).
    If throw? is truthy, throws when the container isn't available."
   ([]
@@ -107,7 +109,7 @@
   [name bindings & body]
   `(def ~name (handler ~bindings ~@body)))
 
-(defn as-async-result-handler
+(defn ^Handler as-async-result-handler
   "Wraps the given fn in a org.vertx.java.core.Handler for handling an AsyncResult.
    If include-result-or-result-fn is true (the default), the fn will
    be passed an exception-map and the result from the AsyncResult,
@@ -120,7 +122,7 @@
      (if (or (nil? f) (handler? f))
        f
        (as-handler
-         (fn [r]
+         (fn [^AsyncResult r]
            (let [ex-map (util/exception->map (.cause r))]
              (if include-result-or-result-fn
                (f ex-map
@@ -297,17 +299,11 @@
   ([f]
      (run-on-context (get-vertx) f))
   ([context f]
-     (.runOnContext context (as-void-handler
-                             (bound-fn [] (f))))))
-
-(defn event-loop?
-  "Is the current thread an event loop thread?"
-  []
-  (.isEventLoop (get-vertx)))
-
-(defn worker? []
-  "Is the current thread an worker thread?"
-  (.isWorker (get-vertx)))
+     (let [h (as-void-handler
+               (bound-fn [] (f)))]
+       (condp instance? context
+         Context (.runOnContext ^Context context h)
+         Vertx   (.runOnContext ^Vertx context h)))))
 
 (defn env
   "Returns a map of environment variables."

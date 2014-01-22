@@ -15,7 +15,8 @@
 (ns vertx.shareddata
   "Functions for sharing data between verticles on the same Vert.x instance."
   (:require [vertx.core :as core])
-  (:import org.vertx.java.core.shareddata.SharedData))
+  (:import org.vertx.java.core.shareddata.SharedData
+           (java.util Map Set)))
 
 
 (def ^{:dynamic true
@@ -24,7 +25,7 @@
              You should only need to bind this for advanced usage."}
   *shared-data* nil)
 
-(defn get-shared-data
+(defn ^SharedData get-shared-data
   "Returns the currently active SharedData instance."
   []
   (or *shared-data* (.sharedData (core/get-vertx))))
@@ -70,7 +71,7 @@
    or keyword) of a set to be looked up. This mutates the set in
    place, returning the set."
   [s & vals]
-  (let [s (resolve-collection s get-set)]
+  (let [^Set s (resolve-collection s get-set)]
     (.addAll s vals) s))
 
 (defn put!
@@ -79,7 +80,7 @@
    or keyword) of a map to be looked up. This mutates the map in
    place, returning the map."
   [m & kvs]
-  (let [m (resolve-collection m get-map)]
+  (let [^Map m (resolve-collection m get-map)]
     (if (odd? (count kvs))
       (throw (IllegalArgumentException. (str "No value supplied for key: " (last kvs)))))
     (loop [[k v] (take 2 kvs)
@@ -97,9 +98,12 @@
    name. This mutates the hash or set in place, returning the hash or
    set."
   [col & vals]
-  (let [col (resolve-collection col get-map-or-set)]
-    (doseq [v vals]
-      (.remove col v)) col))
+  (let [col (resolve-collection col get-map-or-set)
+        remove (if (instance? Set col)
+                 #(.remove ^Set col %)
+                 #(.remove ^Map col %))]
+    (mapv remove vals)
+    col))
 
 (defn clear!
   "Clears all values from a SharedData set or map.
@@ -110,4 +114,7 @@
    set."
   [col]
   (let [col (resolve-collection col get-map-or-set)]
-    (.clear col) col))
+    (if (instance? Set col)
+      (.clear ^Set col)
+      (.clear ^Map col))
+    col))

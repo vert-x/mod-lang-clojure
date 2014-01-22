@@ -25,10 +25,10 @@
   (:refer-clojure :exclude [send])
   (:require [vertx.core :as core :exclude [send]]
             [vertx.buffer :as buf]
-            [vertx.common :as common]
             [vertx.utils :as u])
-  (:import [java.net InetSocketAddress]
-           [ org.vertx.java.core.datagram InternetProtocolFamily]))
+  (:import java.net.InetSocketAddress
+           org.vertx.java.core.buffer.Buffer
+           [org.vertx.java.core.datagram DatagramPacket DatagramSocket InternetProtocolFamily]))
 
 
 (defn- inet-protocol-family
@@ -61,7 +61,7 @@
 (defn local-address
   "Returns the local address for the socket as an address-map.
    This will be nil if listen hasn't been called for the socket."
-  [socket]
+  [^DatagramSocket socket]
   (u/inet-socket-address->map (.localAddress socket)))
 
 (defn send
@@ -74,8 +74,9 @@
   ([socket content host port]
      (send socket content host port nil))
   ([socket content host port handler]
-     (.send socket (buf/as-buffer content) host port
-            (core/as-async-result-handler handler))))
+     (.send ^DatagramSocket socket (buf/as-buffer content)
+       ^String host ^Integer port
+       (core/as-async-result-handler handler))))
 
 (defn listen
   "Makes socket listen to the given port and (optional) host.
@@ -88,10 +89,10 @@
      (listen socket port nil nil))
   ([socket port host]
      (listen socket port host nil))
-  ([socket port host handler]
+  ([^DatagramSocket socket port host handler]
      (if host
        (.listen socket host port (core/as-async-result-handler handler))
-       (.listen socket port (core/as-async-result-handler handler)))))
+       (.listen socket ^Integer port (core/as-async-result-handler handler)))))
 
 (defn join-multicast-group
   "Joins the socket to a multicast group.
@@ -106,12 +107,12 @@
    socket instance."
   ([socket group-address]
      (join-multicast-group socket group-address nil))
-  ([socket group-address handler]
+  ([^DatagramSocket socket group-address handler]
      (.listenMulticastGroup socket group-address
        (core/as-async-result-handler handler)))
   ([socket group-address interface handler]
      (join-multicast-group socket group-address interface nil handler))
-  ([socket group-address interface source-address handler]
+  ([^DatagramSocket socket group-address interface source-address handler]
      (.listenMulticastGroup socket group-address
        interface source-address
        (core/as-async-result-handler handler))))
@@ -128,12 +129,12 @@
    socket instance."
   ([socket group-address]
      (leave-multicast-group socket group-address nil))
-  ([socket group-address handler]
+  ([^DatagramSocket socket group-address handler]
      (.unlistenMulticastGroup socket group-address
        (core/as-async-result-handler handler)))
   ([socket group-address interface handler]
      (leave-multicast-group socket group-address interface nil handler))
-  ([socket group-address interface source handler]
+  ([^DatagramSocket socket group-address interface source handler]
      (.unlistenMulticastGroup socket group-address interface source
        (core/as-async-result-handler handler))))
 
@@ -148,10 +149,10 @@
    socket instance."
   ([socket group-address source-address]
      (block-multicast-sender socket group-address source-address nil))
-  ([socket group-address source-address handler]
+  ([^DatagramSocket socket group-address source-address handler]
      (.blockMulticastGroup socket group-address source-address
                            (core/as-async-result-handler handler)))
-  ([socket group-address source-address interface handler]
+  ([^DatagramSocket socket group-address source-address interface handler]
      (.blockMulticastGroup socket group-address interface source-address
                            (core/as-async-result-handler handler))))
 
@@ -166,13 +167,13 @@
 
    handler can either be a Handler or a single-arity fn.
    Returns the socket."
-  [socket handler]
-  (letfn [(->map [packet]
-            {:sender (u/inet-socket-address->map (.sender packet))
-             :data (.data packet)
-             :basis packet})]
-    (.dataHandler socket
-                  (core/as-handler handler ->map))))
+  [^DatagramSocket socket handler]
+  (.dataHandler socket
+    (core/as-handler handler
+      (fn [^DatagramPacket packet]
+        {:sender (u/inet-socket-address->map (.sender packet))
+         :data (.data packet)
+         :basis packet}))))
 
 (defn close
   "Closes the socket.
@@ -180,7 +181,7 @@
    exception-map (if any) from the result of the close call, or a
    Handler instance that will be called with the AsyncResult object
    that wraps the exception."
-  ([socket]
+  ([^DatagramSocket socket]
      (.close socket))
-  ([socket handler]
-     (common/internal-close socket handler)))
+  ([^DatagramSocket socket handler]
+     (.close socket (core/as-async-result-handler handler false))))

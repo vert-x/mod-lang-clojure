@@ -18,8 +18,8 @@
   (:require [vertx.core :as core]
             [vertx.utils :as u]
             [clojure.string :as str])
-  (:import java.net.InetSocketAddress
-           (org.vertx.java.core.dns DnsClient DnsException)))
+  (:import (java.net InetAddress InetSocketAddress)
+           (org.vertx.java.core.dns DnsClient DnsException MxRecord SrvRecord)))
 
 (extend-type DnsException
   u/ExceptionAsMap
@@ -31,7 +31,7 @@
 
 (defn- sock-address-from-string [address]
   (let [[server port] (str/split address #":")]
-    (InetSocketAddress. server (if port (Integer/parseInt port) 53))))
+    (InetSocketAddress. ^String server (int (if port (Integer/parseInt port) 53)))))
 
 (defn- as-inet-socket-address [address]
   (if (instance? InetSocketAddress address)
@@ -43,7 +43,7 @@
                     (into-array (map as-inet-socket-address
                                      (if (coll? servers) servers [servers])))))
 
-(defn- as-client [client-or-servers]
+(defn- ^DnsClient as-client [client-or-servers]
   (if (instance? DnsClient client-or-servers)
     client-or-servers
     (client client-or-servers)))
@@ -167,7 +167,7 @@
       :MX    (.resolveMX client name
                          (->handler
                           (partial map
-                                   (fn [mx]
+                                   (fn [^MxRecord mx]
                                      {:priority (.priority mx)
                                       :name (.name mx)
                                       :basis mx}))))
@@ -176,7 +176,7 @@
       :SRV   (.resolveSRV client name
                           (->handler
                            (partial map
-                                    (fn [srv]
+                                    (fn [^SrvRecord srv]
                                       {:priority (.priority srv)
                                        :weight (.weight srv)
                                        :port (.port srv)
@@ -226,4 +226,4 @@
                    handler
                    (fn [addr]
                      (if-let [addr-map (u/inet-address->map addr)]
-                       (assoc addr-map :host (.getHostName (:basis addr-map))))))))
+                       (assoc addr-map :host (.getHostName ^InetAddress (:basis addr-map))))))))

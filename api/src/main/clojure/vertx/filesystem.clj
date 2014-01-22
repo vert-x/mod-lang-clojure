@@ -17,8 +17,8 @@
    asynchronous methods from org.vertx.java.core.file.FileSystem."
   (:refer-clojure :exclude [read flush])
   (:require [vertx.core :as core]
-            [vertx.common :as common]
-            [vertx.buffer :as buf]))
+            [vertx.buffer :as buf])
+  (:import [org.vertx.java.core.file AsyncFile FileProps FileSystem FileSystemProps]))
 
 (defonce ^{:dynamic true
            :doc "The currently active default vertx container instance.
@@ -26,7 +26,7 @@
                  You should only need to bind this for advanced usage."}
   *file-system* nil)
 
-(defn get-file-system
+(defn ^FileSystem get-file-system
   "Returns the currently active FileSystem instance."
   []
   (or *file-system* (.fileSystem (core/get-vertx))))
@@ -103,7 +103,7 @@
      (.chown (get-file-system) path user group
        (core/as-async-result-handler handler false))))
 
-(defn ^:internal ^:no-doc file-props->map [props]
+(defn ^:internal ^:no-doc file-props->map [^FileProps props]
   (hash-map
    :creation-time      (.creationTime props)
    :last-access-time   (.lastAccessTime props)
@@ -288,7 +288,7 @@
   (.exists (get-file-system) path
            (core/as-async-result-handler handler)))
 
-(defn ^:internal ^:no-doc file-system-props->map [props]
+(defn ^:internal ^:no-doc file-system-props->map [^FileSystemProps props]
   (hash-map
    :total-space       (.totalSpace props)
    :unallocated-space (.unallocatedSpace props)
@@ -316,7 +316,7 @@
 
    When multiple writes are invoked on the same file there are no
    guarantees as to order in which those writes actually occur."
-   [file data pos handler]
+   [^AsyncFile file data pos handler]
   (.write file (buf/as-buffer data) pos
           (core/as-async-result-handler handler false)))
 
@@ -333,7 +333,7 @@
    guarantees as to order in which those reads actually occur."
   ([file pos length handler]
      (read file (buf/buffer) 0 pos length handler))
-  ([file buffer! offset pos length handler]
+  ([^AsyncFile file buffer! offset pos length handler]
      (.read file buffer! offset pos length 
             (core/as-async-result-handler handler))))
 
@@ -345,8 +345,8 @@
    exception."
   ([file]
      (close file nil))
-  ([file handler]
-     (common/internal-close file handler)))
+  ([^AsyncFile file handler]
+     (.close file (core/as-async-result-handler handler false))))
 
 (defn flush
   "Flush any writes made to this file to underlying persistent storage, asynchronously.
@@ -357,8 +357,8 @@
 
    If the file was opened with :flush? true, then calling this method
    will have no effect."
-  ([file]
+  ([^AsyncFile file]
      (.flush file))
-  ([file handler]
+  ([^AsyncFile file handler]
      (.flush file
              (core/as-async-result-handler handler false))))
