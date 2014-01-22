@@ -64,24 +64,35 @@
          (and throw?
               (throw (VertxException. "No container instance available."))))))
 
+(defn event-loop?
+  "Is the current thread an event loop thread?"
+  []
+  (.isEventLoop (get-vertx)))
+
+(defn worker? []
+  "Is the current thread an worker thread?"
+  (.isWorker (get-vertx)))
+
 (defn ^:internal ^:no-doc handler?
   "Returns true if h is an instance of org.vertx.java.core.Handler"
   [h]
   (instance? Handler h))
 
-(defn as-handler
+(defn ^Handler as-handler
   "Wraps the given single-arity f in a org.vertx.java.core.Handler.
   Returns f unmodified if it is nil or already a Handler. If provided,
   result-fn will be applied to the event before passing it to f."
   ([f]
      (as-handler f identity))
   ([f result-fn]
-      (if (or (nil? f) (handler? f))
-        f
-        (let [boundf (bound-fn [x] (f (result-fn x)))]
-          (reify Handler
-            (handle [_# event#]
-              (boundf event#)))))))
+     (if (or (nil? f) (handler? f))
+       f
+       (let [boundf (if (.getRawRoot #'*vertx*)
+                      #(f (result-fn %))
+                      (bound-fn [x] (f (result-fn x))))]
+         (reify Handler
+           (handle [_# event#]
+             (boundf event#)))))))
 
 (defmacro handler
   "Wraps the given bindings and body in a org.vertx.java.core.Handler.
