@@ -8,6 +8,6 @@
   :name "Vert.x Clojure language module",
   :sources ["src/main/clojure"],
   :description ""
-  :src-dir-uri "https://github.com/vert-x/mod-lang-clojure/tree/master/"
+  :src-dir-uri "https://github.com/vert-x/mod-lang-clojure/tree/master/api/"
   :src-linenum-anchor-prefix "L"
   :writer 'codox.writer.html/write-docs})
