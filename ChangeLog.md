@@ -1,5 +1,17 @@
 # ChangeLog
 
+## [v1.0.0.Beta2](/../../tree/1.0.0.Beta2) - 2014-01-30
+
+Changes:
+
+* bound-fn's are now only used for handlers when `vertx.core/*vertx*` is dynamically bound [#96](/../../issues/96)
+  Using a bound-fn has a speed penalty, so we now only do it when required.
+  **Note:** any user code that was relying on the implicit wrapping of the handler
+  fn in a bound-fn may now break.
+* Reflection in critical sections removed via type hinting [#67](/../../issues/67)
+* Fixed source links to github repo in API docs [#97](/../../issues/97)
+* Support added for new offset-based buffer copying in `vertx.buffer/append!` and `vertx.buffer/set!` [#99](/../../issues/99)
+
 ## [v1.0.0.Beta1](/../../tree/1.0.0.Beta1) - 2014-01-20
 
 Bug fixes:
