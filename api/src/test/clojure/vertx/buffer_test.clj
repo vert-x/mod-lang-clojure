@@ -30,6 +30,13 @@
     (is (= 100 (.length b2!)))
     (is (= b1! (b/get-buffer b2! 0 100)))))
 
+(deftest test-append-buffer-offset
+  (let [b1! (t/random-buffer 100)
+        b2! (b/buffer)]
+    (b/append! b2! b1! 50 25)
+    (is (= 25 (.length b2!)))
+    (is (= b2! (b/get-buffer b1! 50 75)))))
+
 (deftest test-append-byte
   (let [b! (b/buffer)
         data (byte 1)]
@@ -73,6 +80,13 @@
     (is (t/a= data (b/get-bytes b!)))
     (is (t/a= data (b/get-bytes b! 0 (alength data))))))
 
+(deftest test-append-bytes-offset
+  (let [b1! (t/random-buffer 100)
+        b2! (b/buffer)]
+    (b/append! b2! (b/get-bytes b1!) 50 25)
+    (is (= 25 (.length b2!)))
+    (is (= b2! (b/get-buffer b1! 50 75)))))
+
 (deftest test-append-big-decimal
   (let [b! (b/buffer)
         data 4.2M]
@@ -110,6 +124,14 @@
     (is (identical? b2! (b/set! b2! 1 b1!)))
     (is (= 101 (.length b2!)))
     (is (= b1! (b/get-buffer b2! 1 101)))))
+
+(deftest test-set-buffer-offset
+  (let [b1! (t/random-buffer 100)
+        b2! (b/buffer)]
+    (b/set! b2! 1 b1! 50 25)
+    (is (= 26 (.length b2!)))
+    (is (= (b/get-buffer b1! 50 75)
+          (b/get-buffer b2! 1 26)))))
 
 (deftest test-set-byte
   (let [b! (b/buffer)
@@ -152,6 +174,14 @@
         data (.getBytes "ham")]
     (b/set! b! 1 data)
     (is (t/a= data (b/get-bytes b! 1 (+ 1 (alength data)))))))
+
+(deftest test-set-bytes-offset
+  (let [b1! (t/random-buffer 100)
+        b2! (b/buffer)]
+    (b/set! b2! 1 (b/get-bytes b1!) 50 25)
+    (is (= 26 (.length b2!)))
+    (is (= (b/get-buffer b1! 50 75)
+          (b/get-buffer b2! 1 26)))))
 
 (deftest test-set-big-decimal
   (let [b! (b/buffer)

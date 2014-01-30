@@ -65,7 +65,9 @@
 
 (defn append!
   "Appends bufferable data to the end of a buffer.
-     Returns the mutated buffer instance."
+   If data is a byte-array or Buffer, you can also specify an offset
+   to start copying from in data, and len of bytes to copy. Returns
+   the mutated buffer instance."
   ([^Buffer buf data]
      (condp instance? data
        Buffer           (.appendBuffer buf data)
@@ -83,11 +85,20 @@
        (throw (IllegalArgumentException.
                 (str "Can't append data of class " (class data))))))
   ([^Buffer buf data-string encoding]
-     (.appendString buf data-string encoding)))
+     (.appendString buf data-string encoding))
+  ([^Buffer buf data offset len]
+     (condp instance? data
+       Buffer           (.appendBuffer buf data offset len)
+       u/byte-arr-class (.appendBytes buf data offset len)
+       (throw (IllegalArgumentException.
+                (str "Can't append data of class " (class data) " with offset"))))))
 
 (defn set!
   "Sets bufferable data in a buffer.
-     The data is set at the offset specified by loc."
+   The data is set at the offset specified by loc. If data is a
+   byte-array or Buffer, you can also specify an offset to start
+   copying from in data, and len of bytes to copy. Returns
+   the mutated buffer instance."
   ([^Buffer buf ^Integer loc data]
      (condp instance? data
        Buffer           (.setBuffer buf loc data)
@@ -106,7 +117,13 @@
        (throw (IllegalArgumentException.
                 (str "Can't set data of class " (class data))))))
   ([^Buffer buf loc data-string encoding]
-     (.setString buf loc data-string encoding)))
+     (.setString buf loc data-string encoding))
+  ([^Buffer buf loc data offset len]
+     (condp instance? data
+       Buffer           (.setBuffer buf loc data offset len)
+       u/byte-arr-class (.setBytes buf loc data offset len)
+       (throw (IllegalArgumentException.
+                (str "Can't set data of class " (class data) " with offset"))))))
 
 (defn ^Buffer as-buffer
   "Wraps bufferable data in a buffer unless it is already one."
