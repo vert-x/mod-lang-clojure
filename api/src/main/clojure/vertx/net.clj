@@ -131,9 +131,17 @@
   "Stream a file directly from disk to the outgoing connection.
    This bypasses userspace altogether where supported by the
    underlying operating system. This is a very efficient way to serve
-   files. Returns the socket."
-  [^NetSocket socket filename]
-  (.sendFile socket filename))
+   files. handler can either be a single-arity fn that will be passed
+   the exception-map (if any) from the result of the send-file call,
+   or a org.vertx.java.core.Handler that will be called with the
+   AsyncResult object that wraps the exception
+
+   Returns the socket."
+  ([socket filename]
+     (send-file socket filename nil))
+  ([^NetSocket socket filename handler]
+     (.sendFile socket filename
+       (core/as-async-result-handler handler false))))
 
 (defn ssl
   "Upgrade a socket to use SSL/TLS.
