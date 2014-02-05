@@ -2873,7 +2873,7 @@ For example, to echo all data received on a WebSocket:
     (-> (http/server)
         (ws/on-websocket 
           #(stream/pump % %))
-        (listen 8080))
+        (http/listen 8080))
 
 The `vertx.http.websocket` namespace provides the functions
 `write-binary-frame` for writing binary data, and `write-text-frame`
@@ -2929,9 +2929,9 @@ called.
 Here's an example of WebSockets on the client:
 
     (-> (http/client {:host "foo.com" :port 8080})
-        (ws/connect "/services/echo"
+        (ws/connect "/services/echo" :RFC6455
           (fn [ws]
-            (stream/on-data ws #(partial println "got"))
+            (stream/on-data ws (partial println "got"))
             (ws/write-text-frame ws "foo"))))
               
 Note that the host (and port) is set on the `HttpClient` instance, and
