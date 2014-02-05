@@ -2894,7 +2894,7 @@ websocket.
             (if (= "/services/echo" (.path ws))
               (stream/pump ws ws)
               (.reject ws))))
-        (listen 8080))
+        (http/listen 8080))
         
 ### Event Bus Write Handler
 
