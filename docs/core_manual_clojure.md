@@ -2743,12 +2743,12 @@ requests with path `/animals/cats` to another handler you would do:
            (-> (route/get "/animals/dogs"
                  (fn [req]
                    (-> (http/server-response req)
-                       (end "You requested dogs"))))
+                       (http/end "You requested dogs"))))
                (route/get "/animals/cats"
                  (fn [req]
                    (-> (http/server-response req)
-                       (end "You requested cats"))))))
-        (listen 8080))
+                       (http/end "You requested cats"))))))
+        (http/listen 8080))
         
 Corresponding functions exist for each HTTP method - `get`, `post`,
 `put`, `delete`, `head`, `options`, `trace`, `connect` and `patch`.
@@ -2783,10 +2783,10 @@ parameter. For example:
             (fn [req]
               (let [params (http/params req)]
                 (-> (http/server-response req)
-                    (end (format "blogname is %s and post is %s"
+                    (http/end (format "blogname is %s and post is %s"
                                  (:blogname params)
                                  (:post params))))))))
-        (listen 8080))
+        (http/listen 8080))
 
 Any params extracted by pattern matching are added to the map of
 request parameters.
@@ -2818,10 +2818,10 @@ For example:
             (fn [req]
               (let [params (http/params req)]
                 (-> (http/server-response req)
-                    (end (format "first is %s and second is %s"
+                    (http/end (format "first is %s and second is %s"
                                  (:param0 params)
                                  (:param1 params))))))))
-        (listen 8080))
+        (http/listen 8080))
         
 Run the above and point your browser at
 `http://localhost:8080/animals/cats`.
@@ -2836,7 +2836,7 @@ nothing matches, a 404 will be returned.
 
     (route/no-match 
       (fn [req]
-        (end (server-response req) "Nothing matched")))
+        (http/end (server-response req) "Nothing matched")))
     
 # WebSockets 
 
