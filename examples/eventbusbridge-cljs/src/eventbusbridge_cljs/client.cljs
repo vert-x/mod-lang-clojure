@@ -1,8 +1,7 @@
 (ns eventbusbridge-cljs.client
   (:require [vertx.client.eventbus :as eb]
             [enfocus.core :as ef]
-            [enfocus.events :as events])
-  (:require-macros [enfocus.macros :as em]))
+            [enfocus.events :as events]))
 
 (def eb (atom nil))
 

@@ -5,7 +5,7 @@
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :dependencies [[org.clojure/clojure "1.5.1"]
                  [org.clojure/clojurescript "0.0-1885"]
-                 [io.vertx/clojure-api "0.3.0"]
+                 [io.vertx/clojure-api "1.0.0.Beta2"]
                  [enfocus "2.0.0-beta1"]]
   :repositories [["sonatype snapshots" ;; for clojure-api snapshots
                   "https://oss.sonatype.org/content/repositories/snapshots"]]
