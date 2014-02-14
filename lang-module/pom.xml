@@ -175,6 +175,7 @@
         <artifactId>maven-failsafe-plugin</artifactId>
         <version>${maven.failsafe.plugin.version}</version>
         <configuration>
+          <argLine>-XX:MaxPermSize=256m</argLine>
           <systemProperties>
             <property>
               <name>vertx.mods</name>
