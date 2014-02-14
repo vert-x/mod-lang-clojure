@@ -25,12 +25,12 @@ import org.vertx.java.platform.Verticle;
 import org.vertx.java.platform.VerticleFactory;
 
 import java.io.File;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 
 public class ClojureVerticleFactory implements VerticleFactory {
@@ -41,16 +41,16 @@ public class ClojureVerticleFactory implements VerticleFactory {
 
     @Override
     public void init(Vertx vertx, Container container, ClassLoader cl) {
-        List<URL> runtimeUrls = new ArrayList<>();
         try {
+            Method addURL = URLClassLoader.class.getDeclaredMethod("addURL", URL.class);
+            addURL.setAccessible(true);
             for(File each : (new File(cl.getResource("___runtime___").toURI())).listFiles()) {
-                runtimeUrls.add(each.toURI().toURL());
+                addURL.invoke(cl, each.toURI().toURL());
             }
-        }
-        catch (URISyntaxException | MalformedURLException ignored) {}
+        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException |
+                 URISyntaxException | MalformedURLException ignored) { ignored.printStackTrace();}
 
-        this.cl = new URLClassLoader(runtimeUrls.toArray(new URL[0]), cl);
-        this.runtime = ClojureRuntimeShim.newRuntime(this.cl);
+        this.runtime = ClojureRuntimeShim.newRuntime(new URLClassLoader(new URL[0], cl));
         this.ownsRuntime = (this.runtime.invoke("clojure.core/find-ns", 
                                                 this.runtime.invoke("clojure.core/symbol", 
                                                                     "vertx.core")) == null);
@@ -97,7 +97,6 @@ public class ClojureVerticleFactory implements VerticleFactory {
     }
 
     private static final Logger log = LoggerFactory.getLogger(ClojureVerticleFactory.class);
-    private ClassLoader cl;
     private boolean ownsRuntime;
     private ClojureRuntimeShim runtime;
 
