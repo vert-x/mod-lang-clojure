@@ -79,7 +79,7 @@
   eb)
 
 (defn- wrap-handler [f]
-  #(f (js->clj %)))
+  #(f (js->clj % :keywordize-keys true)))
 
 (defn login
   "Sends a login message to the authmanager."
