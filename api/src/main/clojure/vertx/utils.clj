@@ -116,3 +116,9 @@
   (-> address InetAddress/getByName NetworkInterface/getByInetAddress .getName))
 
 (def byte-arr-class (Class/forName "[B"))
+
+(defn require-resolve
+  "Requires the ns for sym, then resolves sym."
+  [sym]
+  (require (symbol (namespace sym)))
+  (resolve sym))

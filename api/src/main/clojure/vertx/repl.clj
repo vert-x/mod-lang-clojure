@@ -57,13 +57,19 @@
                code))))
       (h m))))
 
-(defn ^:private -start [context port host]
+(defn ^:private -start [context port host {:keys [handler middleware]}]
   (log/info (format "Starting nREPL at %s:%s" host port))
-  (let [server
-        (nrepl/start-server
-          :handler (wrapped-context-handler context (nrepl/default-handler))
-          :port port
-          :bind host)
+  (let [handler (or (and handler (u/require-resolve handler))
+                  (->> middleware
+                    (map #(cond 
+                            (var? %) %
+                            (symbol? %) (u/require-resolve %)
+                            (list? %) (eval %)))
+                    (apply nrepl/default-handler)))
+        server (nrepl/start-server
+                 :handler (wrapped-context-handler context handler)
+                 :port port
+                 :bind host)
         actual-port (repl-port server)]
     (write-port-file actual-port)
     (require 'clj-stacktrace.repl 'complete.core)
@@ -83,15 +89,21 @@
    port defaults to 0, which means \"any available port\". host
    defaults to \"127.0.0.1\". Returns an id for the server that can be
    passed to stop to shut it down. the repl will automatically be
-   shutdown when the verticle that started it is stopped."
+   shutdown when the verticle that started it is stopped.
+   You can optionally pass one of the following keyword arguments:
+
+   :handler    A fully-qualified symbol pointing to your own nrepl handler
+   :middleware A collection of middlewares to apply to the default handler.
+               Each can be a fully-qualified symbol, a var, or an inline
+               function."
   ([]
      (start 0))
   ([port]
      (start port "127.0.0.1"))
-  ([port host]
+  ([port host & {:as opts}]
      (let [id (str "repl-" (u/uuid))
            context (.getContext (core/get-vertx))]
        (swap! repls assoc id
          (future-call (bound-fn []
-                        (-start context port host))))
+                        (-start context port host opts))))
        id)))
