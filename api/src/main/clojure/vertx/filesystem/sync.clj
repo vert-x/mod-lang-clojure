@@ -148,7 +148,7 @@
 (defn write-file
   "Creates the file, and writes the specified data to the file represented by path, synchronously."
   [path data]
-  (.writeFileSync (fs/get-file-system) path (buf/buffer data)))
+  (.writeFileSync (fs/get-file-system) path (buf/as-buffer data)))
 
 (defn open
   "Open the file represented by path, synchronously.
