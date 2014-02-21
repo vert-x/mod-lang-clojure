@@ -315,7 +315,7 @@
    that wraps the exception.  
 
    When multiple writes are invoked on the same file there are no
-   guarantees as to order in which those writes actually occur."
+   guarantees as to the order in which those writes actually occur."
    [^AsyncFile file data pos handler]
   (.write file (buf/as-buffer data) pos
           (core/as-async-result-handler handler false)))
