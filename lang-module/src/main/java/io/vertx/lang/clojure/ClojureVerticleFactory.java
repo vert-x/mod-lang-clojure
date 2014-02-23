@@ -48,7 +48,9 @@ public class ClojureVerticleFactory implements VerticleFactory {
                 addURL.invoke(cl, each.toURI().toURL());
             }
         } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException |
-                 URISyntaxException | MalformedURLException ignored) { ignored.printStackTrace();}
+                 URISyntaxException | MalformedURLException ex) {
+            ex.printStackTrace();
+        }
 
         this.runtime = ClojureRuntimeShim.newRuntime(new URLClassLoader(new URL[0], cl));
         this.ownsRuntime = (this.runtime.invoke("clojure.core/find-ns", 
