@@ -54,7 +54,9 @@
       (finally
         (if (.await *embedded-latch* test-timeout TimeUnit/SECONDS)
           (.stop core/*vertx*)
-          (throw (Exception. "Timed out waiting for test to complete")))))))
+          (do (println "Timed out waiting for test to complete")
+              (System/exit 1)
+              (throw (Exception. "Timed out waiting for test to complete"))))))))
 
 (def ^:private teardown
   "Teardown functions to be called when the test is complete."

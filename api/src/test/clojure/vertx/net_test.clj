@@ -21,19 +21,19 @@
 
 (use-fixtures :each t/as-embedded)
 
-(defn assert-socket-addresses [socket]
+(defn ^{:test t/test-complete*} assert-socket-addresses [socket]
   (is (not (nil? (-> socket .localAddress .getAddress))))
   (is (> (-> socket .localAddress .getPort) -1))
   (is (not (nil? (-> socket .remoteAddress .getAddress))))
   (is (> (-> socket .remoteAddress .getPort) -1))
   socket)
 
-(defn echo-handler [socket]
+(defn ^{:test t/test-complete*} echo-handler [socket]
   (stream/on-data socket
                   (fn [data]
                     (stream/write socket data))))
 
-(defn exercise-handlers [socket]
+(defn ^{:test t/test-complete*} exercise-handlers [socket]
   (-> socket
       (stream/on-drain #(println "drain"))
       (stream/on-end #(println "end"))

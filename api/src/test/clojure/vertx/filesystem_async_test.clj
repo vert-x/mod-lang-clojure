@@ -23,9 +23,9 @@
   (:import [java.nio.file Files LinkOption Paths]
            java.nio.file.attribute.PosixFilePermissions))
 
-(def ^:dynamic *tmp-dir* nil)
+(def ^{:dynamic true :test t/test-complete*} *tmp-dir* nil)
 
-(defn with-tmp-dir [f]
+(defn ^{:test t/test-complete*} with-tmp-dir [f]
   (let [tmp-dir (str "target/mod-lang-clojure-tests-" (u/uuid) "/")
         tmp-dir-file (io/file tmp-dir)]
     (sfs/mkdir tmp-dir)
@@ -37,9 +37,9 @@
 
 (use-fixtures :each t/as-embedded with-tmp-dir)
 
-(defn resource-path [name] (t/resource-path name))
+(defn ^{:test t/test-complete*} resource-path [name] (t/resource-path name))
 
-(defn get-perms [path]
+(defn ^{:test t/test-complete*} get-perms [path]
   (PosixFilePermissions/toString
    (Files/getPosixFilePermissions (Paths/get path (make-array String 0))
                                   (make-array LinkOption 0))))
