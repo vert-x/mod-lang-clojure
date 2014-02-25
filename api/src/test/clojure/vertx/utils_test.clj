@@ -15,7 +15,9 @@
 (ns vertx.utils-test
   (:require [vertx.utils :refer :all]
             [clojure.test :refer :all])
-  (:import io.vertx.test.Biscuit))
+  (:import io.vertx.test.Biscuit
+           [org.vertx.java.core.json JsonArray JsonObject]))
+
 
 (deftest camelize-should-work
   (are [given exp] (= (camelize given) exp)
@@ -40,3 +42,19 @@
     (is (nil? (.getJam b)))
     (is (= b (set-properties b {:jam "grape"})))
     (is (= "grape" (.getJam b)))))
+
+(deftest persistentmap-should-encode ;IPersistentMap
+  (is (= (encode {:a "b"}) (JsonObject. "{\"a\":\"b\"}"))))
+
+(deftest map-should-encode ;Map
+  (is (= (encode (let [m (java.util.HashMap.)] (.put m "a" "b") m)) (JsonObject. "{\"a\":\"b\"}"))))
+
+(deftest seq-should-encode ;Seqable
+  (is (= (encode '(1 2)) (JsonArray. "[1,2]"))))
+
+(deftest jsonarray-should-decode ;JsonArray
+    (is (= [1,2] (decode (JsonArray. "[1,2]")))))
+
+(deftest jsonobject-should-decode ;JsonObject
+  (is (= {:a "b"} (decode (JsonObject. "{\"a\":\"b\"}")))))
+
