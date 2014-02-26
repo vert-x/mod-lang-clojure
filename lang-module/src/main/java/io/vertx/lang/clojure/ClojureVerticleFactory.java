@@ -23,10 +23,9 @@ import org.vertx.java.core.logging.impl.LoggerFactory;
 import org.vertx.java.platform.Container;
 import org.vertx.java.platform.Verticle;
 import org.vertx.java.platform.VerticleFactory;
+import org.vertx.java.platform.impl.ModuleClassLoader;
 
 import java.io.File;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -42,13 +41,10 @@ public class ClojureVerticleFactory implements VerticleFactory {
     @Override
     public void init(Vertx vertx, Container container, ClassLoader cl) {
         try {
-            Method addURL = URLClassLoader.class.getDeclaredMethod("addURL", URL.class);
-            addURL.setAccessible(true);
             for(File each : (new File(cl.getResource("___runtime___").toURI())).listFiles()) {
-                addURL.invoke(cl, each.toURI().toURL());
+                ((ModuleClassLoader)cl).addURL(each.toURI().toURL());
             }
-        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException |
-                 URISyntaxException | MalformedURLException ex) {
+        } catch (URISyntaxException | MalformedURLException ex) {
             ex.printStackTrace();
         }
 
