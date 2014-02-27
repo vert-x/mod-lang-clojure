@@ -23,7 +23,7 @@
 
 (use-fixtures :each t/as-embedded)
 
-(defn ^{:test t/test-complete*} fail-on-exception [e]
+(defn fail-on-exception [e]
   (is false (str "Unexpected exception: " e)))
 
 (deftest echo

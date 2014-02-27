@@ -1,5 +1,19 @@
 # ChangeLog
 
+## [v1.0.0.Beta3](/../../tree/1.0.0.Beta3) - 2014-02-27
+
+Breaking changes:
+
+* The ClojureScript eventbus client now keywordizes map keys when
+  deserializing JSON to match the server-side behavior [#106](../../issues/106)
+
+Other Changes:
+
+* `vertx.net/send-file` can now be passed a result handler [#100](../../issues/100)
+* You can now pass nREPL middleware to `vertx.repl/start` [#104](../../issues/104)
+* A class loader fix that allows you to now deploy clojure modules [#108](../../issues/105)
+* `vertx.filesystem.sync/write-file` now properly coerces its data to a Buffer [#109](../../issues/109)
+
 ## [v1.0.0.Beta2](/../../tree/1.0.0.Beta2) - 2014-01-30
 
 Changes:

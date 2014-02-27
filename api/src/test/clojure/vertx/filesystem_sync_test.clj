@@ -23,9 +23,9 @@
            java.nio.file.attribute.PosixFilePermissions
            org.vertx.java.core.file.FileSystemException))
 
-(def ^{:dynamic true :test t/test-complete*} *tmp-dir* nil)
+(def ^:dynamic *tmp-dir* nil)
 
-(defn ^{:test t/test-complete*} with-tmp-dir [f]
+(defn with-tmp-dir [f]
   (let [tmp-dir (str "target/mod-lang-clojure-tests-" (u/uuid) "/")
         tmp-dir-file (io/file tmp-dir)]
     (fs/mkdir tmp-dir)
@@ -37,9 +37,9 @@
 
 (use-fixtures :each t/as-embedded with-tmp-dir)
 
-(defn ^{:test t/test-complete*} resource-path [name] (t/resource-path name))
+(defn resource-path [name] (t/resource-path name))
 
-(defn ^{:test t/test-complete*} get-perms [path]
+(defn get-perms [path]
   (PosixFilePermissions/toString
    (Files/getPosixFilePermissions (Paths/get path (make-array String 0))
                                   (make-array LinkOption 0))))

@@ -24,7 +24,7 @@
 
 (use-fixtures :each t/as-embedded)
 
-(defn ^{:test t/test-complete*} start-server [server]
+(defn start-server [server]
   (.start server)
   (t/on-complete
    #(.stop server))
@@ -89,7 +89,7 @@
                (is (= :NXDOMAIN (:type err)))
                (is (nil? r))))))
 
-(defn ^{:test t/test-complete*} check-resolve-result [check-fn err r]
+(defn check-resolve-result [check-fn err r]
   (t/test-complete
    (is (nil? err))
    (is (seq? r))
