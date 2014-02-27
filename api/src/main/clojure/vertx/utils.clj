@@ -22,8 +22,28 @@
            [java.net NetworkInterface InetAddress InetSocketAddress]
            java.math.BigDecimal))
 
+
 (defprotocol Encodeable
   (encode [data]))
+
+(defn- encode-pmap[data]
+  (reduce #(do (.putValue %1 
+                          (name (first %2)) 
+                          (encode (second %2))) %1) 
+          (JsonObject.) 
+          (seq data)))
+
+(defn- encode-map[data]
+  (reduce #(do (.putValue %1 
+                          (.getKey %2)
+                          (encode (.getValue %2))) %1) 
+          (JsonObject.) 
+          (seq data)))
+
+(defn- encode-seq[data]
+  (reduce #(do (.add %1 (encode %2)) %1) 
+          (JsonArray.) 
+          data))
 
 (extend-protocol Encodeable
   Object
@@ -39,15 +59,18 @@
   ;; the clojure map interface to prevent that.
   IPersistentMap
   (encode [data]
-    (JsonObject. ^String (json/write-str data)))
+          (encode-pmap data))
+    ;(JsonObject. ^String (json/write-str data)))
   Map
   (encode [data]
-    (JsonObject. ^String (json/write-str data)))
+          (encode-map data))
+    ;(JsonObject. ^String (json/write-str data)))
   Ratio
   (encode [data] (double data))
   Seqable
   (encode [data]
-    (JsonArray. ^String (json/write-str data))))
+          (encode-seq data)))
+    ;(JsonArray. ^String (json/write-str data))))
 
 (defprotocol Decodeable
   (decode [data]))
@@ -59,10 +82,14 @@
   (decode [data] nil)
   JsonArray
   (decode [data]
-    (json/read-str (.encode data) :key-fn keyword))
+          (map decode data))
+    ;(json/read-str (.encode data) :key-fn keyword))
   JsonObject
   (decode [data]
-    (json/read-str (.encode data) :key-fn keyword)))
+          (reduce #(assoc %1 (keyword (.getKey %2)) (decode (.getValue %2))) 
+                  {} 
+                  (seq (.toMap data)))))
+    ;(json/read-str (.encode data) :key-fn keyword)))
 
 (defn uuid
   "Generates a uuid."

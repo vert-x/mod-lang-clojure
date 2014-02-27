@@ -50,7 +50,7 @@
   (is (= (encode (let [m (java.util.HashMap.)] (.put m "a" "b") m)) (JsonObject. "{\"a\":\"b\"}"))))
 
 (deftest seq-should-encode ;Seqable
-  (is (= (encode '(1 2)) (JsonArray. "[1,2]"))))
+  (is (= (encode '(1000000000000 2000000000000)) (JsonArray. "[1000000000000,2000000000000]"))))
 
 (deftest jsonarray-should-decode ;JsonArray
     (is (= [1,2] (decode (JsonArray. "[1,2]")))))
