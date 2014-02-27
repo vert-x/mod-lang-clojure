@@ -14,16 +14,52 @@
 
 (ns ^:internal ^:no-doc vertx.utils
     "Internal utility functions."
-  (:require [clojure.string :as s]
-            [clojure.data.json :as json])
+  (:require [clojure.string :as s])
   (:import [org.vertx.java.core.json JsonArray JsonObject]
-           [clojure.lang BigInt IPersistentMap Ratio Seqable]
-           [java.util Map UUID]
+           [clojure.lang BigInt IPersistentMap Ratio Seqable IPersistentVector 
+            IPersistentList IPersistentSet IPersistentCollection Associative Keyword ISeq]
+           [java.util Map UUID List Map$Entry]
            [java.net NetworkInterface InetAddress InetSocketAddress]
            java.math.BigDecimal))
 
+
 (defprotocol Encodeable
   (encode [data]))
+
+(defn- assign-values-to-jsonobject[^JsonObject jobj k v]
+  (.putValue jobj k v)
+  jobj)
+
+(defn- assign-entry-to-jsonobject[^JsonObject jobj ^Map$Entry e]
+  (assign-values-to-jsonobject jobj (encode (.getKey e)) (encode (.getValue e))))
+  
+(defn- encode-map[data]
+  (reduce #(assign-values-to-jsonobject 
+             %1 (name (first %2)) (encode (second %2)))
+          (JsonObject.) 
+          (seq data)))
+
+(defn- encode-java-map[^Map data]
+  (reduce #(assign-entry-to-jsonobject %1 %2) 
+          (JsonObject.)
+          (seq data)))
+
+(defn- add-item-to-json-array[^JsonArray ja item]
+  (.add ja item) ja)
+
+(defn- encode-seq[data]
+  (reduce #(add-item-to-json-array %1 (encode %2)) 
+          (JsonArray.) 
+          data))
+
+(defn- encode-collection[data]
+  (condp instance? data
+    IPersistentMap (encode-map data)
+    IPersistentVector (encode-seq data)
+    IPersistentList (encode-seq data)
+    IPersistentSet (encode-seq data)
+    ISeq (encode-seq data)
+    Associative (encode-map data)))
 
 (extend-protocol Encodeable
   Object
@@ -35,22 +71,32 @@
   BigInt
   (encode [data] (long data))
   ;; clojure maps are Maps and Seqables, and sometimes the Seqable
-  ;; version gets called for a them. Let's explicitly extend
-  ;; the clojure map interface to prevent that.
-  IPersistentMap
+  ;; version gets called for a them. Let's explicitly handle IPersistentCollections.
+  IPersistentCollection
   (encode [data]
-    (JsonObject. ^String (json/write-str data)))
+          (encode-collection data))
   Map
   (encode [data]
-    (JsonObject. ^String (json/write-str data)))
+          (encode-java-map data))
   Ratio
   (encode [data] (double data))
   Seqable
   (encode [data]
-    (JsonArray. ^String (json/write-str data))))
+          (encode-seq data))
+  List
+  (encode [data]
+          (encode-seq data))
+  Keyword
+  (encode [data]
+          (name data)))
 
 (defprotocol Decodeable
   (decode [data]))
+
+(defn- assoc-java-entry-to-map[newmap ^Map$Entry entry]
+  (let [k (keyword (.getKey entry))
+        v (decode (.getValue entry))]
+          (assoc newmap k v)))
 
 (extend-protocol Decodeable
   Object
@@ -59,10 +105,13 @@
   (decode [data] nil)
   JsonArray
   (decode [data]
-    (json/read-str (.encode data) :key-fn keyword))
+          (map decode data))
   JsonObject
   (decode [data]
-    (json/read-str (.encode data) :key-fn keyword)))
+          (reduce assoc-java-entry-to-map {} (seq (.toMap data))))
+  Map
+  (decode [data]
+          (reduce assoc-java-entry-to-map {} (seq data))))
 
 (defn uuid
   "Generates a uuid."

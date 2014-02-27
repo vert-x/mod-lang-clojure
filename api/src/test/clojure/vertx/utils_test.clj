@@ -15,7 +15,9 @@
 (ns vertx.utils-test
   (:require [vertx.utils :refer :all]
             [clojure.test :refer :all])
-  (:import io.vertx.test.Biscuit))
+  (:import io.vertx.test.Biscuit
+           [org.vertx.java.core.json JsonArray JsonObject]))
+
 
 (deftest camelize-should-work
   (are [given exp] (= (camelize given) exp)
@@ -40,3 +42,35 @@
     (is (nil? (.getJam b)))
     (is (= b (set-properties b {:jam "grape"})))
     (is (= "grape" (.getJam b)))))
+
+(deftest persistentmap-should-encode 
+  (is (= (encode {:a "b"}) (JsonObject. "{\"a\":\"b\"}"))))
+
+(deftest persistentset-should-encode
+  (let [encoded (encode #{:a "b"})]
+    (is (= JsonArray (type encoded)))
+    (is (= 2 (.size encoded)))
+    (is (.contains encoded "a"))
+    (is (.contains encoded "b"))))
+
+(deftest persistentmap-of-maps-should-encode
+  (is (= (encode {:a {:b "c"} }) (JsonObject. "{\"a\":{\"b\":\"c\"}}"))))
+
+(deftest map-should-encode
+  (is (= (encode (let [m (java.util.HashMap.)] (.put m "a" "b") m)) (JsonObject. "{\"a\":\"b\"}"))))
+
+(deftest seq-should-encode
+  (is (= (encode '(1000000000000 2000000000000)) (JsonArray. "[1000000000000,2000000000000]"))))
+
+(deftest jsonarray-should-decode
+    (is (= [1,2] (decode (JsonArray. "[1,2]")))))
+
+(deftest jsonobject-should-decode
+  (is (= {:a "b"} (decode (JsonObject. "{\"a\":\"b\"}")))))
+
+(deftest map-of-maps-should-decode
+  (is (= {:a {:b "c"} } (decode (JsonObject. "{\"a\":{\"b\":\"c\"}}")))))
+
+(deftest map-of-mapped-nums-should-decode
+  (is (= {:a {:b 1000000000000} } (decode (JsonObject. "{\"a\":{\"b\":1000000000000}}")))))
+

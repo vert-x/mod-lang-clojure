@@ -38,10 +38,6 @@
     </dependency>
     <dependency>
       <groupId>org.clojure</groupId>
-      <artifactId>data.json</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.clojure</groupId>
       <artifactId>tools.nrepl</artifactId>
     </dependency>
     <dependency>
