@@ -23,7 +23,7 @@
 
 (use-fixtures :each t/as-embedded)
 
-(defn ^{:test t/test-complete*} assert-status-code [resp]
+(defn assert-status-code [resp]
   (is (= (int 200) (.statusCode resp))))
 
 (deftest base-request
