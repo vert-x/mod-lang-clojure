@@ -26,40 +26,36 @@
 (defprotocol Encodeable
   (encode [data]))
 
-(defn- assign-values-to-jsonobject [^JsonObject jobj k v]
-  (.putValue jobj k v)
-  jobj)
+(defn- put
+  ([^JsonObject jobj ^Map$Entry e]
+     (put jobj (.getKey e) (.getValue e)))
+  ([^JsonObject jobj k v]
+     (doto jobj (.putValue (name k) (encode v)))))
 
-(defn- assign-entry-to-jsonobject [^JsonObject jobj ^Map$Entry e]
-  (assign-values-to-jsonobject jobj (encode (.getKey e)) (encode (.getValue e))))
-
-(defn- encode-map [data]
-  (reduce #(assign-values-to-jsonobject
-             %1 (name (first %2)) (encode (second %2)))
+(defn- map->JsonObject [data]
+  (reduce #(put %1 (first %2) (second %2))
     (JsonObject.)
     (seq data)))
 
-(defn- encode-java-map [^Map data]
-  (reduce #(assign-entry-to-jsonobject %1 %2)
+(defn- java-map->JsonObject [^Map data]
+  (reduce #(put %1 %2)
     (JsonObject.)
     (seq data)))
 
-(defn- add-item-to-json-array [^JsonArray ja item]
-  (.add ja item) ja)
-
-(defn- encode-seq [data]
-  (reduce #(add-item-to-json-array %1 (encode %2))
+(defn- seq->JsonArray [data]
+  (reduce #(doto ^JsonArray %1 (.add (encode %2)))
     (JsonArray.)
     data))
 
 (defn- encode-collection [data]
-  (condp instance? data
-    IPersistentMap (encode-map data)
-    IPersistentVector (encode-seq data)
-    IPersistentList (encode-seq data)
-    IPersistentSet (encode-seq data)
-    ISeq (encode-seq data)
-    Associative (encode-map data)))
+  ((condp instance? data
+     IPersistentMap    map->JsonObject
+     IPersistentVector seq->JsonArray
+     IPersistentList   seq->JsonArray
+     IPersistentSet    seq->JsonArray
+     ISeq              seq->JsonArray
+     Associative       map->JsonObject)
+   data))
 
 (extend-protocol Encodeable
   Object
@@ -77,26 +73,21 @@
     (encode-collection data))
   Map
   (encode [data]
-    (encode-java-map data))
+    (java-map->JsonObject data))
   Ratio
   (encode [data] (double data))
   Seqable
   (encode [data]
-    (encode-seq data))
+    (seq->JsonArray data))
   List
   (encode [data]
-    (encode-seq data))
+    (seq->JsonArray data))
   Keyword
   (encode [data]
     (name data)))
 
 (defprotocol Decodeable
   (decode [data]))
-
-(defn- assoc-java-entry-to-map [newmap ^Map$Entry entry]
-  (let [k (keyword (.getKey entry))
-        v (decode (.getValue entry))]
-    (assoc newmap k v)))
 
 (extend-protocol Decodeable
   Object
@@ -108,10 +99,14 @@
     (map decode data))
   JsonObject
   (decode [data]
-    (reduce assoc-java-entry-to-map {} (seq (.toMap data))))
+    (decode (.toMap data)))
   Map
   (decode [data]
-    (reduce assoc-java-entry-to-map {} (seq data))))
+    (reduce (fn [m ^Map$Entry e]
+              (assoc m
+                (keyword (.getKey e))
+                (decode (.getValue e))))
+      {} (seq data))))
 
 (defn uuid
   "Generates a uuid."
