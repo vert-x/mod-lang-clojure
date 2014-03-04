@@ -1,5 +1,11 @@
 # ChangeLog
 
+## [v1.0.0.RC1](/../../tree/1.0.0.RC1) - 2014-03-04
+
+Change:
+
+* Speed/compatibility improvements to JSON encoding/decoding of EventBus messages [#111](../../issues/111)
+
 ## [v1.0.0.Beta3](/../../tree/1.0.0.Beta3) - 2014-02-27
 
 Breaking changes:
