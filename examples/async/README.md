@@ -1,4 +1,4 @@
-# core.async of clojure in Vert.x
+# Clojure core.async in Vert.x
 
-Demonstrates using lib core.async of Clojure in Vertx. See
+Demonstrates using Clojure's core.async in Vert.x. See
 `src/async/core.clj`, and run with `lein run`.
