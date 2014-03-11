@@ -2282,8 +2282,8 @@ directory:
                     (let [path (.path req)]
                       (cond 
                         (= path "/") "index.html"
-                        (not (re-find #"\.\.")) path
-                        :default "error.html"))))))
+                        (not (re-find #"\.\." path)) path
+                        :default "error.html")))))))
         (http/listen 8080))
                     
 There's also a variant of `send-file` which takes the name of a file
