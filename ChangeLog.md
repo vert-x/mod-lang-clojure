@@ -1,5 +1,9 @@
 # ChangeLog
 
+## [v1.0.1](/../../tree/1.0.1) - 2014-03-26
+
+Update to Clojure 1.6.0
+
 ## [v1.0.0](/../../tree/1.0.0) - 2014-03-07
 
 No changes.
