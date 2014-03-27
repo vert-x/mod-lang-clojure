@@ -25,10 +25,10 @@ rather run the latest commit, update your `langs.properties` with:
 
 ## Documentation
 
-For 1.0.0:
+For 1.0.1:
 
-* [User Manual](https://github.com/vert-x/mod-lang-clojure/blob/1.0.0/docs/core_manual_clojure.md)
-* [API docs](http://vertx.io/mod-lang-clojure/docs/1.0.0/index.html)
+* [User Manual](https://github.com/vert-x/mod-lang-clojure/blob/1.0.1/docs/core_manual_clojure.md)
+* [API docs](http://vertx.io/mod-lang-clojure/docs/1.0.1/index.html)
 
 For HEAD:
 
