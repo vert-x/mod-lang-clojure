@@ -66,7 +66,7 @@
                        (net/normalize-ssl-props properties))))
 
 (defn listen
-  "Tells the http-server to start listening for connections on port.
+  "Tells the server to start listening for connections on port.
    If host is not provided, it defaults to \"0.0.0.0\". handler can
    either be a two-arity fn that will be passed the exception-map (if any)
    and server from the result of the listen call, or a Handler
@@ -187,7 +187,7 @@
 
 (defn on-body
   "Attach a handler to receive the entire body in one piece.
-   http can either be a server request or client response.  handler
+   req-or-resp can either be a server request or client response.  handler
    can either be a single-arity fn or a Handler instance that will be
    passed the body as a buffer. This saves the user having to manually
    set a data and end handler and append the chunks of the body until
