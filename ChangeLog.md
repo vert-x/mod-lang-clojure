@@ -1,5 +1,11 @@
 # ChangeLog
 
+## [v1.0.2](/../../tree/1.0.2) - 2014-04-25
+
+* Implement missing `HttpServerResponse#closeHandler` as `vertx.http/on-close` [#112](../../issues/112)
+
+Update to Clojure 1.6.0
+
 ## [v1.0.1](/../../tree/1.0.1) - 2014-03-26
 
 Update to Clojure 1.6.0
@@ -103,7 +109,7 @@ Other changes:
 * Don't require all sockjs hooks to be set [#52](/../../issues/52)
 
 ## [v0.1.2](/../../tree/0.1.2) - 2013-08-26
- 
+
 * Add additional metadata required by the Vert.x module registry
 
 ## [v0.1.1](/../../tree/0.1.1) - 2013-08-26
@@ -112,6 +118,6 @@ Other changes:
 * Change the lang-module artifact name (lang-clojure.zip ->
   lang-clojure-mod.zip) to follow Vert.x module registry guidelines
 
-## [v0.1.0](/../../tree/0.1.0) - 2013-08-12 
+## [v0.1.0](/../../tree/0.1.0) - 2013-08-12
 
 Initial release
