@@ -7,10 +7,10 @@ First, commit and push all changes.
 If this is a SNAPSHOT:
 
     mvn clean deploy
-    
+
 You're done!
 
-## Versioned Release 
+## Versioned Release
 
 1. Update the ChangeLog.
 2. `mvn release:clean`
@@ -20,18 +20,19 @@ You're done!
 4. `mvn release:perform`
 5. Log into <http://oss.sonatype.org>
 6. Browse to 'Staging Repositories', find the correct 'io.vertx' repo,
-   and select it 
-7. Close the repo, then release it (you may need to refresh the list 
+   and select it
+7. Close the repo, then release it (you may need to refresh the list
    for the release button to become active).
 8. Publish the API docs:
    * Switch to release tag
    * `mvn install` in api to generate docs
-   * `mv target/html-docs /tmp`
+   * `mv api/target/html-docs /tmp`
    * `git checkout gh-pages`
-   * `mv /tmp/html-docs /docs/<version>/`
+   * `mv /tmp/html-docs docs/<version>/`
    * edit index.html to refer to new docs
    * commit
    * push the gh-pages branch
+   * `git checkout master`
 9. Update README with link to ^ and update the version number
 10. Wait for several hours until sonatype syncs to central. You can
     check <http://search.maven.org> to know when this has completed.
