@@ -197,6 +197,13 @@
   [req-or-resp handler]
   (-on-body req-or-resp handler))
 
+(defn on-close
+  "Attach a handler to be called if the request connection is closed before the response is complete.
+   handler can either be a zero-arity fn or a Handler instance that
+   will be called when the connection is closed."
+  [^HttpServerResponse resp handler]
+  (.closeHandler resp (core/as-void-handler handler)))
+
 (defn add-header
   "Sets an HTTP header on a client request or server response.
    Key can be a string, keyword, or symbol. The latter two will be
