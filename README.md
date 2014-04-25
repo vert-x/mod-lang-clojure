@@ -6,11 +6,11 @@ The Clojure language implementation for Vert.x
 
 First, you'll need to [install Vert.x](http://vertx.io/install.html).
 
-The latest stable release is *1.0.1*. Until this module becomes part
+The latest stable release is *1.0.2*. Until this module becomes part
 of Vert.x proper, you will need to make Vert.x aware of it by editing
 `VERTX_HOME/conf/langs.properties` and adding:
 
-    clojure=io.vertx~lang-clojure~1.0.1:io.vertx.lang.clojure.ClojureVerticleFactory
+    clojure=io.vertx~lang-clojure~1.0.2:io.vertx.lang.clojure.ClojureVerticleFactory
     .clj=clojure
 
 
@@ -25,10 +25,10 @@ rather run the latest commit, update your `langs.properties` with:
 
 ## Documentation
 
-For 1.0.1:
+For 1.0.2:
 
-* [User Manual](https://github.com/vert-x/mod-lang-clojure/blob/1.0.1/docs/core_manual_clojure.md)
-* [API docs](http://vertx.io/mod-lang-clojure/docs/1.0.1/index.html)
+* [User Manual](https://github.com/vert-x/mod-lang-clojure/blob/1.0.2/docs/core_manual_clojure.md)
+* [API docs](http://vertx.io/mod-lang-clojure/docs/1.0.2/index.html)
 
 For HEAD:
 
