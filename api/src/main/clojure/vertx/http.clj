@@ -148,13 +148,13 @@
     (parse-multi-map (.headers req)))
   (-on-body [req handler]
     (.bodyHandler req (core/as-handler handler)))
-  
+
   HttpClientRequest
   (-headers [req]
     (parse-multi-map (.headers req)))
   (-add-header [req ^String key ^String value]
     (.putHeader req key value))
-  
+
   HttpServerResponse
   (-headers [resp]
     (parse-multi-map (.headers resp)))
@@ -162,7 +162,7 @@
     (.putHeader resp key value))
   (-trailers [resp]
     (parse-multi-map (.trailers resp)))
-  
+
   HttpClientResponse
   (-headers [resp]
     (parse-multi-map (.headers resp)))
@@ -177,7 +177,7 @@
    headers will have those values stored as a vector."
   [req-or-resp]
   (-headers req-or-resp))
-  
+
 (defn trailers
   "Returns a map of trailers for the server response or client response.
    Keys will be keywords, and keys that have multiple values in the
