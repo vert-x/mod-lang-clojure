@@ -2602,7 +2602,7 @@ Here's an example using `body_handler`:
     (-> (http/client {:host "foo.com"})
         (http/get-now "/some-path"
           (fn [resp]
-            (stream/on-body resp
+            (http/on-body resp
               #(println "The total body received was" (.length %))))))
 
 #### Reading cookies
