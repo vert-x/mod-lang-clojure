@@ -18,26 +18,20 @@ Every commit triggers a [CI](https://vertx.ci.cloudbees.com/job/vert.x-mod-lang-
 build, and we publish a SNAPSHOT when that succeeds. So if you would
 rather run the latest commit, update your `langs.properties` with:
 
-    clojure=io.vertx~lang-clojure~1.0.2-SNAPSHOT:io.vertx.lang.clojure.ClojureVerticleFactory
+    clojure=io.vertx~lang-clojure~1.0.3-SNAPSHOT:io.vertx.lang.clojure.ClojureVerticleFactory
     .clj=clojure
 
-**Note that this module only works with Vert.x 2.1RC2 or greater.**
+**Note that this module only works with Vert.x 2.1RC3 or greater.**
 
 ## Documentation
 
-For 1.0.2:
-
-* [User Manual](https://github.com/vert-x/mod-lang-clojure/blob/1.0.2/docs/core_manual_clojure.md)
-* [API docs](http://vertx.io/mod-lang-clojure/docs/1.0.2/index.html)
-
-For HEAD:
-
-* [User Manual](docs/core_manual_clojure.md)
-* [API docs](https://vertx.ci.cloudbees.com/job/vert.x-mod-lang-clojure/lastSuccessfulBuild/artifact/api/target/html-docs/index.html)
+* [User Manual](http://vertx.io/core_manual_clojure.html)
+* [1.0.2 API docs](http://vertx.io/mod-lang-clojure/docs/1.0.2/index.html)
+* [HEAD API docs](https://vertx.ci.cloudbees.com/job/vert.x-mod-lang-clojure/lastSuccessfulBuild/artifact/api/target/html-docs/index.html)
 
 ## Examples
 
-See [examples/README.md](examples/README.md).
+See the offical [examples repo](https://github.com/vert-x/vertx-examples/tree/master/src/raw/clojure#mod-lang-clojure-examples).
 
 ## License
 
