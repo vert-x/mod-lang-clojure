@@ -209,7 +209,7 @@
    Key can be a string, keyword, or symbol. The latter two will be
    converted to a string via name. Returns the request or response."
   [req-or-resp key value]
-  (-add-header req-or-resp (name key) (name value)))
+  (-add-header req-or-resp (name key) (if (keyword? value) (name value) (str value))))
 
 (defn add-headers
   "Sets a HTTP headers on a client request or server response.
