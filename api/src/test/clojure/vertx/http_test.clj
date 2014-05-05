@@ -97,7 +97,7 @@
                         (t/test-complete
                           (is (= (int 0) (.length body))))))))
 
-                (http/add-header :content-length (str (.length body)))
+                (http/add-header :content-length (.length body))
                 (http/add-header :content-type (str "application/x-www-form-urlencoded"))
                 (http/end body))))]
 
