@@ -1,11 +1,11 @@
 ;; Copyright 2013 the original author or authors.
-;; 
+;;
 ;; Licensed under the Apache License, Version 2.0 (the "License");
 ;; you may not use this file except in compliance with the License.
 ;; You may obtain a copy of the License at
-;; 
+;;
 ;;      http://www.apache.org/licenses/LICENSE-2.0
-;; 
+;;
 ;; Unless required by applicable law or agreed to in writing, software
 ;; distributed under the License is distributed on an "AS IS" BASIS,
 ;; WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -47,14 +47,18 @@
    Useful as a fixture: (clojure.test/use-fixtures vertx.testtools/as-embedded).
    Call test-complete to signal the end of the test."
   [f]
-  (binding [*embedded-latch* (CountDownLatch. 1)
-            core/*vertx* (embed/vertx)]
-    (try
-      (f)
-      (finally
-        (if (.await *embedded-latch* test-timeout TimeUnit/SECONDS)
-          (.stop core/*vertx*)
-          (throw (Exception. "Timed out waiting for test to complete")))))))
+  (let [thread (Thread/currentThread)
+        tccl (.getContextClassLoader thread)]
+    (binding [*embedded-latch* (CountDownLatch. 1)
+              core/*vertx* (embed/vertx)]
+      (try
+        (f)
+        (finally
+          (if (.await *embedded-latch* test-timeout TimeUnit/SECONDS)
+            (do
+              (.stop core/*vertx*)
+              (.setContextClassLoader thread tccl))
+            (throw (Exception. "Timed out waiting for test to complete"))))))))
 
 (def ^:private teardown
   "Teardown functions to be called when the test is complete."
