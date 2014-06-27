@@ -34,9 +34,6 @@
       (p/deploy-verticle *pm* "config_to_eb.clj"
         :config cfg
         :handler (fn [err _]
-                   (when err
-                     (println err)
-                     (.printStackTrace (:basis err)))
                    (t/assert-nil err)
                    (core/timer 1000
                      (-> (http/client cfg)
