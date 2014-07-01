@@ -74,3 +74,8 @@
 (deftest map-of-mapped-nums-should-decode
   (is (= {:a {:b 1000000000000} } (decode (JsonObject. "{\"a\":{\"b\":1000000000000}}")))))
 
+(deftest ilookup-semantics-should-hold
+  (let [data {:a {:b ["foo" "bar"]}}
+        ks [:a :b 0]]
+    (is (= (get-in data ks)
+           (get-in (-> data encode decode) ks)))))

@@ -18,7 +18,7 @@
     (:import [org.vertx.java.core.json JsonArray JsonObject]
              [clojure.lang BigInt IPersistentMap Ratio Seqable IPersistentVector
               IPersistentList IPersistentSet IPersistentCollection Associative Keyword ISeq]
-             [java.util Map UUID List Map$Entry]
+             [java.util ArrayList Map UUID List Map$Entry]
              [java.net NetworkInterface InetAddress InetSocketAddress]
              java.math.BigDecimal))
 
@@ -106,7 +106,10 @@
               (assoc m
                 (keyword (.getKey e))
                 (decode (.getValue e))))
-      {} (seq data))))
+      {} (seq data)))
+  ArrayList
+  (decode [data]
+    (vec (map decode data))))
 
 (defn uuid
   "Generates a uuid."
