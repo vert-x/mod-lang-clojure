@@ -18,7 +18,7 @@
     (:import [org.vertx.java.core.json JsonArray JsonObject]
              [clojure.lang BigInt IPersistentMap Ratio Seqable IPersistentVector
               IPersistentList IPersistentSet IPersistentCollection Associative Keyword ISeq]
-             [java.util ArrayList Map UUID List Map$Entry]
+             [java.util Map UUID List Map$Entry]
              [java.net NetworkInterface InetAddress InetSocketAddress]
              java.math.BigDecimal))
 
@@ -107,7 +107,7 @@
                 (keyword (.getKey e))
                 (decode (.getValue e))))
       {} (seq data)))
-  ArrayList
+  List
   (decode [data]
     (vec (map decode data))))
 
