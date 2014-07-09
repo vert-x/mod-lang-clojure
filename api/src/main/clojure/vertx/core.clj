@@ -1,11 +1,11 @@
 ;; Copyright 2013 the original author or authors.
-;; 
+;;
 ;; Licensed under the Apache License, Version 2.0 (the "License");
 ;; you may not use this file except in compliance with the License.
 ;; You may obtain a copy of the License at
-;; 
+;;
 ;;      http://www.apache.org/licenses/LICENSE-2.0
-;; 
+;;
 ;; Unless required by applicable law or agreed to in writing, software
 ;; distributed under the License is distributed on an "AS IS" BASIS,
 ;; WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -52,19 +52,22 @@
 
 (defn ^Vertx get-vertx
   "Returns the currently active vertx instance (*vertx*), throwing if not set."
-  [] 
+  []
   (or *vertx*
       (throw (VertxException. "No vertx instance available."))))
 
 (defn ^Container get-container
   "Returns the currently active vertx container instance (*container*).
-   If throw? is truthy, throws when the container isn't available."
+   If throw? is truthy, throws when the container isn't available.
+   If using container in embed mode, please create a platform firstly,
+   then deploy with it."
   ([]
      (get-container true))
-  ([throw?] 
+  ([throw?]
      (or *container*
          (and throw?
-              (throw (VertxException. "No container instance available."))))))
+              (throw (VertxException. "No container instance available.
+please create a platform and deploy with it."))))))
 
 (defn event-loop?
   "Is the current thread an event loop thread?"
@@ -122,14 +125,14 @@
      (if (or (nil? f) (handler? f))
        f
        (as-handler
-         (fn [^AsyncResult r]
-           (let [ex-map (util/exception->map (.cause r))]
-             (if include-result-or-result-fn
-               (f ex-map
+        (fn [^AsyncResult r]
+          (let [ex-map (util/exception->map (.cause r))]
+            (if include-result-or-result-fn
+              (f ex-map
                  (if (fn? include-result-or-result-fn)
                    (include-result-or-result-fn (.result r))
                    (.result r)))
-               (f ex-map))))))))
+              (f ex-map))))))))
 
 (defn as-void-handler
   "Wraps the given fn in a Handler that ignores the event.
@@ -300,7 +303,7 @@
      (run-on-context (get-vertx) f))
   ([context f]
      (let [h (as-void-handler
-               (bound-fn [] (f)))]
+              (bound-fn [] (f)))]
        (condp instance? context
          Context (.runOnContext ^Context context h)
          Vertx   (.runOnContext ^Vertx context h)))))
