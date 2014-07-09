@@ -106,7 +106,10 @@
               (assoc m
                 (keyword (.getKey e))
                 (decode (.getValue e))))
-      {} (seq data))))
+      {} (seq data)))
+  List
+  (decode [data]
+    (vec (map decode data))))
 
 (defn uuid
   "Generates a uuid."
