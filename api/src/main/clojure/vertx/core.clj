@@ -58,16 +58,17 @@
 
 (defn ^Container get-container
   "Returns the currently active vertx container instance (*container*).
+
    If throw? is truthy, throws when the container isn't available.
-   If using container in embed mode, please create a platform firstly,
-   then deploy with it."
+
+   If using Vert.x embedded, the container won't be available. Use the
+   functions in vertx.platform for deploying when embedded."
   ([]
      (get-container true))
   ([throw?]
      (or *container*
          (and throw?
-              (throw (VertxException. "No container instance available.
-please create a platform and deploy with it."))))))
+              (throw (VertxException. "No container instance available. If embedded, see vertx.platform."))))))
 
 (defn event-loop?
   "Is the current thread an event loop thread?"
