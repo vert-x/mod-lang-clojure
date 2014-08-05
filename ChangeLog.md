@@ -4,8 +4,6 @@
 
 * Implement missing `HttpServerResponse#closeHandler` as `vertx.http/on-close` [#112](../../issues/112)
 
-Update to Clojure 1.6.0
-
 ## [v1.0.1](/../../tree/1.0.1) - 2014-03-26
 
 Update to Clojure 1.6.0
