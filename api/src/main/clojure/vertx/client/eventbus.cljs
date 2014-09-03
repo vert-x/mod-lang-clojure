@@ -14,8 +14,7 @@
 
 (ns vertx.client.eventbus
   "A ClojureScript wrapper around vertxbus.js."
-  (:require vertx.eventbusjs
-            sockjs))
+  (:require vertx.eventbusjs))
 
 (defn eventbus
   "Creates a new eventbus with the given url and options."
@@ -135,6 +134,3 @@
   "Closes the given EventBus."
   [eb]
   (.close eb))
-
-
-

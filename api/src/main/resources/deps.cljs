@@ -1,4 +1,2 @@
-{:foreign-libs [{:file "js/vertxbus.js"
-                 :provides ["vertx.eventbusjs"]}
-                {:file "js/sockjs.js"
-                 :provides ["sockjs"]}]}
+{:foreign-libs [{:file "js/vertxbus-sockjs.js"
+                 :provides ["vertx.eventbusjs"]}]}
