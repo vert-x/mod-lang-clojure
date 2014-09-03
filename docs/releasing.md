@@ -14,9 +14,10 @@ You're done!
 
 1. Update the ChangeLog.
 2. `mvn release:clean`
-3. `mvn release:prepare` - Use the version number (ex: '0.3.0') as the
-   tag, and use the next minor version + SNAPSHOT for the next dev
-   version (ex: '0.4.0-SNAPSHOT' instead of '0.3.1-SNAPSHOT')
+3. `mvn release:prepare -DautoVersionSubmodules` -
+   Use the version number (ex: '0.3.0') as the tag, and use the next
+   minor version + SNAPSHOT for the next dev version (ex:
+   '0.4.0-SNAPSHOT' instead of '0.3.1-SNAPSHOT')
 4. `mvn release:perform`
 5. Log into <http://oss.sonatype.org>
 6. Browse to 'Staging Repositories', find the correct 'io.vertx' repo,
