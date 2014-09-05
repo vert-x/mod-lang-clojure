@@ -1,5 +1,11 @@
 # ChangeLog
 
+## [v1.0.3](/../../tree/1.0.3) - 2014-09-05
+
+* Coerce values passed to `vertx.http/add-header` to strings. [#114](../../issues/114)
+* Update to Vert.x 2.1.2 [#122](../../issues/122)
+* eventbus.cljs doesn't work with latest ClojureScript  [#123](../../issues/123)
+
 ## [v1.0.2](/../../tree/1.0.2) - 2014-04-25
 
 * Implement missing `HttpServerResponse#closeHandler` as `vertx.http/on-close` [#112](../../issues/112)
