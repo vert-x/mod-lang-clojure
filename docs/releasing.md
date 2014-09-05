@@ -39,6 +39,7 @@ You're done!
     check <http://search.maven.org> to know when this has completed.
 11. Announce it: twitter, clojure@, vertx@
 12. Register it in the [module registry](http://modulereg.vertx.io/)
+13. Submit a PR to vert.x to include the release in langs.properties
 
 For reference:
 
