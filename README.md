@@ -6,27 +6,27 @@ The Clojure language implementation for Vert.x
 
 First, you'll need to [install Vert.x](http://vertx.io/install.html).
 
-The latest stable release is *1.0.2*. Until this module becomes part
-of Vert.x proper, you will need to make Vert.x aware of it by editing
-`VERTX_HOME/conf/langs.properties` and adding:
+The latest stable release is *1.0.3*. Vert.x 2.1.2 ships with 1.0.2, so you will need update
+`VERTX_HOME/conf/langs.properties` to use 1.0.3 if you want the latest. Change:
 
     clojure=io.vertx~lang-clojure~1.0.2:io.vertx.lang.clojure.ClojureVerticleFactory
-    .clj=clojure
 
+to
+
+    clojure=io.vertx~lang-clojure~1.0.3:io.vertx.lang.clojure.ClojureVerticleFactory
 
 Every commit triggers a [CI](https://vertx.ci.cloudbees.com/job/vert.x-mod-lang-clojure/)
 build, and we publish a SNAPSHOT when that succeeds. So if you would
 rather run the latest commit, update your `langs.properties` with:
 
-    clojure=io.vertx~lang-clojure~1.0.3-SNAPSHOT:io.vertx.lang.clojure.ClojureVerticleFactory
-    .clj=clojure
+    clojure=io.vertx~lang-clojure~1.0.4-SNAPSHOT:io.vertx.lang.clojure.ClojureVerticleFactory
 
 **Note that this module only works with Vert.x 2.1RC3 or greater.**
 
 ## Documentation
 
 * [User Manual](http://vertx.io/core_manual_clojure.html)
-* [1.0.2 API docs](http://vertx.io/mod-lang-clojure/docs/1.0.2/index.html)
+* [1.0.3 API docs](http://vertx.io/mod-lang-clojure/docs/1.0.3/index.html)
 * [HEAD API docs](https://vertx.ci.cloudbees.com/job/vert.x-mod-lang-clojure/lastSuccessfulBuild/artifact/api/target/html-docs/index.html)
 
 ## Examples
