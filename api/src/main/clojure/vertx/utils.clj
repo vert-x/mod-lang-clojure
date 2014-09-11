@@ -30,7 +30,7 @@
   ([^JsonObject jobj ^Map$Entry e]
      (put jobj (.getKey e) (.getValue e)))
   ([^JsonObject jobj k v]
-     (doto jobj (.putValue (name k) (encode v)))))
+     (doto jobj (.putValue (encode k) (encode v)))))
 
 (defn- map->JsonObject [data]
   (reduce #(put %1 (first %2) (second %2))
@@ -84,7 +84,7 @@
     (seq->JsonArray data))
   Keyword
   (encode [data]
-    (name data)))
+    (.substring (str data) 1)))
 
 (defprotocol Decodeable
   (decode [data]))
