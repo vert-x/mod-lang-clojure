@@ -6,14 +6,14 @@ The Clojure language implementation for Vert.x
 
 First, you'll need to [install Vert.x](http://vertx.io/install.html).
 
-The latest stable release is *1.0.3*. Vert.x 2.1.2 ships with 1.0.2, so you will need update
-`VERTX_HOME/conf/langs.properties` to use 1.0.3 if you want the latest. Change:
+The latest stable release is *1.0.4*. Vert.x 2.1.2 ships with 1.0.2, so you will need update
+`VERTX_HOME/conf/langs.properties` to use 1.0.4 if you want the latest. Change:
 
     clojure=io.vertx~lang-clojure~1.0.2:io.vertx.lang.clojure.ClojureVerticleFactory
 
 to
 
-    clojure=io.vertx~lang-clojure~1.0.3:io.vertx.lang.clojure.ClojureVerticleFactory
+    clojure=io.vertx~lang-clojure~1.0.4:io.vertx.lang.clojure.ClojureVerticleFactory
 
 Every commit triggers a [CI](https://vertx.ci.cloudbees.com/job/vert.x-mod-lang-clojure/)
 build, and we publish a SNAPSHOT when that succeeds. So if you would
@@ -26,7 +26,7 @@ rather run the latest commit, update your `langs.properties` with:
 ## Documentation
 
 * [User Manual](http://vertx.io/core_manual_clojure.html)
-* [1.0.3 API docs](http://vertx.io/mod-lang-clojure/docs/1.0.3/index.html)
+* [1.0.4 API docs](http://vertx.io/mod-lang-clojure/docs/1.0.4/index.html)
 * [HEAD API docs](https://vertx.ci.cloudbees.com/job/vert.x-mod-lang-clojure/lastSuccessfulBuild/artifact/api/target/html-docs/index.html)
 
 ## Examples

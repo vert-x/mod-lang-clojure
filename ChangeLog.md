@@ -1,5 +1,9 @@
 # ChangeLog
 
+## [v1.0.4](/../../tree/1.0.4) - 2014-09-22
+
+* Preserve namespaced keywords when sent over the eventbus. [#124](../../issues/124)
+
 ## [v1.0.3](/../../tree/1.0.3) - 2014-09-05
 
 * Coerce values passed to `vertx.http/add-header` to strings. [#114](../../issues/114)
