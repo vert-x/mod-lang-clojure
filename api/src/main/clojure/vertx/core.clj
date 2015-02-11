@@ -269,7 +269,7 @@
    Returns the id of the timer. Calling (timer 1 (foo)) is analogous
    to calling (timer* 1 (fn [_] (foo)))."
   [delay & body]
-  `(timer* ~delay (fn [_#] ~@body)))
+  `(timer* ~delay (bound-fn [_#] ~@body)))
 
 (defn periodic*
   "Registers a handler with *vertx* to be called every interval ms until cancelled.
