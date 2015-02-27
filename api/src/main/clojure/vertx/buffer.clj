@@ -1,11 +1,11 @@
 ;; Copyright 2013 the original author or authors.
-;; 
+;;
 ;; Licensed under the Apache License, Version 2.0 (the "License");
 ;; you may not use this file except in compliance with the License.
 ;; You may obtain a copy of the License at
-;; 
+;;
 ;;      http://www.apache.org/licenses/LICENSE-2.0
-;; 
+;;
 ;; Unless required by applicable law or agreed to in writing, software
 ;; distributed under the License is distributed on an "AS IS" BASIS,
 ;; WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -77,7 +77,7 @@
        BigDecimal       (.appendDouble buf (double data))
        Ratio            (.appendDouble buf (double data))
        Float            (.appendFloat buf data)
-       Integer          (.appendInt buf data)    
+       Integer          (.appendInt buf data)
        Long             (.appendLong buf data)
        BigInt           (.appendLong buf (long data))
        Short            (.appendShort buf data)
@@ -109,7 +109,7 @@
        BigDecimal       (.setDouble buf loc (double data))
        Ratio            (.setDouble buf loc (double data))
        Float            (.setFloat buf loc data)
-       Integer          (.setInt buf loc data)    
+       Integer          (.setInt buf loc data)
        Long             (.setLong buf loc data)
        BigInt           (.setLong buf loc (long data))
        Short            (.setShort buf loc data)
@@ -140,7 +140,7 @@
   (.getBuffer buf start end))
 
 (defmacro ^:private def-get [name len]
-  (let [fname (symbol (str "get-" name)) 
+  (let [fname (symbol (str "get-" name))
         doc (format "Returns the %s at position pos in buf.\n  Throws IndexOutOfBoundsException if the specified pos is less than 0\n  or pos + %s is greater than the length of buf." name len)
         method (symbol (str ".get" (clojure.string/capitalize name)))
         buf (with-meta 'buf {:tag 'Buffer})]
@@ -211,7 +211,7 @@
    buffer1:Hello
    buffer2:How are you?
    buffer3:I am fine.
-   
+
    handler can either be a single-arity fn or a Handler instance that
    will be passed the Buffer for each parsed fragment. See
    org.vertx.java.core.parsetools.RecordParser for more details."
