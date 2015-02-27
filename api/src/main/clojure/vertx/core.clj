@@ -42,8 +42,9 @@
 (def ^:private -vertx-stop-fns (atom {}))
 
 (defn- -start-verticle [main id]
-  (binding [-current-verticle-id id]
-    (clojure.lang.RT/loadResourceScript main)))
+  (locking clojure.lang.RT
+    (binding [-current-verticle-id id]
+      (clojure.lang.RT/loadResourceScript main))))
 
 (defn- -stop-verticle [id]
   (doseq [f (get @-vertx-stop-fns id)]
