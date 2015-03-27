@@ -81,8 +81,10 @@ public class ClojureVerticleFactory implements VerticleFactory {
         }
 
         public void start() {
-            this.runtime.invoke("vertx.core/-start-verticle", scriptName, this.id);
-            log.info("Started clojure verticle: " + scriptName);
+            synchronized (ClojureVerticle.class) {
+                this.runtime.invoke("vertx.core/-start-verticle", scriptName, this.id);
+                log.info("Started clojure verticle: " + scriptName);
+            }
         }
 
         public void stop() {
@@ -97,5 +99,4 @@ public class ClojureVerticleFactory implements VerticleFactory {
     private static final Logger log = LoggerFactory.getLogger(ClojureVerticleFactory.class);
     private boolean ownsRuntime;
     private ClojureRuntimeShim runtime;
-
 }
