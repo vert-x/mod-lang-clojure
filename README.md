@@ -13,13 +13,13 @@ The latest stable release is *1.0.4*. Vert.x 2.1.2 ships with 1.0.2, so you will
 
 to
 
-    clojure=io.vertx~lang-clojure~1.0.4:io.vertx.lang.clojure.ClojureVerticleFactory
+    clojure=io.vertx~lang-clojure~1.0.5:io.vertx.lang.clojure.ClojureVerticleFactory
 
 Every commit triggers a [CI](https://vertx.ci.cloudbees.com/job/vert.x-mod-lang-clojure/)
 build, and we publish a SNAPSHOT when that succeeds. So if you would
 rather run the latest commit, update your `langs.properties` with:
 
-    clojure=io.vertx~lang-clojure~1.0.4-SNAPSHOT:io.vertx.lang.clojure.ClojureVerticleFactory
+    clojure=io.vertx~lang-clojure~1.0.6-SNAPSHOT:io.vertx.lang.clojure.ClojureVerticleFactory
 
 **Note that this module only works with Vert.x 2.1RC3 or greater.**
 
