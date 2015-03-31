@@ -1,5 +1,12 @@
 # ChangeLog
 
+## [v1.0.5](/../../tree/1.0.5) - 2015-03-31
+
+* Upgrade tools.nrepl to 0.2.10. This addresses security concerns with the repl
+  binding to 0.0.0.0 by default - it now binds to localhost by default.
+* Functions passed to timer fns (and the bodies passed to the corresponding macros) are now wrapped in `bound-fn` [#126](../../issues/126)
+* Deployment of verticles is now serialized. This prevents errors with namespaces being loaded concurrently [#130](../../issues/130), [#134](../../issues/134)
+
 ## [v1.0.4](/../../tree/1.0.4) - 2014-09-22
 
 * Preserve namespaced keywords when sent over the eventbus. [#124](../../issues/124)
