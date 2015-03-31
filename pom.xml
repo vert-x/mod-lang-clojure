@@ -63,10 +63,10 @@
     <version.vertx>2.1.5</version.vertx>
     <version.vertx.testtools>2.0.3-final</version.vertx.testtools>
     <version.sockjs>0.3.4</version.sockjs>
-    <version.shimdandy>1.0.1</version.shimdandy>
+    <version.shimdandy>1.1.0</version.shimdandy>
     <version.clojure>1.6.0</version.clojure>
     <version.json>0.2.2</version.json>
-    <version.nrepl>0.2.3</version.nrepl>
+    <version.nrepl>0.2.10</version.nrepl>
     <version.clj-stacktrace>0.2.5</version.clj-stacktrace>
     <version.clojure-complete>0.2.3</version.clojure-complete>
 
