@@ -1,8 +1,10 @@
-# mod-lang-clojure
+# Vert.x 2.x is **deprecated** - use instead https://vertx.io
 
-The Clojure language implementation for Vert.x
+## mod-lang-clojure
 
-## Usage
+The Clojure language implementation for Vert.x 2.x
+
+### Usage
 
 First, you'll need to [install Vert.x](http://vertx.io/install.html).
 
@@ -23,7 +25,7 @@ rather run the latest commit, update your `langs.properties` with:
 
 **Note that this module only works with Vert.x 2.1RC3 or greater.**
 
-## Documentation
+### Documentation
 
 * [User Manual](http://vertx.io/core_manual_clojure.html)
 * [1.0.4 API docs](http://vertx.io/mod-lang-clojure/docs/1.0.4/index.html)
